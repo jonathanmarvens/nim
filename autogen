@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -ex
+
+aclocal --install -I m4
+autoconf
+libtoolize --copy
+automake --add-missing --copy
+./configure "$@"
+
