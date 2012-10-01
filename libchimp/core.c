@@ -69,6 +69,27 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     return memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
 }
 
+static ChimpRef *
+_chimp_object_str (ChimpGC *gc, ChimpRef *self)
+{
+    char buf[32];
+    ChimpRef *name = CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
+    ChimpRef *str;
+    
+    snprintf (buf, sizeof(buf), " @ %p>", self);
+    str = chimp_str_new_concat (gc, "<", CHIMP_STR_DATA(name), buf, NULL);
+    if (str == NULL) {
+        return NULL;
+    }
+    return str;
+}
+
+static ChimpRef *
+chimp_str_str (ChimpGC *gc, ChimpRef *self)
+{
+    return self;
+}
+
 chimp_bool_t
 chimp_core_startup (void)
 {
@@ -82,9 +103,11 @@ chimp_core_startup (void)
     chimp_str_class    = chimp_gc_new_object (gc);
 
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_object_class, "object", NULL);
+    CHIMP_CLASS(chimp_object_class)->str = _chimp_object_str;
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
+    CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
 
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);

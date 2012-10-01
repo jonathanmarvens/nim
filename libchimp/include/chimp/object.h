@@ -34,6 +34,7 @@ typedef struct _ChimpClass {
     ChimpRef *name;
     ChimpRef *super;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*str)(ChimpGC *, ChimpRef *);
     struct _ChimpLWHash *methods;
 } ChimpClass;
 
@@ -61,8 +62,14 @@ typedef union _ChimpValue {
     ChimpArray  array;
 } ChimpValue;
 
+ChimpRef *
+chimp_object_new (ChimpGC *gc, ChimpRef *klass);
+
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
+
+ChimpRef *
+chimp_object_str (ChimpGC *gc, ChimpRef *self);
 
 #define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 

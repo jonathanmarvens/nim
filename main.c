@@ -29,6 +29,15 @@ main (int argc, char **argv)
     chimp_gc_collect (gc);
     printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEMS(ref)[0]));
 
+    /* conversion from generic object to string? */
+    ref = chimp_object_new (gc, NULL);
+    ref = chimp_object_str (gc, ref);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    ref = chimp_array_new (gc);
+    ref = chimp_object_str (gc, ref);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
     chimp_gc_delete (gc);
     chimp_core_shutdown ();
     return 0;
