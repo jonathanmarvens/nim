@@ -2,6 +2,8 @@
 #include "chimp/gc.h"
 #include "chimp/object.h"
 #include "chimp/lwhash.h"
+#include "chimp/class.h"
+#include "chimp/str.h"
 
 static ChimpGC *gc = NULL;
 
@@ -31,6 +33,7 @@ static ChimpGC *gc = NULL;
 ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
+ChimpRef *chimp_array_class = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -86,6 +89,12 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_str_class);
+
+    chimp_array_class =
+        chimp_class_new (gc, CHIMP_STR_NEW(gc, "array"), chimp_object_class);
+    if (chimp_array_class == NULL) {
+        return CHIMP_FALSE;
+    }
 
     return CHIMP_TRUE;
 }

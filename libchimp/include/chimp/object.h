@@ -13,6 +13,7 @@ typedef enum _ChimpValueType {
     CHIMP_VALUE_TYPE_OBJECT,
     CHIMP_VALUE_TYPE_CLASS,
     CHIMP_VALUE_TYPE_STR,
+    CHIMP_VALUE_TYPE_ARRAY,
 } ChimpValueType;
 
 typedef struct _ChimpAny {
@@ -46,18 +47,22 @@ typedef struct _ChimpStr {
     size_t    size;
 } ChimpStr;
 
+typedef struct _ChimpArray {
+    ChimpAny   base;
+    ChimpRef **items;
+    size_t     size;
+} ChimpArray;
+
 typedef union _ChimpValue {
     ChimpAny    any;
     ChimpClass  klass;
     ChimpObject object;
     ChimpStr    str;
+    ChimpArray  array;
 } ChimpValue;
 
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
-
-ChimpRef *
-chimp_object_call (ChimpRef *target, ChimpRef *args);
 
 #define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 
@@ -65,6 +70,7 @@ chimp_object_call (ChimpRef *target, ChimpRef *args);
 #define CHIMP_CLASS(ref)  CHIMP_CHECK_CAST(ChimpClass, (ref), CHIMP_VALUE_TYPE_CLASS)
 #define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
+#define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), CHIMP_VALUE_TYPE_ARRAY)
 
 #define CHIMP_ANY_CLASS(ref) (CHIMP_ANY(ref)->klass)
 #define CHIMP_ANY_TYPE(ref) (CHIMP_ANY(ref)->type)
@@ -74,6 +80,7 @@ chimp_object_call (ChimpRef *target, ChimpRef *args);
 CHIMP_EXTERN_CLASS(object);
 CHIMP_EXTERN_CLASS(class);
 CHIMP_EXTERN_CLASS(str);
+CHIMP_EXTERN_CLASS(array);
 
 #ifdef __cplusplus
 };

@@ -5,6 +5,8 @@
 #include <chimp/gc.h>
 #include <chimp/object.h>
 #include <chimp/str.h>
+#include <chimp/array.h>
+#include <chimp/class.h>
 
 #endif
 

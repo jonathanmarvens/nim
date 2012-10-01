@@ -17,13 +17,17 @@ main (int argc, char **argv)
     }
 
     /* let's see if a string can survive a collection :) */
-
     ref = chimp_str_new (gc, "foo", 3);
     chimp_gc_make_root (gc, ref);
-
     chimp_gc_collect (gc);
-
     printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    /* alright, how about an array? */
+    ref = chimp_array_new (gc);
+    chimp_gc_make_root (gc, ref);
+    chimp_array_push (ref, CHIMP_STR_NEW(gc, "bar"));
+    chimp_gc_collect (gc);
+    printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEMS(ref)[0]));
 
     chimp_gc_delete (gc);
     chimp_core_shutdown ();
