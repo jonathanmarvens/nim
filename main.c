@@ -82,6 +82,7 @@ main (int argc, char **argv)
     chimp_gc_make_root (gc, ref);
     chimp_gc_collect (gc);
     chimp_object_call (ref, NULL);
+    chimp_gc_collect (gc);
 
     chimp_task_delete (main_task);
     chimp_core_shutdown ();

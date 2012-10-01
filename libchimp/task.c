@@ -5,7 +5,7 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 
-static __thread ChimpTask *current_task;
+static __thread ChimpTask *current_task = NULL;
 
 struct _ChimpTask {
     ChimpGC  *gc;
@@ -51,6 +51,7 @@ chimp_task_new_main (void)
     if (task == NULL) {
         return NULL;
     }
+    task->impl = NULL;
     task->is_main = CHIMP_TRUE;
     task->gc = chimp_gc_new ();
     if (task->gc == NULL) {
