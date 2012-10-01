@@ -1,6 +1,7 @@
 #include "chimp/gc.h"
 #include "chimp/object.h"
 #include "chimp/core.h"
+#include "chimp/lwhash.h"
 
 #define DEFAULT_SLAB_SIZE ((4 * 1024) / sizeof(ChimpValue))
 
@@ -12,6 +13,7 @@ struct _ChimpRef {
 
 #define CHIMP_FAST_ANY(ref) (&((ref)->value->any))
 #define CHIMP_FAST_CLASS(ref) (&((ref)->value->klass))
+#define CHIMP_FAST_STR(ref) (&((ref)->value->str))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
 
@@ -184,11 +186,15 @@ chimp_gc_value_dtor (ChimpRef *ref)
     switch (CHIMP_FAST_REF_TYPE(ref)) {
         case CHIMP_VALUE_TYPE_STR:
             {
-                CHIMP_FREE (CHIMP_STR(ref)->data);
+                CHIMP_FREE (CHIMP_FAST_STR(ref)->data);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_CLASS:
+            {
+                chimp_lwhash_delete (CHIMP_FAST_CLASS(ref)->methods);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:
-        case CHIMP_VALUE_TYPE_CLASS:
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type: %s", type_name (ref->value->any.type));
@@ -304,6 +310,9 @@ chimp_gc_ref_type (ChimpRef *ref)
 }
 
 static void
+chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data);
+
+static void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 {
     if (ref == NULL) return;
@@ -322,6 +331,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->super);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->name);
+                chimp_lwhash_foreach (CHIMP_FAST_CLASS(ref)->methods, chimp_gc_mark_lwhash_items, gc);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:
@@ -330,6 +340,14 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type '%s'", type_name (ref->value->any.type));
     };
+}
+
+static void
+chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data)
+{
+    ChimpGC *gc = (ChimpGC *) data;
+    chimp_gc_mark_ref (gc, key);
+    chimp_gc_mark_ref (gc, value);
 }
 
 static void

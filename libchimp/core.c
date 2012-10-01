@@ -1,6 +1,7 @@
 #include "chimp/core.h"
 #include "chimp/gc.h"
 #include "chimp/object.h"
+#include "chimp/lwhash.h"
 
 static ChimpGC *gc = NULL;
 
@@ -20,6 +21,11 @@ static ChimpGC *gc = NULL;
         } \
         CHIMP_STR(CHIMP_CLASS(c)->name)->size = sizeof(n)-1; \
         chimp_gc_make_root ((gc), (c)); \
+    } while (0)
+
+#define CHIMP_BOOTSTRAP_CLASS_L2(gc, c) \
+    do { \
+        CHIMP_CLASS(c)->methods = chimp_lwhash_new (); \
     } while (0)
 
 ChimpRef *chimp_object_class = NULL;
@@ -76,6 +82,10 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
+
+    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);
+    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_str_class);
 
     return CHIMP_TRUE;
 }

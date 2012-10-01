@@ -2,6 +2,7 @@
 #define _CHIMP_OBJECT_H_INCLUDED_
 
 #include <chimp/core.h>
+#include <chimp/gc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,10 +33,11 @@ typedef struct _ChimpClass {
     ChimpRef *name;
     ChimpRef *super;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
+    struct _ChimpLWHash *methods;
 } ChimpClass;
 
 typedef struct _ChimpObject {
-    ChimpAny  base;
+    ChimpAny     base;
 } ChimpObject;
 
 typedef struct _ChimpStr {
@@ -51,12 +53,21 @@ typedef union _ChimpValue {
     ChimpStr    str;
 } ChimpValue;
 
+ChimpCmpResult
+chimp_object_cmp (ChimpRef *a, ChimpRef *b);
+
+ChimpRef *
+chimp_object_call (ChimpRef *target, ChimpRef *args);
+
 #define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 
 #define CHIMP_ANY(ref)    CHIMP_CHECK_CAST(ChimpAny, (ref), CHIMP_VALUE_TYPE_ANY)
 #define CHIMP_CLASS(ref)  CHIMP_CHECK_CAST(ChimpClass, (ref), CHIMP_VALUE_TYPE_CLASS)
 #define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
+
+#define CHIMP_ANY_CLASS(ref) (CHIMP_ANY(ref)->klass)
+#define CHIMP_ANY_TYPE(ref) (CHIMP_ANY(ref)->type)
 
 #define CHIMP_EXTERN_CLASS(name) extern struct _ChimpRef *chimp_ ## name ## _class
 
