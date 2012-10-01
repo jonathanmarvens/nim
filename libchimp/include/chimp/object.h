@@ -121,6 +121,9 @@ CHIMP_EXTERN_CLASS(class);
 CHIMP_EXTERN_CLASS(str);
 CHIMP_EXTERN_CLASS(array);
 CHIMP_EXTERN_CLASS(method);
+CHIMP_EXTERN_CLASS(nil);
+
+extern struct _ChimpRef *chimp_nil;
 
 #ifdef __cplusplus
 };

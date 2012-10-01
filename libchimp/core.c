@@ -35,6 +35,9 @@ static ChimpGC *gc = NULL;
 ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
+ChimpRef *chimp_nil_class = NULL;
+
+ChimpRef *chimp_nil = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -115,6 +118,12 @@ chimp_class_getattr (ChimpRef *self, ChimpRef *name)
     return method;
 }
 
+static ChimpRef *
+chimp_nil_str (ChimpGC *gc, ChimpRef *self)
+{
+    return CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
+}
+
 chimp_bool_t
 chimp_core_startup (void)
 {
@@ -140,8 +149,24 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_str_class);
 
-    chimp_array_class_bootstrap (gc);
-    chimp_method_class_bootstrap (gc);
+    chimp_nil_class = chimp_class_new (gc, CHIMP_STR_NEW(gc, "nil"), chimp_object_class);
+    if (chimp_nil_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    chimp_gc_make_root (gc, chimp_nil_class);
+    CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
+    chimp_nil = chimp_object_new (gc, chimp_nil_class);
+    if (chimp_nil == NULL) {
+        return CHIMP_FALSE;
+    }
+    chimp_gc_make_root (gc, chimp_nil);
+
+    if (!chimp_array_class_bootstrap (gc)) {
+        return CHIMP_FALSE;
+    }
+    if (!chimp_method_class_bootstrap (gc)) {
+        return CHIMP_FALSE;
+    }
 
     return CHIMP_TRUE;
 }

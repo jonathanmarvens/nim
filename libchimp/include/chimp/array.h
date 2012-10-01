@@ -19,6 +19,9 @@ chimp_array_push (ChimpRef *self, ChimpRef *value);
 ChimpRef *
 chimp_array_pop (ChimpRef *self);
 
+ChimpRef *
+chimp_array_get (ChimpRef *self, int32_t pos);
+
 #define CHIMP_ARRAY_ITEMS(ref) (CHIMP_ARRAY(ref)->items)
 #define CHIMP_ARRAY_SIZE(ref) (CHIMP_ARRAY(ref)->size)
 

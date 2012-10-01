@@ -28,6 +28,7 @@ main (int argc, char **argv)
     ChimpTask *task;
     ChimpRef *ref;
     ChimpGC *gc;
+    ChimpRef *args;
 
     if (!chimp_core_startup ()) {
         return 1;
@@ -83,6 +84,18 @@ main (int argc, char **argv)
     chimp_gc_collect (gc);
     chimp_object_call (ref, NULL);
     chimp_gc_collect (gc);
+
+    /* does nil format itself well? */
+    ref = chimp_object_str (gc, chimp_nil);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    /* push a value onto an array indirectly, then check the result */
+    ref = chimp_array_new (gc);
+    args = chimp_array_new (gc);
+    chimp_array_push (args, CHIMP_STR_NEW(gc, "hello"));
+    chimp_object_call (chimp_object_getattr (ref, CHIMP_STR_NEW(gc, "push")), args);
+    ref = chimp_object_str (gc, chimp_array_get (ref, 0));
+    printf ("%s\n", CHIMP_STR_DATA(ref));
 
     chimp_task_delete (main_task);
     chimp_core_shutdown ();

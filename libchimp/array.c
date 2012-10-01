@@ -10,6 +10,23 @@
 
 ChimpRef *chimp_array_class = NULL;
 
+static ChimpRef *
+_chimp_array_push (ChimpRef *self, ChimpRef *args)
+{
+    /* TODO error if args len == 0 */
+    if (!chimp_array_push (self, chimp_array_get (args, 0))) {
+        /* XXX error? exception? abort? */
+        return NULL;
+    }
+    return chimp_nil;
+}
+
+static ChimpRef *
+_chimp_array_pop (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_array_pop (self);
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (ChimpGC *gc)
 {
@@ -18,6 +35,9 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }
+    chimp_gc_make_root (gc, chimp_array_class);
+    chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
+    chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
     return CHIMP_TRUE;
 }
 
@@ -53,5 +73,18 @@ chimp_array_pop (ChimpRef *self)
 {
     ChimpArray *arr = CHIMP_ARRAY(self);
     return arr->items[--arr->size];
+}
+
+ChimpRef *
+chimp_array_get (ChimpRef *self, int32_t pos)
+{
+    /* XXX index bounds checks */
+    ChimpArray *arr = CHIMP_ARRAY(self);
+    if (pos >= 0) {
+        return arr->items[pos];
+    }
+    else {
+        return arr->items[arr->size - (size_t)(-pos)];
+    }
 }
 

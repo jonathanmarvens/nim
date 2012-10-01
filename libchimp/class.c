@@ -2,6 +2,8 @@
 #include "chimp/object.h"
 #include "chimp/class.h"
 #include "chimp/lwhash.h"
+#include "chimp/str.h"
+#include "chimp/method.h"
 
 #define CHIMP_CLASS_INIT(ref) \
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CLASS; \
@@ -25,5 +27,20 @@ chimp_bool_t
 chimp_class_add_method (ChimpGC *gc, ChimpRef *self, ChimpRef *name, ChimpRef *method)
 {
     return chimp_lwhash_put (CHIMP_CLASS(self)->methods, name, method);
+}
+
+chimp_bool_t
+chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
+{
+    ChimpRef *method_ref;
+    ChimpRef *name_ref = chimp_str_new (gc, name, strlen (name));
+    if (name_ref == NULL) {
+        return CHIMP_FALSE;
+    }
+    method_ref = chimp_method_new_native (gc, func);
+    if (method_ref == NULL) {
+        return CHIMP_FALSE;
+    }
+    return chimp_class_add_method (gc, self, name_ref, method_ref);
 }
 
