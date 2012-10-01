@@ -1,5 +1,6 @@
 #include "chimp/object.h"
 #include "chimp/gc.h"
+#include "chimp/task.h"
 
 #define CHIMP_OBJECT_INIT(ref, c) \
     do { \
@@ -55,6 +56,20 @@ chimp_object_str (ChimpGC *gc, ChimpRef *self)
     }
 
     chimp_bug (__FILE__, __LINE__, "cannot convert type to string. probably a bug.");
+    return NULL;
+}
+
+ChimpRef *
+chimp_object_call (ChimpRef *target, ChimpRef *args)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(target);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->call != NULL) {
+            return CHIMP_CLASS(klass)->call (target, args);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
     return NULL;
 }
 

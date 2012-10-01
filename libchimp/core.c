@@ -4,6 +4,7 @@
 #include "chimp/lwhash.h"
 #include "chimp/class.h"
 #include "chimp/str.h"
+#include "chimp/method.h"
 
 static ChimpGC *gc = NULL;
 
@@ -34,6 +35,7 @@ ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
 ChimpRef *chimp_array_class = NULL;
+ChimpRef *chimp_method_class = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -90,6 +92,12 @@ chimp_str_str (ChimpGC *gc, ChimpRef *self)
     return self;
 }
 
+static ChimpRef *
+chimp_method_call (ChimpRef *self, ChimpRef *args)
+{
+    return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
+}
+
 chimp_bool_t
 chimp_core_startup (void)
 {
@@ -118,6 +126,12 @@ chimp_core_startup (void)
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }
+    chimp_method_class =
+        chimp_class_new (gc, CHIMP_STR_NEW(gc, "method"), chimp_object_class);
+    if (chimp_method_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
 
     return CHIMP_TRUE;
 }

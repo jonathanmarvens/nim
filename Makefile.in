@@ -75,7 +75,7 @@ am_chimp_OBJECTS = chimp-main.$(OBJEXT)
 chimp_OBJECTS = $(am_chimp_OBJECTS)
 chimp_DEPENDENCIES = $(top_builddir)/libchimp/libchimp.la
 chimp_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(chimp_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	--mode=link $(CCLD) $(chimp_CFLAGS) $(CFLAGS) $(chimp_LDFLAGS) \
 	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -274,6 +274,8 @@ SUBDIRS = libchimp .
 chimp_SOURCES = main.c
 chimp_CFLAGS = -Wall -I$(top_srcdir)/libchimp/include
 chimp_LDADD = $(top_builddir)/libchimp/libchimp.la
+# TODO sniff out the appropriate pthread flags ...
+chimp_LDFLAGS = -pthread
 all: all-recursive
 
 .SUFFIXES:

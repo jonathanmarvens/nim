@@ -15,6 +15,7 @@ struct _ChimpRef {
 #define CHIMP_FAST_CLASS(ref) (&((ref)->value->klass))
 #define CHIMP_FAST_STR(ref) (&((ref)->value->str))
 #define CHIMP_FAST_ARRAY(ref) (&((ref)->value->array))
+#define CHIMP_FAST_METHOD(ref) (&((ref)->value->method))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
 
@@ -54,6 +55,14 @@ type_name (ChimpValueType type)
         case CHIMP_VALUE_TYPE_STR:
             {
                 return "str";
+            }
+        case CHIMP_VALUE_TYPE_ARRAY:
+            {
+                return "array";
+            }
+        case CHIMP_VALUE_TYPE_METHOD:
+            {
+                return "method";
             }
         default:
             {
@@ -200,6 +209,7 @@ chimp_gc_value_dtor (ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_ARRAY(ref)->items);
                 break;
             }
+        case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
             break;
         default:
@@ -346,6 +356,12 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 for (i = 0; i < CHIMP_FAST_ARRAY(ref)->size; i++) {
                     chimp_gc_mark_ref (gc, CHIMP_FAST_ARRAY(ref)->items[i]);
                 }
+                break;
+            }
+        case CHIMP_VALUE_TYPE_METHOD:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->self);
+                /* TODO mark code object ? */
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:

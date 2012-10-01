@@ -7,6 +7,8 @@
 #include <chimp/str.h>
 #include <chimp/array.h>
 #include <chimp/class.h>
+#include <chimp/task.h>
+#include <chimp/method.h>
 
 #endif
 

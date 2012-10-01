@@ -14,6 +14,7 @@ typedef enum _ChimpValueType {
     CHIMP_VALUE_TYPE_CLASS,
     CHIMP_VALUE_TYPE_STR,
     CHIMP_VALUE_TYPE_ARRAY,
+    CHIMP_VALUE_TYPE_METHOD,
 } ChimpValueType;
 
 typedef struct _ChimpAny {
@@ -35,6 +36,7 @@ typedef struct _ChimpClass {
     ChimpRef *super;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
     ChimpRef *(*str)(ChimpGC *, ChimpRef *);
+    ChimpRef *(*call)(ChimpRef *, ChimpRef *);
     struct _ChimpLWHash *methods;
 } ChimpClass;
 
@@ -54,12 +56,34 @@ typedef struct _ChimpArray {
     size_t     size;
 } ChimpArray;
 
+typedef enum _ChimpMethodType {
+    CHIMP_METHOD_NATIVE,
+    CHIMP_METHOD_BYTECODE
+} ChimpMethodType;
+
+typedef ChimpRef *(*ChimpNativeMethodFunc)(ChimpRef *, ChimpRef *);
+
+typedef struct _ChimpMethod {
+    ChimpAny         base;
+    ChimpRef        *self; /* NULL for unbound/function */
+    ChimpMethodType  type;
+    union {
+        struct {
+            ChimpNativeMethodFunc func;
+        } native;
+        struct {
+            /* TODO */
+        } bytecode;
+    };
+} ChimpMethod;
+
 typedef union _ChimpValue {
     ChimpAny    any;
     ChimpClass  klass;
     ChimpObject object;
     ChimpStr    str;
     ChimpArray  array;
+    ChimpMethod method;
 } ChimpValue;
 
 ChimpRef *
@@ -71,6 +95,9 @@ chimp_object_cmp (ChimpRef *a, ChimpRef *b);
 ChimpRef *
 chimp_object_str (ChimpGC *gc, ChimpRef *self);
 
+ChimpRef *
+chimp_object_call (ChimpRef *target, ChimpRef *args);
+
 #define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 
 #define CHIMP_ANY(ref)    CHIMP_CHECK_CAST(ChimpAny, (ref), CHIMP_VALUE_TYPE_ANY)
@@ -78,6 +105,7 @@ chimp_object_str (ChimpGC *gc, ChimpRef *self);
 #define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
 #define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), CHIMP_VALUE_TYPE_ARRAY)
+#define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), CHIMP_VALUE_TYPE_METHOD)
 
 #define CHIMP_ANY_CLASS(ref) (CHIMP_ANY(ref)->klass)
 #define CHIMP_ANY_TYPE(ref) (CHIMP_ANY(ref)->type)
@@ -88,6 +116,7 @@ CHIMP_EXTERN_CLASS(object);
 CHIMP_EXTERN_CLASS(class);
 CHIMP_EXTERN_CLASS(str);
 CHIMP_EXTERN_CLASS(array);
+CHIMP_EXTERN_CLASS(method);
 
 #ifdef __cplusplus
 };

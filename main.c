@@ -1,8 +1,15 @@
 #include <chimp.h>
 
+static ChimpRef *
+some_native_method (ChimpRef *self, ChimpRef *args)
+{
+    return CHIMP_STR_NEW(CHIMP_CURRENT_GC, "Hello, World");
+}
+
 int
 main (int argc, char **argv)
 {
+    ChimpTask *main_task;
     ChimpRef *ref;
     ChimpGC *gc;
 
@@ -10,11 +17,8 @@ main (int argc, char **argv)
         return 1;
     }
 
-    gc = chimp_gc_new ();
-    if (gc == NULL) {
-        chimp_core_shutdown ();
-        return 1;
-    }
+    main_task = chimp_task_new_main ();
+    gc = CHIMP_CURRENT_GC;
 
     /* let's see if a string can survive a collection :) */
     ref = chimp_str_new (gc, "foo", 3);
@@ -38,7 +42,11 @@ main (int argc, char **argv)
     ref = chimp_object_str (gc, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
-    chimp_gc_delete (gc);
+    ref = chimp_method_new_native (gc, some_native_method);
+    ref = chimp_object_call (ref, chimp_array_new (gc));
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    chimp_task_delete (main_task);
     chimp_core_shutdown ();
     return 0;
 }
