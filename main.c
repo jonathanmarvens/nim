@@ -1,6 +1,14 @@
 #include <chimp.h>
 
 static ChimpRef *
+some_other_method (ChimpRef *self, ChimpRef *args)
+{
+    printf ("from a separate thread\n");
+    /* XXX */
+    return NULL;
+}
+
+static ChimpRef *
 some_native_method (ChimpRef *self, ChimpRef *args)
 {
     return CHIMP_STR_NEW(CHIMP_CURRENT_GC, "Hello, World");
@@ -10,6 +18,7 @@ int
 main (int argc, char **argv)
 {
     ChimpTask *main_task;
+    ChimpTask *task;
     ChimpRef *ref;
     ChimpGC *gc;
 
@@ -45,6 +54,10 @@ main (int argc, char **argv)
     ref = chimp_method_new_native (gc, some_native_method);
     ref = chimp_object_call (ref, chimp_array_new (gc));
     printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    task = chimp_task_new (chimp_method_new_native (gc, some_other_method));
+    /* XXX hrm. */
+    chimp_task_delete (task);
 
     chimp_task_delete (main_task);
     chimp_core_shutdown ();
