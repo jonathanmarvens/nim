@@ -294,6 +294,8 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
     if (ref == NULL) return;
     if (ref->marked) return;
 
+    ref->marked = CHIMP_TRUE;
+
     chimp_gc_mark_ref (gc, CHIMP_FAST_ANY(ref)->klass);
     switch (CHIMP_FAST_REF_TYPE(ref)) {
         case CHIMP_VALUE_TYPE_CLASS:
@@ -354,7 +356,7 @@ chimp_gc_collect (ChimpGC *gc)
     }
 
     for (i = 0; i < gc->num_roots; i++) {
-        chimp_gc_mark_ref (gc, ref);
+        chimp_gc_mark_ref (gc, gc->roots[i]);
     }
 
     chimp_gc_sweep (gc);
