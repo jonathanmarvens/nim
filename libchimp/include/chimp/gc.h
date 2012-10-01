@@ -28,8 +28,13 @@ chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref);
 union _ChimpValue *
 chimp_gc_ref_check_cast (ChimpRef *ref, enum _ChimpValueType type);
 
+enum _ChimpValueType
+chimp_gc_ref_type (ChimpRef *ref);
+
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc);
+
+#define CHIMP_REF_TYPE(ref) chimp_gc_ref_type(ref)
 
 #ifdef __cplusplus
 };

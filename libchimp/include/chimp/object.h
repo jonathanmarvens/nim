@@ -19,10 +19,19 @@ typedef struct _ChimpAny {
     ChimpRef       *klass;
 } ChimpAny;
 
+typedef enum _ChimpCmpResult {
+    CHIMP_CMP_ERROR    = -3,
+    CHIMP_CMP_NOT_IMPL = -2,
+    CHIMP_CMP_LT       = -1,
+    CHIMP_CMP_EQ       = 0,
+    CHIMP_CMP_GT       = 1
+} ChimpCmpResult;
+
 typedef struct _ChimpClass {
     ChimpAny  base;
     ChimpRef *name;
     ChimpRef *super;
+    ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
 } ChimpClass;
 
 typedef struct _ChimpObject {

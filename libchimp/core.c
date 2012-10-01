@@ -26,6 +26,40 @@ ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
 
+static ChimpCmpResult
+chimp_str_cmp (ChimpRef *a, ChimpRef *b)
+{
+    ChimpStr *as;
+    ChimpStr *bs;
+    ChimpValueType at, bt;
+
+    if (a == b) {
+        return CHIMP_CMP_EQ;
+    }
+
+    at = CHIMP_REF_TYPE(a);
+    bt = CHIMP_REF_TYPE(b);
+
+    if (at != CHIMP_VALUE_TYPE_STR) {
+        /* TODO this is almost certainly a bug */
+        return CHIMP_CMP_ERROR;
+    }
+
+    /* TODO should probably be a subtype check? */
+    if (at != bt) {
+        return CHIMP_CMP_NOT_IMPL;
+    }
+
+    as = CHIMP_STR(a);
+    bs = CHIMP_STR(b);
+
+    if (as->size != bs->size) {
+        return strcmp (as->data, bs->data);
+    }
+
+    return memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
+}
+
 chimp_bool_t
 chimp_core_startup (void)
 {
@@ -41,6 +75,7 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_object_class, "object", NULL);
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
+    CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
 
     return CHIMP_TRUE;
 }
@@ -55,5 +90,21 @@ chimp_core_shutdown (void)
         chimp_class_class = NULL;
         chimp_str_class = NULL;
     }
+}
+
+void
+chimp_bug (const char *filename, int lineno, const char *format, ...)
+{
+    va_list args;
+
+    fprintf (stderr, "bug: %s:%d: ", filename, lineno);
+
+    va_start (args, format);
+    vfprintf (stderr, format, args);
+    va_end (args);
+
+    fprintf (stderr, ". aborting ...\n");
+
+    abort ();
 }
 

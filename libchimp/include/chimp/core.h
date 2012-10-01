@@ -2,6 +2,7 @@
 #define _CHIMP_CORE_H_INCLUDED_
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -21,6 +22,16 @@ chimp_core_startup (void);
 
 void
 chimp_core_shutdown (void);
+
+void
+chimp_bug (const char *filename, int lineno, const char *format, ...);
+
+#define CHIMP_MALLOC(type, size) ((type *) malloc (size))
+#define CHIMP_REALLOC(type, ptr, size) ((type *) realloc ((ptr), (size)))
+#define CHIMP_FREE(ptr) \
+    do { \
+        if ((ptr) != NULL) { free (ptr); } \
+    } while (0)
 
 #ifdef __cplusplus
 };
