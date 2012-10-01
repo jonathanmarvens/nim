@@ -135,10 +135,11 @@ chimp_heap_grow (ChimpHeap *heap)
 }
 
 static void
-chimp_heap_copy_value (ChimpHeap *heap, ChimpValue *value)
+chimp_heap_copy_value (ChimpHeap *heap, ChimpValue **value)
 {
     ChimpSlab *slab = heap->slabs[heap->used / heap->slab_size];
-    memcpy (slab->values, value, sizeof (*value));
+    memcpy (slab->values, *value, sizeof (**value));
+    *value = slab->values;
     slab->values++;
     heap->used++;
 }
@@ -403,7 +404,8 @@ chimp_gc_sweep (ChimpGC *gc)
             continue;
         }
         if (ref->marked) {
-            chimp_heap_copy_value (dest, ref->value);
+            chimp_heap_copy_value (dest, &ref->value);
+            prev = ref;
             kept++;
         }
         else {
@@ -420,6 +422,7 @@ chimp_gc_sweep (ChimpGC *gc)
         ref = next;
     }
 
+    gc->heap = dest;
     fprintf (stderr, "sweep complete! freed %lu, kept %lu\n", freed, kept);
 }
 
