@@ -1,10 +1,25 @@
 #include "chimp/array.h"
 #include "chimp/object.h"
 #include "chimp/core.h"
+#include "chimp/class.h"
+#include "chimp/str.h"
 
 #define CHIMP_ARRAY_INIT(ref) \
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_ARRAY; \
     CHIMP_ANY(ref)->klass = chimp_array_class;
+
+ChimpRef *chimp_array_class = NULL;
+
+chimp_bool_t
+chimp_array_class_bootstrap (ChimpGC *gc)
+{
+    chimp_array_class =
+        chimp_class_new (gc, CHIMP_STR_NEW(gc, "array"), chimp_object_class);
+    if (chimp_array_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
 
 ChimpRef *
 chimp_array_new (ChimpGC *gc)

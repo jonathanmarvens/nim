@@ -37,6 +37,7 @@ typedef struct _ChimpClass {
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
     ChimpRef *(*str)(ChimpGC *, ChimpRef *);
     ChimpRef *(*call)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*getattr)(ChimpRef *, ChimpRef *);
     struct _ChimpLWHash *methods;
 } ChimpClass;
 
@@ -97,6 +98,9 @@ chimp_object_str (ChimpGC *gc, ChimpRef *self);
 
 ChimpRef *
 chimp_object_call (ChimpRef *target, ChimpRef *args);
+
+ChimpRef *
+chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 
 #define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 

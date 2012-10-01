@@ -73,3 +73,17 @@ chimp_object_call (ChimpRef *target, ChimpRef *args)
     return NULL;
 }
 
+ChimpRef *
+chimp_object_getattr (ChimpRef *self, ChimpRef *name)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(self);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->getattr != NULL) {
+            return CHIMP_CLASS(klass)->getattr (self, name);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+    return NULL;
+}
+

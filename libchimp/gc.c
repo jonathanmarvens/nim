@@ -191,8 +191,13 @@ chimp_gc_new (void)
 }
 
 static void
-chimp_gc_value_dtor (ChimpRef *ref)
+chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
 {
+    if (!chimp_heap_contains (gc->heap, ref->value)) {
+        chimp_bug (__FILE__, __LINE__, "destructor called on value that belongs to another GC: %s", CHIMP_STR(chimp_object_str (gc, ref))->data);
+        return;
+    }
+
     switch (CHIMP_FAST_REF_TYPE(ref)) {
         case CHIMP_VALUE_TYPE_STR:
             {
@@ -225,7 +230,7 @@ chimp_gc_delete (ChimpGC *gc)
         ChimpRef *live = gc->live;
         while (live != NULL) {
             ChimpRef *next = live->next;
-            chimp_gc_value_dtor (live);
+            chimp_gc_value_dtor (gc, live);
             CHIMP_FREE (live);
             live = next;
         }
@@ -408,7 +413,7 @@ chimp_gc_sweep (ChimpGC *gc)
             else {
                 gc->live = next;
             }
-            chimp_gc_value_dtor (ref);
+            chimp_gc_value_dtor (gc, ref);
             CHIMP_FREE (ref);
             freed++;
         }

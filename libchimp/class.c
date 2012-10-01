@@ -21,3 +21,9 @@ chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
     return ref;
 }
 
+chimp_bool_t
+chimp_class_add_method (ChimpGC *gc, ChimpRef *self, ChimpRef *name, ChimpRef *method)
+{
+    return chimp_lwhash_put (CHIMP_CLASS(self)->methods, name, method);
+}
+

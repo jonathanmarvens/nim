@@ -4,6 +4,7 @@
 #include "chimp/lwhash.h"
 #include "chimp/class.h"
 #include "chimp/str.h"
+#include "chimp/array.h"
 #include "chimp/method.h"
 
 static ChimpGC *gc = NULL;
@@ -34,8 +35,6 @@ static ChimpGC *gc = NULL;
 ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
-ChimpRef *chimp_array_class = NULL;
-ChimpRef *chimp_method_class = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -93,9 +92,27 @@ chimp_str_str (ChimpGC *gc, ChimpRef *self)
 }
 
 static ChimpRef *
-chimp_method_call (ChimpRef *self, ChimpRef *args)
+_chimp_object_getattr (ChimpRef *self, ChimpRef *name)
 {
-    return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
+    /* TODO check CHIMP_ANY(self)->attributes ? */
+    ChimpLWHash *methods = CHIMP_CLASS(CHIMP_ANY_CLASS(self))->methods;
+    ChimpRef *method;
+    if (!chimp_lwhash_get (methods, name, &method)) {
+        return NULL;
+    }
+    /* XXX binding on every call is probably dumb/slow */
+    return chimp_method_new_bound (method, self);
+}
+
+static ChimpRef *
+chimp_class_getattr (ChimpRef *self, ChimpRef *name)
+{
+    ChimpLWHash *methods = CHIMP_CLASS(self)->methods;
+    ChimpRef *method;
+    if (!chimp_lwhash_get (methods, name, &method)) {
+        return NULL;
+    }
+    return method;
 }
 
 chimp_bool_t
@@ -112,7 +129,9 @@ chimp_core_startup (void)
 
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_object_class, "object", NULL);
     CHIMP_CLASS(chimp_object_class)->str = _chimp_object_str;
+    CHIMP_CLASS(chimp_object_class)->getattr = _chimp_object_getattr;
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
+    CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
     CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
@@ -121,17 +140,8 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_str_class);
 
-    chimp_array_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "array"), chimp_object_class);
-    if (chimp_array_class == NULL) {
-        return CHIMP_FALSE;
-    }
-    chimp_method_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "method"), chimp_object_class);
-    if (chimp_method_class == NULL) {
-        return CHIMP_FALSE;
-    }
-    CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
+    chimp_array_class_bootstrap (gc);
+    chimp_method_class_bootstrap (gc);
 
     return CHIMP_TRUE;
 }
