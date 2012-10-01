@@ -10,6 +10,11 @@ struct _ChimpRef {
     struct _ChimpRef *next;
 };
 
+#define CHIMP_FAST_ANY(ref) (&((ref)->value->any))
+#define CHIMP_FAST_CLASS(ref) (&((ref)->value->klass))
+
+#define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
+
 typedef struct _ChimpSlab {
     ChimpValue *values;
     ChimpValue *head;
@@ -162,7 +167,7 @@ chimp_gc_new (void)
 static void
 chimp_gc_value_dtor (ChimpRef *ref)
 {
-    switch (CHIMP_REF_TYPE(ref)) {
+    switch (CHIMP_FAST_REF_TYPE(ref)) {
         case CHIMP_VALUE_TYPE_STR:
             {
                 CHIMP_FREE (CHIMP_STR(ref)->data);
@@ -289,12 +294,12 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
     if (ref == NULL) return;
     if (ref->marked) return;
 
-    chimp_gc_mark_ref (gc, CHIMP_ANY(ref)->klass);
-    switch (CHIMP_REF_TYPE(ref)) {
+    chimp_gc_mark_ref (gc, CHIMP_FAST_ANY(ref)->klass);
+    switch (CHIMP_FAST_REF_TYPE(ref)) {
         case CHIMP_VALUE_TYPE_CLASS:
             {
-                chimp_gc_mark_ref (gc, CHIMP_CLASS(ref)->super);
-                chimp_gc_mark_ref (gc, CHIMP_CLASS(ref)->name);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->super);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->name);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:
