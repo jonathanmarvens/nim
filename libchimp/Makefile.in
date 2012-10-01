@@ -95,7 +95,7 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libchimp_la_DEPENDENCIES =
 am_libchimp_la_OBJECTS = libchimp_la-gc.lo libchimp_la-core.lo \
-	libchimp_la-str.lo
+	libchimp_la-str.lo libchimp_la-class.lo
 libchimp_la_OBJECTS = $(am_libchimp_la_OBJECTS)
 libchimp_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libchimp_la_CFLAGS) \
@@ -241,7 +241,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libchimp.la
-libchimp_la_SOURCES = gc.c core.c str.c
+libchimp_la_SOURCES = gc.c core.c str.c class.c
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include
 libchimp_la_LIBADD = 
 all: all-am
@@ -319,6 +319,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-class.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-core.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-gc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-str.Plo@am__quote@
@@ -364,6 +365,13 @@ libchimp_la-str.lo: str.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='str.c' object='libchimp_la-str.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-str.lo `test -f 'str.c' || echo '$(srcdir)/'`str.c
+
+libchimp_la-class.lo: class.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -MT libchimp_la-class.lo -MD -MP -MF $(DEPDIR)/libchimp_la-class.Tpo -c -o libchimp_la-class.lo `test -f 'class.c' || echo '$(srcdir)/'`class.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libchimp_la-class.Tpo $(DEPDIR)/libchimp_la-class.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='class.c' object='libchimp_la-class.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-class.lo `test -f 'class.c' || echo '$(srcdir)/'`class.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
