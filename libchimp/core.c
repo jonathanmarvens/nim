@@ -4,7 +4,7 @@
 
 static ChimpGC *gc = NULL;
 
-#define CHIMP_BOOTSTRAP_CLASS(gc, c, n, sup) \
+#define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
         CHIMP_ANY(c)->type = CHIMP_VALUE_TYPE_CLASS; \
         CHIMP_ANY(c)->klass = chimp_class_class; \
@@ -38,9 +38,9 @@ chimp_core_startup (void)
     chimp_class_class  = chimp_gc_new_object (gc);
     chimp_str_class    = chimp_gc_new_object (gc);
 
-    CHIMP_BOOTSTRAP_CLASS(gc, chimp_object_class, "object", NULL);
-    CHIMP_BOOTSTRAP_CLASS(gc, chimp_class_class, "class", chimp_object_class);
-    CHIMP_BOOTSTRAP_CLASS(gc, chimp_str_class, "str", chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_object_class, "object", NULL);
+    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
 
     return CHIMP_TRUE;
 }
