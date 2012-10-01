@@ -141,6 +141,20 @@ chimp_heap_reset (ChimpHeap *heap)
     heap->used = 0;
 }
 
+static chimp_bool_t
+chimp_heap_contains (ChimpHeap *heap, ChimpValue *value)
+{
+    size_t i;
+    for (i = 0; i < heap->slab_count; i++) {
+        ChimpValue *begin = heap->slabs[i]->head;
+        ChimpValue *end   = heap->slabs[i]->head + heap->slab_size;
+        if (value >= begin && value < end) {
+            return CHIMP_TRUE;
+        }
+    }
+    return CHIMP_FALSE;
+}
+
 ChimpGC *
 chimp_gc_new (void)
 {
@@ -210,6 +224,7 @@ chimp_gc_new_ref (ChimpGC *gc, ChimpValue *value)
     }
     ref->next = gc->live;
     ref->value = value;
+    ref->marked = CHIMP_FALSE;
     gc->live = ref;
     return ref;
 }
@@ -294,6 +309,11 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
     if (ref == NULL) return;
     if (ref->marked) return;
 
+    if (!chimp_heap_contains (gc->heap, ref->value)) {
+        /* this ref belongs to another GC */
+        return;
+    }
+
     ref->marked = CHIMP_TRUE;
 
     chimp_gc_mark_ref (gc, CHIMP_FAST_ANY(ref)->klass);
@@ -324,6 +344,11 @@ chimp_gc_sweep (ChimpGC *gc)
     chimp_heap_reset (dest);
     while (ref != NULL) {
         ChimpRef *next = ref->next;
+        if (!chimp_heap_contains (gc->heap, ref->value)) {
+            /* this ref belongs to another GC*/
+            ref = next;
+            continue;
+        }
         if (ref->marked) {
             chimp_heap_copy_value (dest, ref->value);
             kept++;
