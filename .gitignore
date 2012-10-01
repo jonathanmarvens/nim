@@ -1,0 +1,15 @@
+.libs
+.deps
+*.la
+*.lo
+*.a
+*.o
+*.so
+*.swp
+*.log
+config.status
+config.site
+/chimp
+Makefile
+autom4te.cache
+
