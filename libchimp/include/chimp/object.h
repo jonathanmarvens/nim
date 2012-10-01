@@ -58,6 +58,12 @@ typedef union _ChimpValue {
 #define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
 
+#define CHIMP_EXTERN_CLASS(name) extern struct _ChimpRef *chimp_ ## name ## _class
+
+CHIMP_EXTERN_CLASS(object);
+CHIMP_EXTERN_CLASS(class);
+CHIMP_EXTERN_CLASS(str);
+
 #ifdef __cplusplus
 };
 #endif
