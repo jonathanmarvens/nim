@@ -32,6 +32,8 @@ main (int argc, char **argv)
         return 1;
     }
 
+    CHIMP_PUSH_STACK_FRAME();
+
     /* let's see if a string can survive a collection :) */
     ref = chimp_str_new (NULL, "foo", 3);
     chimp_gc_make_root (NULL, ref);
@@ -97,6 +99,7 @@ main (int argc, char **argv)
     ref = chimp_object_str (NULL, chimp_array_get (ref, 0));
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
+    CHIMP_POP_STACK_FRAME ();
     chimp_core_shutdown ();
     return 0;
 }
