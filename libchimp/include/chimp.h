@@ -9,6 +9,7 @@
 #include <chimp/class.h>
 #include <chimp/task.h>
 #include <chimp/method.h>
+#include <chimp/stackframe.h>
 
 #endif
 
