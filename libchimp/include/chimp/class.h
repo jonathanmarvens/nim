@@ -2,6 +2,7 @@
 #define _CHIMP_CLASS_H_INCLUDED_
 
 #include <chimp/gc.h>
+#include <chimp/object.h>
 
 #ifdef __cplusplus
 extern "C" {

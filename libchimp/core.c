@@ -7,6 +7,7 @@
 #include "chimp/array.h"
 #include "chimp/method.h"
 #include "chimp/task.h"
+#include "chimp/stackframe.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -172,6 +173,11 @@ chimp_core_startup (void)
         return CHIMP_FALSE;
     }
     if (!chimp_method_class_bootstrap (NULL)) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
+        return CHIMP_FALSE;
+    }
+    if (!chimp_stack_frame_class_bootstrap (NULL)) {
         chimp_task_delete (main_task);
         main_task = NULL;
         return CHIMP_FALSE;

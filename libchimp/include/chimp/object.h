@@ -15,6 +15,7 @@ typedef enum _ChimpValueType {
     CHIMP_VALUE_TYPE_STR,
     CHIMP_VALUE_TYPE_ARRAY,
     CHIMP_VALUE_TYPE_METHOD,
+    CHIMP_VALUE_TYPE_STACK_FRAME,
 } ChimpValueType;
 
 typedef struct _ChimpAny {
@@ -57,6 +58,10 @@ typedef struct _ChimpArray {
     size_t     size;
 } ChimpArray;
 
+typedef struct _ChimpStackFrame {
+    ChimpAny   base;
+} ChimpStackFrame;
+
 typedef enum _ChimpMethodType {
     CHIMP_METHOD_NATIVE,
     CHIMP_METHOD_BYTECODE
@@ -79,12 +84,13 @@ typedef struct _ChimpMethod {
 } ChimpMethod;
 
 typedef union _ChimpValue {
-    ChimpAny    any;
-    ChimpClass  klass;
-    ChimpObject object;
-    ChimpStr    str;
-    ChimpArray  array;
-    ChimpMethod method;
+    ChimpAny        any;
+    ChimpClass      klass;
+    ChimpObject     object;
+    ChimpStr        str;
+    ChimpArray      array;
+    ChimpMethod     method;
+    ChimpStackFrame stack_frame;
 } ChimpValue;
 
 ChimpRef *
@@ -110,6 +116,8 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
 #define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), CHIMP_VALUE_TYPE_ARRAY)
 #define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), CHIMP_VALUE_TYPE_METHOD)
+#define CHIMP_STACK_FRAME(ref) \
+    CHIMP_CHECK_CAST(ChimpStackFrame, (ref), CHIMP_VALUE_TYPE_STACK_FRAME)
 
 #define CHIMP_ANY_CLASS(ref) (CHIMP_ANY(ref)->klass)
 #define CHIMP_ANY_TYPE(ref) (CHIMP_ANY(ref)->type)
@@ -121,6 +129,7 @@ CHIMP_EXTERN_CLASS(class);
 CHIMP_EXTERN_CLASS(str);
 CHIMP_EXTERN_CLASS(array);
 CHIMP_EXTERN_CLASS(method);
+CHIMP_EXTERN_CLASS(stack_frame);
 CHIMP_EXTERN_CLASS(nil);
 
 extern struct _ChimpRef *chimp_nil;
