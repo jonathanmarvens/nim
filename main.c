@@ -1,5 +1,6 @@
 #include <chimp.h>
 
+#if 0
 static ChimpRef *
 print_self (ChimpRef *self, ChimpRef *args)
 {
@@ -21,17 +22,43 @@ some_native_method (ChimpRef *self, ChimpRef *args)
     return CHIMP_STR_NEW(NULL, "Hello, World");
 }
 
+#endif
+
 int
 main (int argc, char **argv)
 {
+#if 0
     ChimpTask *task;
     ChimpRef *ref;
     ChimpRef *args;
+#endif
+    size_t i;
+    ChimpRef *a, *b, *c;
 
     if (!chimp_core_startup ()) {
         return 1;
     }
 
+    /* 25 ChimpValues used by chimp_core_startup: push it up furthr so we're
+     * just before a GC at 57
+     */
+    for (i = 0; i < 29; i++) {
+        CHIMP_STR_NEW(NULL, "foo");
+    }
+
+    /* allocations 55 & 56 work fine but notice they're ripe for collection
+     * since we don't walk the C stack.
+     */
+    a = CHIMP_STR_NEW(NULL, "a");
+    b = CHIMP_STR_NEW(NULL, "b");
+
+    /* GC occurs. a & b now point to freed memory. */
+    c = CHIMP_STR_NEW(NULL, "c");
+
+    /* a & b may contain garbage here */
+    printf ("a=%s, b=%s, c=%s\n", CHIMP_STR_DATA(a), CHIMP_STR_DATA(b), CHIMP_STR_DATA(c));
+
+#if 0
     CHIMP_PUSH_STACK_FRAME();
 
     /* let's see if a string can survive a collection :) */
@@ -107,6 +134,8 @@ main (int argc, char **argv)
     printf ("%s\n", CHIMP_STR_DATA(CHIMP_CLASS_NAME(chimp_bool_class)));
 
     CHIMP_POP_STACK_FRAME ();
+#endif
+
     chimp_core_shutdown ();
     return 0;
 }
