@@ -24,80 +24,79 @@ some_native_method (ChimpRef *self, ChimpRef *args)
 int
 main (int argc, char **argv)
 {
-    ChimpTask *main_task;
     ChimpTask *task;
     ChimpRef *ref;
-    ChimpGC *gc;
     ChimpRef *args;
 
     if (!chimp_core_startup ()) {
         return 1;
     }
 
-    main_task = chimp_task_new_main ();
-    gc = CHIMP_CURRENT_GC;
-
     /* let's see if a string can survive a collection :) */
-    ref = chimp_str_new (gc, "foo", 3);
-    chimp_gc_make_root (gc, ref);
-    chimp_gc_collect (gc);
+    ref = chimp_str_new (NULL, "foo", 3);
+    chimp_gc_make_root (NULL, ref);
+    chimp_gc_collect (NULL);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
     /* alright, how about an array? */
-    ref = chimp_array_new (gc);
-    chimp_gc_make_root (gc, ref);
-    chimp_array_push (ref, CHIMP_STR_NEW(gc, "bar"));
-    chimp_gc_collect (gc);
+    ref = chimp_array_new (NULL);
+    chimp_gc_make_root (NULL, ref);
+    chimp_array_push (ref, CHIMP_STR_NEW(NULL, "bar"));
+    chimp_gc_collect (NULL);
     printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEMS(ref)[0]));
 
     /* conversion from generic object to string? */
-    ref = chimp_object_new (gc, NULL);
-    ref = chimp_object_str (gc, ref);
+    ref = chimp_object_new (NULL, NULL);
+    ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
-    ref = chimp_array_new (gc);
-    ref = chimp_object_str (gc, ref);
+    ref = chimp_array_new (NULL);
+    ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
-    ref = chimp_method_new_native (gc, some_native_method);
-    ref = chimp_object_call (ref, chimp_array_new (gc));
+    ref = chimp_method_new_native (NULL, some_native_method);
+    ref = chimp_object_call (ref, chimp_array_new (NULL));
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
-    task = chimp_task_new (chimp_method_new_native (gc, some_other_method));
+    task = chimp_task_new (chimp_method_new_native (NULL, some_other_method));
     /* XXX hrm. */
     chimp_task_delete (task);
 
-    ref = chimp_class_new (gc, CHIMP_STR_NEW(gc, "foo"), chimp_object_class);
-    chimp_gc_make_root (gc, ref);
-    chimp_class_add_method (gc, ref, CHIMP_STR_NEW(gc, "prn"), chimp_method_new_native (gc, print_self));
+    ref = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "foo"), chimp_object_class);
+    chimp_gc_make_root (NULL, ref);
+    {
+        ChimpRef *name = CHIMP_STR_NEW(NULL, "prn");
+        ChimpRef *method = chimp_method_new_native (NULL, print_self);
 
-    /* call prn as a class method for kicks ... */
-    chimp_object_call (chimp_object_getattr (ref, CHIMP_STR_NEW(gc, "prn")), NULL);
+        chimp_class_add_method (NULL, ref, name, method);
 
-    ref = chimp_object_new (gc, ref);
-    ref = chimp_object_getattr (ref, CHIMP_STR_NEW(gc, "prn"));
+        /* call prn as a class method for kicks ... */
+        chimp_object_call (chimp_object_getattr (ref, name), NULL);
+    }
+
+    ref = chimp_object_new (NULL, ref);
+    ref = chimp_object_getattr (ref, CHIMP_STR_NEW(NULL, "prn"));
     /* ref is now bound to our instance of 'foo' */
     chimp_object_call (ref, NULL);
 
     /* does the GC fuck with anything ? */
-    chimp_gc_make_root (gc, ref);
-    chimp_gc_collect (gc);
+    chimp_gc_make_root (NULL, ref);
+    chimp_gc_collect (NULL);
     chimp_object_call (ref, NULL);
-    chimp_gc_collect (gc);
+    chimp_gc_collect (NULL);
 
     /* does nil format itself well? */
-    ref = chimp_object_str (gc, chimp_nil);
+    ref = chimp_object_str (NULL, chimp_nil);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
     /* push a value onto an array indirectly, then check the result */
-    ref = chimp_array_new (gc);
-    args = chimp_array_new (gc);
-    chimp_array_push (args, CHIMP_STR_NEW(gc, "hello"));
-    chimp_object_call (chimp_object_getattr (ref, CHIMP_STR_NEW(gc, "push")), args);
-    ref = chimp_object_str (gc, chimp_array_get (ref, 0));
+    ref = chimp_array_new (NULL);
+    args = chimp_array_new (NULL);
+    chimp_array_push (args, CHIMP_STR_NEW(NULL, "hello"));
+    chimp_object_call (chimp_object_getattr (ref, CHIMP_STR_NEW(NULL, "push")), args);
+    ref = chimp_object_str (NULL, chimp_array_get (ref, 0));
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
-    chimp_task_delete (main_task);
     chimp_core_shutdown ();
     return 0;
 }

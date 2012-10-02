@@ -2,6 +2,7 @@
 #include "chimp/object.h"
 #include "chimp/core.h"
 #include "chimp/lwhash.h"
+#include "chimp/task.h"
 
 #define DEFAULT_SLAB_SIZE ((4 * 1024) / sizeof(ChimpValue))
 
@@ -263,6 +264,10 @@ chimp_gc_new_object (ChimpGC *gc)
     ChimpValue *value;
     ChimpSlab *slab;
     
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
     if (gc->heap->used == gc->heap->allocated) {
         if (!chimp_gc_collect (gc)) {
             if (!chimp_heap_grow (&gc->heaps[0])) {
@@ -290,6 +295,10 @@ chimp_bool_t
 chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref)
 {
     ChimpRef **roots;
+
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
     
     roots = CHIMP_REALLOC (ChimpRef *, gc->roots, sizeof (*gc->roots) * (gc->num_roots + 1));
     if (roots == NULL) {
@@ -430,7 +439,13 @@ chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
     size_t i;
-    ChimpRef *ref = gc->live;
+    ChimpRef *ref;
+    
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
+    ref = gc->live;
     while (ref != NULL) {
         ref->marked = CHIMP_FALSE;
         ref = ref->next;

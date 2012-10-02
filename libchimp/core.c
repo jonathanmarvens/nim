@@ -6,8 +6,7 @@
 #include "chimp/str.h"
 #include "chimp/array.h"
 #include "chimp/method.h"
-
-static ChimpGC *gc = NULL;
+#include "chimp/task.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -19,8 +18,8 @@ static ChimpGC *gc = NULL;
         CHIMP_ANY(CHIMP_CLASS(c)->name)->klass = chimp_str_class; \
         CHIMP_STR(CHIMP_CLASS(c)->name)->data = strndup ((n), (sizeof(n)-1)); \
         if (CHIMP_STR(CHIMP_CLASS(c)->name)->data == NULL) { \
-            chimp_gc_delete (gc); \
-            gc = NULL; \
+            chimp_task_delete (main_task); \
+            main_task = NULL; \
             return CHIMP_FALSE; \
         } \
         CHIMP_STR(CHIMP_CLASS(c)->name)->size = sizeof(n)-1; \
@@ -124,47 +123,57 @@ chimp_nil_str (ChimpGC *gc, ChimpRef *self)
     return CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
 }
 
+static ChimpTask *main_task = NULL;
+
 chimp_bool_t
 chimp_core_startup (void)
 {
-    gc = chimp_gc_new ();
-    if (gc == NULL) {
+    main_task = chimp_task_new_main ();
+    if (main_task == NULL) {
         return CHIMP_FALSE;
     }
 
-    chimp_object_class = chimp_gc_new_object (gc);
-    chimp_class_class  = chimp_gc_new_object (gc);
-    chimp_str_class    = chimp_gc_new_object (gc);
+    chimp_object_class = chimp_gc_new_object (NULL);
+    chimp_class_class  = chimp_gc_new_object (NULL);
+    chimp_str_class    = chimp_gc_new_object (NULL);
 
-    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_object_class, "object", NULL);
+    CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_object_class, "object", NULL);
     CHIMP_CLASS(chimp_object_class)->str = _chimp_object_str;
     CHIMP_CLASS(chimp_object_class)->getattr = _chimp_object_getattr;
-    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_class_class, "class", chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_class_class, "class", chimp_object_class);
     CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
-    CHIMP_BOOTSTRAP_CLASS_L1(gc, chimp_str_class, "str", chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
 
-    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_object_class);
-    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_class_class);
-    CHIMP_BOOTSTRAP_CLASS_L2(gc, chimp_str_class);
+    CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_object_class);
+    CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);
+    CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_str_class);
 
-    chimp_nil_class = chimp_class_new (gc, CHIMP_STR_NEW(gc, "nil"), chimp_object_class);
+    chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "nil"), chimp_object_class);
     if (chimp_nil_class == NULL) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
         return CHIMP_FALSE;
     }
-    chimp_gc_make_root (gc, chimp_nil_class);
+    chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
-    chimp_nil = chimp_object_new (gc, chimp_nil_class);
+    chimp_nil = chimp_object_new (NULL, chimp_nil_class);
     if (chimp_nil == NULL) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
         return CHIMP_FALSE;
     }
-    chimp_gc_make_root (gc, chimp_nil);
+    chimp_gc_make_root (NULL, chimp_nil);
 
-    if (!chimp_array_class_bootstrap (gc)) {
+    if (!chimp_array_class_bootstrap (NULL)) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
         return CHIMP_FALSE;
     }
-    if (!chimp_method_class_bootstrap (gc)) {
+    if (!chimp_method_class_bootstrap (NULL)) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
         return CHIMP_FALSE;
     }
 
@@ -174,9 +183,9 @@ chimp_core_startup (void)
 void
 chimp_core_shutdown (void)
 {
-    if (gc != NULL) {
-        chimp_gc_delete (gc);
-        gc = NULL;
+    if (main_task != NULL) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
         chimp_object_class = NULL;
         chimp_class_class = NULL;
         chimp_str_class = NULL;
