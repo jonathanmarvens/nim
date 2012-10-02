@@ -127,12 +127,15 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 CHIMP_EXTERN_CLASS(object);
 CHIMP_EXTERN_CLASS(class);
 CHIMP_EXTERN_CLASS(str);
+CHIMP_EXTERN_CLASS(bool);
 CHIMP_EXTERN_CLASS(array);
 CHIMP_EXTERN_CLASS(method);
 CHIMP_EXTERN_CLASS(stack_frame);
 CHIMP_EXTERN_CLASS(nil);
 
 extern struct _ChimpRef *chimp_nil;
+extern struct _ChimpRef *chimp_true;
+extern struct _ChimpRef *chimp_false;
 
 #ifdef __cplusplus
 };

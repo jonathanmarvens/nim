@@ -36,8 +36,11 @@ ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
 ChimpRef *chimp_nil_class = NULL;
+ChimpRef *chimp_bool_class = NULL;
 
 ChimpRef *chimp_nil = NULL;
+ChimpRef *chimp_true = NULL;
+ChimpRef *chimp_false = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -152,44 +155,35 @@ chimp_core_startup (void)
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_str_class);
 
     chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "nil"), chimp_object_class);
-    if (chimp_nil_class == NULL) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
+    if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
     chimp_nil = chimp_object_new (NULL, chimp_nil_class);
-    if (chimp_nil == NULL) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
+    if (chimp_nil == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil);
 
-    if (!chimp_array_class_bootstrap (NULL)) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
-    if (!chimp_method_class_bootstrap (NULL)) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
-    if (!chimp_stack_frame_class_bootstrap (NULL)) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
+    chimp_bool_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "bool"), chimp_object_class);
+    if (chimp_bool_class == NULL) goto error;
+    chimp_gc_make_root (NULL, chimp_bool_class);
+    chimp_true = chimp_object_new (NULL, chimp_bool_class);
+    if (chimp_true == NULL) goto error;
+    chimp_gc_make_root (NULL, chimp_true);
+    chimp_false = chimp_object_new (NULL, chimp_bool_class);
+    if (chimp_false == NULL) goto error;
+    chimp_gc_make_root (NULL, chimp_false);
 
-    if (!chimp_task_push_stack_frame (main_task)) {
-        chimp_task_delete (main_task);
-        main_task = NULL;
-        return CHIMP_FALSE;
-    }
+    if (!chimp_array_class_bootstrap (NULL)) goto error;
+    if (!chimp_method_class_bootstrap (NULL)) goto error;
+    if (!chimp_stack_frame_class_bootstrap (NULL)) goto error;
+    if (!chimp_task_push_stack_frame (main_task)) goto error;
 
     return CHIMP_TRUE;
+
+error:
+
+    chimp_task_delete (main_task);
+    main_task = NULL;
+    return CHIMP_FALSE;
 }
 
 void
