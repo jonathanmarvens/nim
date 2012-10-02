@@ -78,13 +78,22 @@ chimp_array_pop (ChimpRef *self)
 ChimpRef *
 chimp_array_get (ChimpRef *self, int32_t pos)
 {
-    /* XXX index bounds checks */
     ChimpArray *arr = CHIMP_ARRAY(self);
     if (pos >= 0) {
-        return arr->items[pos];
+        if (pos < arr->size) {
+            return arr->items[pos];
+        }
+        else {
+            return chimp_nil;
+        }
     }
     else {
-        return arr->items[arr->size - (size_t)(-pos)];
+        if ((size_t)(-pos) <= arr->size) {
+            return arr->items[arr->size - (size_t)(-pos)];
+        }
+        else {
+            return chimp_nil;
+        }
     }
 }
 

@@ -183,6 +183,12 @@ chimp_core_startup (void)
         return CHIMP_FALSE;
     }
 
+    if (!chimp_task_push_stack_frame (main_task)) {
+        chimp_task_delete (main_task);
+        main_task = NULL;
+        return CHIMP_FALSE;
+    }
+
     return CHIMP_TRUE;
 }
 

@@ -65,6 +65,10 @@ type_name (ChimpValueType type)
             {
                 return "method";
             }
+        case CHIMP_VALUE_TYPE_STACK_FRAME:
+            {
+                return "stackframe";
+            }
         default:
             {
                 return "<unknown>";
@@ -216,6 +220,7 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_ARRAY(ref)->items);
                 break;
             }
+        case CHIMP_VALUE_TYPE_STACK_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
             break;
@@ -381,6 +386,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             }
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_STR:
+        case CHIMP_VALUE_TYPE_STACK_FRAME:
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type '%s'", type_name (ref->value->any.type));
