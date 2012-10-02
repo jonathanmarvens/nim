@@ -92,6 +92,20 @@ _chimp_object_str (ChimpGC *gc, ChimpRef *self)
 }
 
 static ChimpRef *
+chimp_bool_str (ChimpGC *gc, ChimpRef *self)
+{
+    if (self == chimp_true) {
+        return CHIMP_STR_NEW(gc, "true");
+    }
+    else if (self == chimp_false) {
+        return CHIMP_STR_NEW(gc, "false");
+    }
+    else {
+        return NULL;
+    }
+}
+
+static ChimpRef *
 chimp_str_str (ChimpGC *gc, ChimpRef *self)
 {
     return self;
@@ -165,6 +179,8 @@ chimp_core_startup (void)
     chimp_bool_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "bool"), chimp_object_class);
     if (chimp_bool_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_bool_class);
+    CHIMP_CLASS(chimp_bool_class)->str = chimp_bool_str;
+
     chimp_true = chimp_object_new (NULL, chimp_bool_class);
     if (chimp_true == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_true);

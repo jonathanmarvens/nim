@@ -99,6 +99,13 @@ main (int argc, char **argv)
     ref = chimp_object_str (NULL, chimp_array_get (ref, 0));
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
+    /* booleans to string */
+    ref = chimp_object_str (NULL, chimp_true);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+    ref = chimp_object_str (NULL, chimp_false);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+    printf ("%s\n", CHIMP_STR_DATA(CHIMP_CLASS_NAME(chimp_bool_class)));
+
     CHIMP_POP_STACK_FRAME ();
     chimp_core_shutdown ();
     return 0;
