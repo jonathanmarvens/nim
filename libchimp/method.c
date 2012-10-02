@@ -26,6 +26,7 @@ chimp_method_class_bootstrap (ChimpGC *gc)
     if (chimp_method_class == NULL) {
         return CHIMP_FALSE;
     }
+    chimp_gc_make_root (gc, chimp_method_class);
     CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
     return CHIMP_TRUE;
 }
