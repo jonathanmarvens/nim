@@ -18,7 +18,7 @@ some_other_method (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 some_native_method (ChimpRef *self, ChimpRef *args)
 {
-    return CHIMP_STR_NEW(CHIMP_CURRENT_GC, "Hello, World");
+    return CHIMP_STR_NEW(NULL, "Hello, World");
 }
 
 int

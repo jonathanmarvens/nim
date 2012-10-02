@@ -33,6 +33,13 @@ chimp_bug (const char *filename, int lineno, const char *format, ...);
         if ((ptr) != NULL) { free (ptr); } \
     } while (0)
 
+#define CHIMP_ASSERT(cond) \
+    do { \
+        if (!(cond)) { \
+            chimp_bug (__FILE__, __LINE__, "assertion failed: \"%s\"", #cond); \
+        } \
+    } while (0)
+
 #ifdef __cplusplus
 };
 #endif

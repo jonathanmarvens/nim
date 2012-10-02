@@ -20,7 +20,7 @@ chimp_task_thread_func (void *arg)
     ChimpTask *task = (ChimpTask *) arg;
     current_task = task;
     if (task->impl != NULL) {
-        chimp_object_call (task->impl, chimp_array_new (CHIMP_CURRENT_GC));
+        chimp_object_call (task->impl, chimp_array_new (NULL));
     }
     return NULL;
 }
@@ -77,12 +77,16 @@ chimp_task_delete (ChimpTask *task)
 ChimpTask *
 chimp_task_current (void)
 {
+    CHIMP_ASSERT(current_task != NULL);
+
     return current_task;
 }
 
 ChimpGC *
 chimp_task_get_gc (ChimpTask *task)
 {
+    CHIMP_ASSERT(task != NULL);
+
     return current_task->gc;
 }
 
