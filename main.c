@@ -4,15 +4,14 @@ static ChimpRef *
 print_self (ChimpRef *self, ChimpRef *args)
 {
     printf ("print_self: %p\n", self);
-    return NULL;
+    return chimp_nil;
 }
 
 static ChimpRef *
 some_other_method (ChimpRef *self, ChimpRef *args)
 {
     printf ("from a separate thread\n");
-    /* XXX */
-    return NULL;
+    return chimp_nil;
 }
 
 static ChimpRef *
@@ -107,7 +106,16 @@ real_main (int argc, char **argv)
     ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
+    /* empty array to string? */
     ref = chimp_array_new (NULL);
+    ref = chimp_object_str (NULL, ref);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    /* populated array? */
+    ref = chimp_array_new (NULL);
+    chimp_array_push (ref, CHIMP_STR_NEW(NULL, "testing :)"));
+    chimp_array_push (ref, chimp_object_new (NULL, NULL));
+    chimp_array_push (ref, chimp_nil);
     ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 

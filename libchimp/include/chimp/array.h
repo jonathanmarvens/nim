@@ -33,6 +33,7 @@ chimp_array_last (ChimpRef *self);
 
 #define CHIMP_ARRAY_FIRST(ref) chimp_array_get(ref, 0)
 #define CHIMP_ARRAY_LAST(ref)  chimp_array_get(ref, -1)
+#define CHIMP_ARRAY_ITEM(ref, i) chimp_array_get((ref), (i))
 
 #ifdef __cplusplus
 };

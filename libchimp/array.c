@@ -27,6 +27,69 @@ _chimp_array_pop (ChimpRef *self, ChimpRef *args)
     return chimp_array_pop (self);
 }
 
+static ChimpRef *
+chimp_array_str (ChimpGC *gc, ChimpRef *self)
+{
+    size_t size = CHIMP_ARRAY_SIZE(self);
+    /* '[' + ']' + (', ' x (size-1)) */
+    size_t total_len = ((size-1) * 2) + 2;
+    ChimpRef *ref;
+    ChimpRef *item_strs;
+    char *data;
+    size_t i, j;
+
+
+    item_strs = chimp_array_new (gc);
+    if (item_strs == NULL) {
+        return NULL;
+    }
+
+    for (i = 0; i < size; i++) {
+        ref = CHIMP_ARRAY_ITEM(self, i);
+        /* XXX what we really want is something like Python's repr() */
+        if (CHIMP_ANY_TYPE(ref) == CHIMP_VALUE_TYPE_STR) {
+            /* for surrounding quotes */
+            total_len += 2;
+        }
+        ref = chimp_object_str (gc, ref);
+        if (ref == NULL) {
+            return NULL;
+        }
+        chimp_array_push (item_strs, ref);
+        total_len += CHIMP_STR_SIZE(CHIMP_ARRAY_LAST(item_strs));
+    }
+
+    data = CHIMP_MALLOC(char, total_len + 1);
+    if (data == NULL) {
+        return NULL;
+    }
+    j = 0;
+    data[j++] = '[';
+
+    for (i = 0; i < size; i++) {
+        ref = CHIMP_ARRAY_ITEM(item_strs, i);
+        /* XXX what we really want is something like Python's repr() */
+        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(self, i)) == CHIMP_VALUE_TYPE_STR) {
+            data[j++] = '"';
+        }
+        memcpy (data + j, CHIMP_STR_DATA(ref), CHIMP_STR_SIZE(ref));
+        j += CHIMP_STR_SIZE(ref);
+        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(self, i)) == CHIMP_VALUE_TYPE_STR) {
+            data[j++] = '"';
+        }
+        if (i < (size-1)) {
+            memcpy (data + j, ", ", 2);
+            j += 2;
+        }
+
+    }
+
+    data[j++] = ']';
+    data[j] = '\0';
+
+    return chimp_str_new_take (gc, data, total_len);
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (ChimpGC *gc)
 {
@@ -35,6 +98,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     chimp_gc_make_root (gc, chimp_array_class);
     chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
