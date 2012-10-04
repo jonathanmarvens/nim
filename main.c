@@ -65,10 +65,27 @@ real_main (int argc, char **argv)
     b = CHIMP_STR_NEW(NULL, "b");
 
     /* GC occurs. a & b now point to freed memory. */
+    printf ("GC should occur at this point ...\n");
     c = CHIMP_STR_NEW(NULL, "c");
+    printf ("\n");
 
     /* a & b may contain garbage here if the GC is broken */
+    printf ("a & b may contain garbage here if the GC is broken\n");
     printf ("a=%s, b=%s, c=%s\n", CHIMP_STR_DATA(a), CHIMP_STR_DATA(b), CHIMP_STR_DATA(c));
+    printf ("\n");
+
+    /* this should free nothing since we just GCed */
+    printf ("The next collection should free nothing...\n");
+    chimp_gc_collect (NULL);
+    printf ("\n");
+
+    /* free a ref on the local stack */
+    b = NULL;
+
+    /* this should free one value */
+    printf ("This should free exactly one value\n");
+    chimp_gc_collect (NULL);
+    printf ("\n");
 
     CHIMP_PUSH_STACK_FRAME();
 
