@@ -39,6 +39,7 @@ chimp_task_new (ChimpRef *callable)
     if (task == NULL) {
         return NULL;
     }
+    memset (task, 0, sizeof (*task));
     /* XXX nothing ensures that 'callable' won't get collected by the active GC */
     /*     do we want to make it a root of the current GC? something else? */
     task->impl = callable;
@@ -55,6 +56,7 @@ chimp_task_new_main (void *stack_start)
     if (task == NULL) {
         return NULL;
     }
+    memset (task, 0, sizeof (*task));
     task->impl = NULL;
     task->is_main = CHIMP_TRUE;
     task->gc = chimp_gc_new (stack_start);
