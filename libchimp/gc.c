@@ -1,4 +1,4 @@
-#if HAVE_VALGRIND
+#ifdef HAVE_VALGRIND
 #include <valgrind/memcheck.h>
 #else
 #define VALGRIND_MAKE_MEM_DEFINED(p, s)
