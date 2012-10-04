@@ -45,7 +45,6 @@ typedef struct _ChimpHeap {
     size_t      slab_count;
     size_t      slab_size;
     size_t      used;
-    size_t      allocated;
 } ChimpHeap;
 
 struct _ChimpGC {
@@ -103,6 +102,9 @@ type_name (ChimpValueType type)
 #define CHIMP_HEAP_CURRENT_SLAB(heap) \
     (heap)->slabs[(heap)->used / (heap)->slab_size]
 
+#define CHIMP_HEAP_ALLOCATED(heap) \
+    ((heap)->slab_count * (heap)->slab_size)
+
 static ChimpSlab *
 chimp_slab_new (ChimpSlabType type, size_t size)
 {
@@ -143,7 +145,6 @@ chimp_heap_init (ChimpHeap *heap, ChimpSlabType slab_type, size_t slab_size)
     heap->slab_count = 1;
     heap->slab_size  = slab_size;
     heap->used       = 0;
-    heap->allocated  = slab_size;
     return CHIMP_TRUE;
 }
 
@@ -363,7 +364,7 @@ chimp_gc_new_object (ChimpGC *gc)
         gc = CHIMP_CURRENT_GC;
     }
 
-    if (gc->heap->used == gc->heap->allocated) {
+    if (gc->heap->used == CHIMP_HEAP_ALLOCATED(gc->heap)) {
         if (!chimp_gc_collect (gc)) {
             if (!chimp_heap_grow (&gc->heaps[0])) {
                 fprintf (stderr, "out of memory\n");
