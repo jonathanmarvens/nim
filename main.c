@@ -116,7 +116,7 @@ real_main (int argc, char **argv)
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
     task = chimp_task_new (chimp_method_new_native (NULL, some_other_method));
-    /* XXX hrm. */
+    chimp_task_wait (task);
     chimp_task_delete (task);
 
     ref = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "foo"), chimp_object_class);

@@ -16,6 +16,9 @@ chimp_task_new_main (void *stack_start);
 void
 chimp_task_delete (ChimpTask *task);
 
+void
+chimp_task_wait (ChimpTask *task);
+
 ChimpRef *
 chimp_task_push_stack_frame (ChimpTask *task);
 

@@ -14,6 +14,7 @@ struct _ChimpTask {
     pthread_t thread;
     ChimpRef *impl;
     ChimpRef *stack;
+    chimp_bool_t done;
 };
 
 static void *
@@ -72,12 +73,21 @@ void
 chimp_task_delete (ChimpTask *task)
 {
     if (task != NULL) {
-        if (!task->is_main) {
-            pthread_join (task->thread, NULL);
+        if (!task->done) {
+            chimp_task_wait (task);
         }
         chimp_gc_delete (task->gc);
         CHIMP_FREE (task);
     }
+}
+
+void
+chimp_task_wait (ChimpTask *task)
+{
+    if (!task->is_main && !task->done) {
+        pthread_join (task->thread, NULL);
+    }
+    task->done = CHIMP_TRUE;
 }
 
 ChimpRef *
