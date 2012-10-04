@@ -1,3 +1,9 @@
+#if HAVE_VALGRIND
+#include <valgrind/memcheck.h>
+#else
+#define VALGRIND_MAKE_MEM_DEFINED(p, s)
+#endif
+
 #include "chimp/gc.h"
 #include "chimp/object.h"
 #include "chimp/core.h"
@@ -556,6 +562,9 @@ chimp_gc_collect (ChimpGC *gc)
         void *ref_p = &base;
         /* XXX stack may grow in the other direction on some archs. */
         while (ref_p <= gc->stack_start) {
+            /* STFU valgrind. */
+            VALGRIND_MAKE_MEM_DEFINED(ref_p, sizeof(ChimpRef *));
+
             if (chimp_heap_contains (&gc->refs, *((ChimpRef **)ref_p))) {
                 chimp_gc_mark_ref (gc, *((ChimpRef **)ref_p));
             }
