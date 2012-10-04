@@ -24,8 +24,26 @@ some_native_method (ChimpRef *self, ChimpRef *args)
 
 #endif
 
+static int
+real_main (int argc, char **argv);
+
 int
 main (int argc, char **argv)
+{
+    int rc;
+
+    if (!chimp_core_startup ((void *)&rc)) {
+        return 1;
+    }
+
+    rc = real_main(argc, argv);
+
+    chimp_core_shutdown ();
+    return rc;
+}
+
+static int
+real_main (int argc, char **argv)
 {
 #if 0
     ChimpTask *task;
@@ -35,10 +53,6 @@ main (int argc, char **argv)
     size_t i;
     ChimpRef *a, *b, *c;
 
-    if (!chimp_core_startup ()) {
-        return 1;
-    }
-
     /* 25 ChimpValues used by chimp_core_startup: push it up furthr so we're
      * just before a GC at 57
      */
@@ -46,6 +60,9 @@ main (int argc, char **argv)
         CHIMP_STR_NEW(NULL, "foo");
     }
 
+    printf ("a @ %p\n", &a);
+    printf ("b @ %p\n", &b);
+    printf ("c @ %p\n", &c);
     /* allocations 55 & 56 work fine but notice they're ripe for collection
      * since we don't walk the C stack.
      */
@@ -136,7 +153,6 @@ main (int argc, char **argv)
     CHIMP_POP_STACK_FRAME ();
 #endif
 
-    chimp_core_shutdown ();
     return 0;
 }
 

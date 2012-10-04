@@ -18,7 +18,7 @@ typedef int chimp_bool_t;
 #define CHIMP_FALSE ((chimp_bool_t) 0)
 
 chimp_bool_t
-chimp_core_startup (void);
+chimp_core_startup (void *stack_start);
 
 void
 chimp_core_shutdown (void);

@@ -144,9 +144,9 @@ chimp_nil_str (ChimpGC *gc, ChimpRef *self)
 static ChimpTask *main_task = NULL;
 
 chimp_bool_t
-chimp_core_startup (void)
+chimp_core_startup (void *stack_start)
 {
-    main_task = chimp_task_new_main ();
+    main_task = chimp_task_new_main (stack_start);
     if (main_task == NULL) {
         return CHIMP_FALSE;
     }

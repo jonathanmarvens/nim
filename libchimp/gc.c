@@ -39,6 +39,7 @@ struct _ChimpGC {
     ChimpRef  *live;
     ChimpRef **roots;
     size_t     num_roots;
+    void      *stack_start;
 };
 
 static const char *
@@ -174,12 +175,15 @@ chimp_heap_contains (ChimpHeap *heap, ChimpValue *value)
 }
 
 ChimpGC *
-chimp_gc_new (void)
+chimp_gc_new (void *stack_start)
 {
     ChimpGC *gc = CHIMP_MALLOC (ChimpGC, sizeof (*gc));
     if (gc == NULL) {
         return NULL;
     }
+
+    gc->stack_start = stack_start;
+
     if (!chimp_heap_init (&gc->heaps[0], DEFAULT_SLAB_SIZE)) {
         CHIMP_FREE (gc);
         return NULL;
@@ -352,13 +356,13 @@ static void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 {
     if (ref == NULL) return;
-    if (ref->marked) return;
 
     if (!chimp_heap_contains (gc->heap, ref->value)) {
         /* this ref belongs to another GC */
         return;
     }
 
+    if (ref->marked) return;
     ref->marked = CHIMP_TRUE;
 
     chimp_gc_mark_ref (gc, CHIMP_FAST_ANY(ref)->klass);
@@ -444,6 +448,7 @@ chimp_gc_sweep (ChimpGC *gc)
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
+    ChimpRef *base;
     size_t i;
     ChimpRef *ref;
     
@@ -459,6 +464,21 @@ chimp_gc_collect (ChimpGC *gc)
 
     for (i = 0; i < gc->num_roots; i++) {
         chimp_gc_mark_ref (gc, gc->roots[i]);
+    }
+
+    if (gc->stack_start != NULL) {
+        void *ref_p = &base;
+        while (ref_p <= gc->stack_start) {
+            ref = gc->live;
+            while (ref != NULL) {
+                if (ref == *((ChimpRef **)ref_p)) break;
+                ref = ref->next;
+            }
+            if (ref != NULL) {
+                chimp_gc_mark_ref (gc, *((ChimpRef **)ref_p));
+            }
+            ref_p += sizeof(ref_p);
+        }
     }
 
     chimp_gc_sweep (gc);

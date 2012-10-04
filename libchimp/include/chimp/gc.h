@@ -14,7 +14,7 @@ union _ChimpValue;
 enum _ChimpValueType;
 
 ChimpGC *
-chimp_gc_new (void);
+chimp_gc_new (void *stack_start);
 
 void
 chimp_gc_delete (ChimpGC *gc);

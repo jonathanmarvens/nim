@@ -20,6 +20,11 @@ static void *
 chimp_task_thread_func (void *arg)
 {
     ChimpTask *task = (ChimpTask *) arg;
+    task->gc = chimp_gc_new ((void *)&task);
+    if (task->gc == NULL) {
+        CHIMP_FREE (task);
+        return NULL;
+    }
     current_task = task;
     if (task->impl != NULL) {
         chimp_object_call (task->impl, chimp_array_new (NULL));
@@ -38,18 +43,13 @@ chimp_task_new (ChimpRef *callable)
     /*     do we want to make it a root of the current GC? something else? */
     task->impl = callable;
     task->is_main = CHIMP_FALSE;
-    task->gc = chimp_gc_new ();
-    if (task->gc == NULL) {
-        CHIMP_FREE (task);
-        return NULL;
-    }
     /* TODO error checking */
     pthread_create (&task->thread, NULL, chimp_task_thread_func, task);
     return task;
 }
 
 ChimpTask *
-chimp_task_new_main (void)
+chimp_task_new_main (void *stack_start)
 {
     ChimpTask *task = CHIMP_MALLOC(ChimpTask, sizeof(*task));
     if (task == NULL) {
@@ -57,7 +57,7 @@ chimp_task_new_main (void)
     }
     task->impl = NULL;
     task->is_main = CHIMP_TRUE;
-    task->gc = chimp_gc_new ();
+    task->gc = chimp_gc_new (stack_start);
     if (task->gc == NULL) {
         CHIMP_FREE (task);
         return NULL;
