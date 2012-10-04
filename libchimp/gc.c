@@ -20,9 +20,18 @@ struct _ChimpRef {
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
 
+typedef enum _ChimpSlabType {
+    CHIMP_SLAB_TYPE_VALUE,
+    CHIMP_SLAB_TYPE_REF,
+} ChimpSlabType;
+
 typedef struct _ChimpSlab {
-    ChimpValue *values;
-    ChimpValue *head;
+    ChimpSlabType type;
+    union {
+        ChimpValue *values;
+        ChimpRef *refs;
+    };
+    void *head;
 } ChimpSlab;
 
 typedef struct _ChimpHeap {
@@ -36,9 +45,14 @@ typedef struct _ChimpHeap {
 struct _ChimpGC {
     ChimpHeap  heaps[2];
     ChimpHeap *heap;
+
+    ChimpHeap  refs;
     ChimpRef  *live;
+    ChimpRef  *free;
+
     ChimpRef **roots;
     size_t     num_roots;
+
     void      *stack_start;
 };
 
@@ -77,26 +91,45 @@ type_name (ChimpValueType type)
     };
 }
 
+#define CHIMP_UNIT_SIZE(type) \
+    (((type) == CHIMP_SLAB_TYPE_VALUE) ? sizeof(ChimpValue) : sizeof(ChimpRef))
+
+#define CHIMP_HEAP_CURRENT_SLAB(heap) \
+    (heap)->slabs[(heap)->used / (heap)->slab_size]
+
 static ChimpSlab *
-chimp_slab_new (size_t size)
+chimp_slab_new (ChimpSlabType type, size_t size)
 {
-    ChimpSlab *slab = CHIMP_MALLOC (ChimpSlab, sizeof (*slab) + sizeof(ChimpValue) * size);
+    void **pp;
+    ChimpSlab *slab = CHIMP_MALLOC (ChimpSlab, sizeof (*slab) + CHIMP_UNIT_SIZE(type) * size);
     if (slab == NULL) {
         return NULL;
     }
-    slab->values = (ChimpValue *)(((char *) slab) + sizeof (*slab));
+    slab->type = type;
+    switch (type) {
+        case CHIMP_SLAB_TYPE_VALUE:
+            {
+                pp = (void **)&slab->values;
+                break;
+            }
+        case CHIMP_SLAB_TYPE_REF:
+            {
+                pp = (void **)&slab->refs;
+            }
+    }
+    *pp = (ChimpValue *)(((char *) slab) + sizeof (*slab));
     slab->head = slab->values;
     return slab;
 }
 
 static chimp_bool_t
-chimp_heap_init (ChimpHeap *heap, size_t slab_size)
+chimp_heap_init (ChimpHeap *heap, ChimpSlabType slab_type, size_t slab_size)
 {
     heap->slabs = CHIMP_MALLOC (ChimpSlab *, sizeof (*heap->slabs));
     if (heap->slabs == NULL) {
         return CHIMP_FALSE;
     }
-    heap->slabs[0] = chimp_slab_new (slab_size);
+    heap->slabs[0] = chimp_slab_new (slab_type, slab_size);
     if (heap->slabs[0] == NULL) {
         CHIMP_FREE (heap->slabs);
         return CHIMP_FALSE;
@@ -126,7 +159,7 @@ chimp_heap_grow (ChimpHeap *heap)
     ChimpSlab **slabs;
     ChimpSlab *slab;
 
-    slab = chimp_slab_new (heap->slab_size);
+    slab = chimp_slab_new (heap->slabs[0]->type, heap->slab_size);
     if (slab == NULL) {
         return CHIMP_FALSE;
     }
@@ -140,10 +173,32 @@ chimp_heap_grow (ChimpHeap *heap)
     return CHIMP_TRUE;
 }
 
+static ChimpRef *
+chimp_heap_new_ref (ChimpHeap *heap)
+{
+    ChimpSlab *slab;
+    ChimpRef *ref;
+
+    CHIMP_ASSERT(heap->slabs[0]->type == CHIMP_SLAB_TYPE_REF);
+
+    slab = CHIMP_HEAP_CURRENT_SLAB(heap);
+
+    ref = slab->refs;
+    memset (ref, 0, sizeof (*ref));
+    slab->refs++;
+    heap->used++;
+    return ref;
+}
+
 static void
 chimp_heap_copy_value (ChimpHeap *heap, ChimpValue **value)
 {
-    ChimpSlab *slab = heap->slabs[heap->used / heap->slab_size];
+    ChimpSlab *slab;
+    
+    CHIMP_ASSERT(heap->slabs[0]->type == CHIMP_SLAB_TYPE_VALUE);
+
+    slab = CHIMP_HEAP_CURRENT_SLAB(heap);
+
     memcpy (slab->values, *value, sizeof (**value));
     *value = slab->values;
     slab->values++;
@@ -154,6 +209,9 @@ static void
 chimp_heap_reset (ChimpHeap *heap)
 {
     size_t i;
+
+    CHIMP_ASSERT(heap->slabs[0]->type == CHIMP_SLAB_TYPE_VALUE);
+
     for (i = 0; i < heap->slab_count; i++) {
         heap->slabs[i]->values = heap->slabs[i]->head;
     }
@@ -161,13 +219,20 @@ chimp_heap_reset (ChimpHeap *heap)
 }
 
 static chimp_bool_t
-chimp_heap_contains (ChimpHeap *heap, ChimpValue *value)
+chimp_heap_contains (ChimpHeap *heap, void *value)
 {
     size_t i;
     for (i = 0; i < heap->slab_count; i++) {
-        ChimpValue *begin = heap->slabs[i]->head;
-        ChimpValue *end   = heap->slabs[i]->head + heap->slab_size;
-        if (value >= begin && value < end) {
+        void *begin = heap->slabs[i]->head;
+        void *end   = heap->slabs[i]->head + CHIMP_UNIT_SIZE(heap->slabs[0]->type) * heap->slab_size;
+        chimp_bool_t is_base_ptr;
+        
+        /* is this a pointer to the *start* of a value/ref?
+         * (We don't want to corrupt random bytes in the heap during a mark)
+         */ 
+        is_base_ptr = (end - value) % CHIMP_UNIT_SIZE(heap->slabs[0]->type) == 0;
+
+        if (value >= begin && value < end && is_base_ptr) {
             return CHIMP_TRUE;
         }
     }
@@ -184,17 +249,24 @@ chimp_gc_new (void *stack_start)
 
     gc->stack_start = stack_start;
 
-    if (!chimp_heap_init (&gc->heaps[0], DEFAULT_SLAB_SIZE)) {
+    if (!chimp_heap_init (&gc->heaps[0], CHIMP_SLAB_TYPE_VALUE, DEFAULT_SLAB_SIZE)) {
         CHIMP_FREE (gc);
         return NULL;
     }
-    if (!chimp_heap_init (&gc->heaps[1], DEFAULT_SLAB_SIZE)) {
+    if (!chimp_heap_init (&gc->heaps[1], CHIMP_SLAB_TYPE_VALUE, DEFAULT_SLAB_SIZE)) {
+        chimp_heap_destroy (&gc->heaps[0]);
+        CHIMP_FREE (gc);
+        return NULL;
+    }
+    if (!chimp_heap_init (&gc->refs, CHIMP_SLAB_TYPE_REF, DEFAULT_SLAB_SIZE)) {
+        chimp_heap_destroy (&gc->heaps[1]);
         chimp_heap_destroy (&gc->heaps[0]);
         CHIMP_FREE (gc);
         return NULL;
     }
     gc->heap = &gc->heaps[0];
     gc->live = NULL;
+    gc->free = NULL;
     gc->roots = NULL;
     gc->num_roots = 0;
     return gc;
@@ -242,12 +314,12 @@ chimp_gc_delete (ChimpGC *gc)
         while (live != NULL) {
             ChimpRef *next = live->next;
             chimp_gc_value_dtor (gc, live);
-            CHIMP_FREE (live);
             live = next;
         }
 
         chimp_heap_destroy (&gc->heaps[0]);
         chimp_heap_destroy (&gc->heaps[1]);
+        chimp_heap_destroy (&gc->refs);
         CHIMP_FREE (gc->roots);
         CHIMP_FREE (gc);
     }
@@ -256,9 +328,17 @@ chimp_gc_delete (ChimpGC *gc)
 static ChimpRef *
 chimp_gc_new_ref (ChimpGC *gc, ChimpValue *value)
 {
-    ChimpRef *ref = CHIMP_MALLOC(ChimpRef, sizeof(*ref));
-    if (ref == NULL) {
-        return NULL;
+    ChimpRef *ref;
+    if (gc->free == NULL) {
+        /* XXX we're pretty lazy with the ref heap because we assume we have
+         *     space for as many refs as we have allocated values.
+         *     Think this assumption is correct, but y'know ...
+         */
+        ref = chimp_heap_new_ref (&gc->refs);
+    }
+    else {
+        ref = gc->free;
+        gc->free = gc->free->next;
     }
     ref->next = gc->live;
     ref->value = value;
@@ -289,10 +369,15 @@ chimp_gc_new_object (ChimpGC *gc)
                 abort ();
                 return NULL;
             }
+            if (!chimp_heap_grow (&gc->refs)) {
+                fprintf (stderr, "out of memory\n");
+                abort ();
+                return NULL;
+            }
         }
     }
 
-    slab = gc->heap->slabs[gc->heap->used / gc->heap->slab_size];
+    slab = CHIMP_HEAP_CURRENT_SLAB(gc->heap);
     value = slab->values;
     memset (value, 0, sizeof(*value));
     slab->values++;
@@ -435,7 +520,8 @@ chimp_gc_sweep (ChimpGC *gc)
                 gc->live = next;
             }
             chimp_gc_value_dtor (gc, ref);
-            CHIMP_FREE (ref);
+            ref->next = gc->free;
+            gc->free = ref;
             freed++;
         }
         ref = next;
@@ -468,13 +554,9 @@ chimp_gc_collect (ChimpGC *gc)
 
     if (gc->stack_start != NULL) {
         void *ref_p = &base;
+        /* XXX stack may grow in the other direction on some archs. */
         while (ref_p <= gc->stack_start) {
-            ref = gc->live;
-            while (ref != NULL) {
-                if (ref == *((ChimpRef **)ref_p)) break;
-                ref = ref->next;
-            }
-            if (ref != NULL) {
+            if (chimp_heap_contains (&gc->refs, *((ChimpRef **)ref_p))) {
                 chimp_gc_mark_ref (gc, *((ChimpRef **)ref_p));
             }
             ref_p += sizeof(ref_p);
