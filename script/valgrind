@@ -5,5 +5,5 @@ set -ex
 TOP_SRCDIR="$(dirname "$0")/.."
 TOP_SRCDIR="$(cd "$TOP_SRCDIR" && pwd)"
 
-LD_LIBRARY_PATH="$TOP_SRCDIR/libchimp/.libs" valgrind --leak-check=full "$TOP_SRCDIR/.libs/chimp"
+LD_LIBRARY_PATH="$TOP_SRCDIR/libchimp/.libs" valgrind "$@" "$TOP_SRCDIR/.libs/chimp"
 
