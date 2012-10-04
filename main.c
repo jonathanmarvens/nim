@@ -1,6 +1,5 @@
 #include <chimp.h>
 
-#if 0
 static ChimpRef *
 print_self (ChimpRef *self, ChimpRef *args)
 {
@@ -21,8 +20,6 @@ some_native_method (ChimpRef *self, ChimpRef *args)
 {
     return CHIMP_STR_NEW(NULL, "Hello, World");
 }
-
-#endif
 
 static int
 real_main (int argc, char **argv);
@@ -45,11 +42,9 @@ main (int argc, char **argv)
 static int
 real_main (int argc, char **argv)
 {
-#if 0
     ChimpTask *task;
     ChimpRef *ref;
     ChimpRef *args;
-#endif
     size_t i;
     ChimpRef *a, *b, *c;
 
@@ -75,7 +70,6 @@ real_main (int argc, char **argv)
     /* a & b may contain garbage here */
     printf ("a=%s, b=%s, c=%s\n", CHIMP_STR_DATA(a), CHIMP_STR_DATA(b), CHIMP_STR_DATA(c));
 
-#if 0
     CHIMP_PUSH_STACK_FRAME();
 
     /* let's see if a string can survive a collection :) */
@@ -151,7 +145,6 @@ real_main (int argc, char **argv)
     printf ("%s\n", CHIMP_STR_DATA(CHIMP_CLASS_NAME(chimp_bool_class)));
 
     CHIMP_POP_STACK_FRAME ();
-#endif
 
     return 0;
 }
