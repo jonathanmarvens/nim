@@ -67,7 +67,7 @@ real_main (int argc, char **argv)
     /* GC occurs. a & b now point to freed memory. */
     c = CHIMP_STR_NEW(NULL, "c");
 
-    /* a & b may contain garbage here */
+    /* a & b may contain garbage here if the GC is broken */
     printf ("a=%s, b=%s, c=%s\n", CHIMP_STR_DATA(a), CHIMP_STR_DATA(b), CHIMP_STR_DATA(c));
 
     CHIMP_PUSH_STACK_FRAME();
