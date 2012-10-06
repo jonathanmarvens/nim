@@ -31,8 +31,8 @@ static ChimpRef *
 chimp_array_str (ChimpGC *gc, ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
-    /* '[' + ']' + (', ' x (size-1)) */
-    size_t total_len = ((size-1) * 2) + 2;
+    /* '[' + ']' + (', ' x (size-1)) + '\0' */
+    size_t total_len = 2 + (size > 0 ? ((size-1) * 2) : 0) + 1;
     ChimpRef *ref;
     ChimpRef *item_strs;
     char *data;
@@ -56,10 +56,10 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
             return NULL;
         }
         chimp_array_push (item_strs, ref);
-        total_len += CHIMP_STR_SIZE(CHIMP_ARRAY_LAST(item_strs));
+        total_len += CHIMP_STR_SIZE(ref);
     }
 
-    data = CHIMP_MALLOC(char, total_len + 1);
+    data = CHIMP_MALLOC(char, total_len);
     if (data == NULL) {
         return NULL;
     }
@@ -81,7 +81,6 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
             memcpy (data + j, ", ", 2);
             j += 2;
         }
-
     }
 
     data[j++] = ']';
