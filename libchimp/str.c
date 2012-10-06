@@ -1,3 +1,4 @@
+#include "chimp/object.h"
 #include "chimp/str.h"
 
 #define CHIMP_STR_INIT(ref) \
