@@ -54,6 +54,8 @@ extern struct _ChimpRef *chimp_nil;
 extern struct _ChimpRef *chimp_true;
 extern struct _ChimpRef *chimp_false;
 
+#define CHIMP_BOOL_REF(b) ((b) ? chimp_true : chimp_false)
+
 #ifdef __cplusplus
 };
 #endif
