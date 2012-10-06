@@ -123,7 +123,12 @@ chimp_slab_new (ChimpSlabType type, size_t size)
         case CHIMP_SLAB_TYPE_REF:
             {
                 pp = (void **)&slab->refs;
+                break;
             }
+        default:
+            chimp_bug (__FILE__, __LINE__, "unknown slab type: %d", type);
+            CHIMP_FREE (slab);
+            return NULL;
     }
     *pp = (ChimpValue *)(((char *) slab) + sizeof (*slab));
     slab->head = slab->values;
