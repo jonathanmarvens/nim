@@ -8,6 +8,7 @@
 #include <chimp/array.h>
 #include <chimp/stackframe.h>
 #include <chimp/method.h>
+#include <chimp/hash.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,6 +24,7 @@ typedef union _ChimpValue {
     ChimpObject     object;
     ChimpStr        str;
     ChimpArray      array;
+    ChimpHash       hash;
     ChimpMethod     method;
     ChimpStackFrame stack_frame;
 } ChimpValue;

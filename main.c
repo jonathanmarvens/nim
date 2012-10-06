@@ -119,6 +119,18 @@ real_main (int argc, char **argv)
     ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
 
+    /* empty hash to string? */
+    ref = chimp_hash_new (NULL);
+    ref = chimp_object_str (NULL, ref);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    /* populated hash to string? */
+    ref = chimp_hash_new (NULL);
+    CHIMP_HASH_PUT(ref, "a", CHIMP_STR_NEW(NULL, "Hello"));
+    CHIMP_HASH_PUT(ref, "foo", chimp_array_new(NULL));
+    ref = chimp_object_str (NULL, ref);
+    printf ("%s\n", CHIMP_STR_DATA(ref));
+
     ref = chimp_method_new_native (NULL, some_native_method);
     ref = chimp_object_call (ref, chimp_array_new (NULL));
     printf ("%s\n", CHIMP_STR_DATA(ref));

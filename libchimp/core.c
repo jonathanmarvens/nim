@@ -189,6 +189,7 @@ chimp_core_startup (void *stack_start)
     chimp_gc_make_root (NULL, chimp_false);
 
     if (!chimp_array_class_bootstrap (NULL)) goto error;
+    if (!chimp_hash_class_bootstrap (NULL)) goto error;
     if (!chimp_method_class_bootstrap (NULL)) goto error;
     if (!chimp_stack_frame_class_bootstrap (NULL)) goto error;
     if (!chimp_task_push_stack_frame (main_task)) goto error;

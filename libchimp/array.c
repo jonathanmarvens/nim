@@ -86,7 +86,7 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
     data[j++] = ']';
     data[j] = '\0';
 
-    return chimp_str_new_take (gc, data, total_len);
+    return chimp_str_new_take (gc, data, total_len-1);
 }
 
 chimp_bool_t
