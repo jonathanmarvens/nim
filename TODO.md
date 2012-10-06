@@ -1,14 +1,11 @@
 * Real unit tests for the runtime.
-* A GC occuring at the wrong time will have dire effects atm.
-  Artificial stack frames / scopes are needed to make object lifetime explicit
-* Lots of explicit malloc()ing where a slab allocator would probably do better
-  (worst offender: ChimpRef).
-* Classes defined in older GCs need to become sealed as soon as they are
-  referenced from another GC. Make it so either implicitly or via an explicit
-  API call. (e.g. chimp\_class\_freeze)
+* Explicit mallocs for lwhashes. Should be managed by the GC.
+* If a task creates a child task, I think (but haven't proven) that it's
+  safe for the child to hold a reference to objects in the parent's GC,
+  but not vice versa (i.e. values in new GCs may reference values in old GCs).
 * There's a whole slew of stuff just begging for more shorthand.
 * Are we rooting all the core classes correctly?
-* ChimpModule? How can we make this play nice with our GC restrictions?
+* ChimpModule?
 * ChimpInt?
 * Arbitrary precision for ChimpInt.
 * ChimpFloat?
@@ -16,6 +13,5 @@
   that makes more sense.
 * Explicit constructors?
 * Generational GC one day. Erlang-style GC algorithm switching another.
-* Explicit GC parameter sucks. Implicit per-task GC should be fine.
 * Syntax, one day.
 
