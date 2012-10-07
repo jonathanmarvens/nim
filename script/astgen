@@ -1,0 +1,209 @@
+#!/usr/bin/env python
+
+import sys
+import os
+
+APP_NAME = "chimp"
+
+HEADER_FILE, SOURCE_FILE = sys.argv[1:3]
+
+CORE_TYPES = {
+    'str':   {'ctype': 'ChimpRef*'},
+    'int':   {'ctype': 'ChimpRef*'},
+    'array': {'ctype': 'ChimpRef*'},
+    'hash':  {'ctype': 'ChimpRef*'},
+    'bool':  {'ctype': 'chimp_bool_t'}
+}
+
+AST_DESCRIPTOR = [
+    ['mod',
+        ['root',
+            ['name', 'str'],
+            ['body', 'array']]],
+    ['expr',
+        ['call',
+            ['target', 'expr'],
+            ['args', 'array']]],
+    ['stmt',
+        ['expr',
+            ['expr', 'expr']]]
+]
+
+class UnknownTypeError(Exception):
+    pass
+
+def ctype(name):
+    try:
+        t = CORE_TYPES[name]
+        return t['ctype']
+    except KeyError:
+        ast_types = set([x[0] for x in AST_DESCRIPTOR])
+        if name in ast_types:
+            return 'ChimpRef*'
+    raise UnknownTypeError(name)
+
+def camelize(s):
+    return "".join([x.title() for x in s.split("_")])
+
+PARAMS = {
+    "app_name": APP_NAME,
+    "APP_NAME": APP_NAME.upper(),
+    "AppName": camelize(APP_NAME)
+}
+
+OUTPUT_STREAM = None
+
+def _(s="", params={}):
+    print >>OUTPUT_STREAM, s % dict(PARAMS.items() + params.items())
+
+def node_type_params(t):
+    name = t[0]
+    return {
+        "node_type": name,
+        "NODE_TYPE": name.upper(),
+        "NodeType": camelize(name),
+        "node_ctype": ctype(name)
+    }
+
+def kind_params(k):
+    name = k[0]
+    return {
+        "kind": name,
+        "KIND": name.upper(),
+        "Kind": camelize(name)
+    }
+
+def node_type_kinds(t):
+    return t[1:]
+
+def node_kind_attrs(k):
+    return k[1:]
+
+def attr_params(a):
+    name = a[0]
+    return {
+        "attr": name,
+        "ATTR": name.upper(),
+        "Attr": camelize(name),
+        "attr_ctype": ctype(a[1])
+    }
+
+def kind_ctor_args_params(k):
+    params = []
+    for a in node_kind_attrs(k):
+        ap = attr_params(a)
+        params.append("%(attr_ctype)s %(attr)s" % ap)
+    return {"args": ", ".join(params)}
+
+def set_output_stream(stream):
+    global OUTPUT_STREAM
+    OUTPUT_STREAM = stream
+
+def merge(*args):
+    s = dict(args[0])
+    for arg in args[1:]:
+        s.update(arg)
+    return s
+
+def header():
+    with open(HEADER_FILE, "w+") as stream:
+        set_output_stream(stream)
+        _("#ifndef _%(APP_NAME)s_AST_H_INCLUDED_")
+        _("#define _%(APP_NAME)s_AST_H_INCLUDED_")
+        _()
+        _("#include <chimp/gc.h>")
+        _("#include <chimp/any.h>")
+        _()
+        _("#ifdef __cplusplus")
+        _("extern \"C\" {")
+        _("#endif")
+        _()
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            _("typedef enum _%(AppName)sAst%(NodeType)sType {", np)
+            for k in node_type_kinds(t):
+                kp = kind_params(k)
+                _("    %(APP_NAME)s_AST_%(NODE_TYPE)s_%(KIND)s,", merge(np, kp))
+            _("} %(AppName)sAst%(NodeType)sType;", np)
+            _()
+            _("typedef struct _%(AppName)sAst%(NodeType)s {", np)
+            _("    %(AppName)sAny base;")
+            _("    %(AppName)sAst%(NodeType)sType type;", np)
+            _("    union {")
+            for k in node_type_kinds(t):
+                kp = kind_params(k)
+                _("        struct {")
+                for a in node_kind_attrs(k):
+                    ap = attr_params(a)
+                    _("            %(attr_ctype)s %(attr)s;", ap)
+                _("        } %(kind)s;", kp)
+            _("    };")
+            _("} %(AppName)sAst%(NodeType)s;", np)
+            _()
+
+        _(ctype("bool"))
+        _("%(app_name)s_ast_class_bootstrap(void);")
+
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            for k in node_type_kinds(t):
+                kp = kind_params(k)
+                argp = kind_ctor_args_params(k)
+                _("%(node_ctype)s", np)
+                _("%(app_name)s_ast_%(node_type)s_new_%(kind)s(%(args)s);", merge(np, kp, argp))
+                _()
+
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            _("#define %(APP_NAME)s_AST_%(NODE_TYPE)s(ref) %(APP_NAME)s_CHECK_CAST(%(AppName)sAst%(NodeType)s, (ref), %(APP_NAME)s_VALUE_TYPE_AST_%(NODE_TYPE)s)", np)
+            _()
+
+        _("#ifdef __cplusplus")
+        _("};")
+        _("#endif")
+        _()
+        _("#endif")
+
+def source():
+    with open(SOURCE_FILE, "w+") as stream:
+        set_output_stream(stream)
+        _("#include \"%(app_name)s/ast.h\"")
+        _()
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            # XXX class_ctype ?
+            _("%(AppName)sRef *%(app_name)s_ast_%(node_type)s_class = NULL;", np)
+        _()
+        _(ctype("bool"))
+        _("%(app_name)s_ast_class_bootstrap(void)")
+        _("{")
+        _("    return %(APP_NAME)s_FALSE;")
+        _("}")
+        _()
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            for k in node_type_kinds(t):
+                kp = kind_params(k)
+                argp = kind_ctor_args_params(k)
+                _("%(node_ctype)s", np)
+                _("%(app_name)s_ast_%(node_type)s_new_%(kind)s(%(args)s)", merge(np, kp, argp))
+                _("{")
+                _("    %(node_ctype)s ref = %(app_name)s_gc_new_object (NULL);", np)
+                _("    if (ref == NULL) {")
+                _("        return NULL;")
+                _("    }")
+                _()
+                _("    %(APP_NAME)s_ANY(ref)->type = %(APP_NAME)s_VALUE_TYPE_AST_%(NODE_TYPE)s;", np)
+                _("    %(APP_NAME)s_ANY(ref)->klass = %(app_name)s_ast_%(node_type)s_class;", np)
+                _()
+                for a in node_kind_attrs(k):
+                    ap = attr_params(a)
+                    _("    %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->%(kind)s.%(attr)s = %(attr)s;", merge(np, kp, ap))
+                _()
+                _("    return ref;")
+                _("}")
+                _()
+
+header()
+source()
+

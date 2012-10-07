@@ -17,6 +17,9 @@ typedef enum _ChimpValueType {
     CHIMP_VALUE_TYPE_HASH,
     CHIMP_VALUE_TYPE_METHOD,
     CHIMP_VALUE_TYPE_STACK_FRAME,
+    CHIMP_VALUE_TYPE_AST_MOD,
+    CHIMP_VALUE_TYPE_AST_STMT,
+    CHIMP_VALUE_TYPE_AST_EXPR
 } ChimpValueType;
 
 typedef struct _ChimpAny {

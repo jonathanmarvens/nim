@@ -98,7 +98,7 @@ am_libchimp_la_OBJECTS = libchimp_la-gc.lo libchimp_la-core.lo \
 	libchimp_la-str.lo libchimp_la-class.lo libchimp_la-lwhash.lo \
 	libchimp_la-object.lo libchimp_la-array.lo libchimp_la-task.lo \
 	libchimp_la-method.lo libchimp_la-stackframe.lo \
-	libchimp_la-hash.lo libchimp_la-int.lo
+	libchimp_la-hash.lo libchimp_la-int.lo libchimp_la-ast.lo
 libchimp_la_OBJECTS = $(am_libchimp_la_OBJECTS)
 libchimp_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libchimp_la_CFLAGS) \
@@ -248,8 +248,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 valgrind_CFLAGS = @valgrind_CFLAGS@
 valgrind_LIBS = @valgrind_LIBS@
+GENERATED_SOURCES = ast.c ast.h
+MOSTLYCLEANFILES = $(GENERATED_SOURCES)
 lib_LTLIBRARIES = libchimp.la
-libchimp_la_SOURCES = gc.c core.c str.c class.c lwhash.c object.c array.c task.c method.c stackframe.c hash.c int.c
+libchimp_la_SOURCES = gc.c core.c str.c class.c lwhash.c object.c array.c task.c method.c stackframe.c hash.c int.c ast.c
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD = 
 all: all-am
@@ -328,6 +330,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-array.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-ast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-class.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-core.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-gc.Plo@am__quote@
@@ -445,6 +448,13 @@ libchimp_la-int.lo: int.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-int.lo `test -f 'int.c' || echo '$(srcdir)/'`int.c
 
+libchimp_la-ast.lo: ast.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -MT libchimp_la-ast.lo -MD -MP -MF $(DEPDIR)/libchimp_la-ast.Tpo -c -o libchimp_la-ast.lo `test -f 'ast.c' || echo '$(srcdir)/'`ast.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libchimp_la-ast.Tpo $(DEPDIR)/libchimp_la-ast.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ast.c' object='libchimp_la-ast.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-ast.lo `test -f 'ast.c' || echo '$(srcdir)/'`ast.c
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -560,6 +570,7 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 
@@ -657,6 +668,11 @@ uninstall-am: uninstall-libLTLIBRARIES
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-libLTLIBRARIES
 
+
+ast.h: ast.c
+
+ast.c: $(top_srcdir)/script/astgen
+	$(top_srcdir)/script/astgen $(srcdir)/include/chimp/ast.h $(srcdir)/ast.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

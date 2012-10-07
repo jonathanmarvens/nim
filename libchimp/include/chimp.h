@@ -12,6 +12,7 @@
 #include <chimp/task.h>
 #include <chimp/method.h>
 #include <chimp/stackframe.h>
+#include <chimp/ast.h>
 
 #endif
 
