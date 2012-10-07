@@ -162,6 +162,7 @@ def header():
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
             _("#define %(APP_NAME)s_AST_%(NODE_TYPE)s(ref) %(APP_NAME)s_CHECK_CAST(%(AppName)sAst%(NodeType)s, (ref), %(APP_NAME)s_VALUE_TYPE_AST_%(NODE_TYPE)s)", np)
+            _("#define %(APP_NAME)s_AST_%(NODE_TYPE)s_TYPE(ref) (%(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type)", np)
             _()
 
         _("#ifdef __cplusplus")

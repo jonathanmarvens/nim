@@ -25,6 +25,7 @@ libchimp_la_SOURCES = \
 	hash.c \
 	int.c \
 	code.c \
+	compile.c \
 	_parser.y \
 	scanner.l
 

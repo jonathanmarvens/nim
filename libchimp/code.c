@@ -26,6 +26,7 @@ chimp_code_new (void)
     }
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
+    CHIMP_CODE(ref)->constants = chimp_array_new (NULL);
     CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, 32);
     if (CHIMP_CODE(ref)->bytecode == NULL) {
         return NULL;
@@ -71,10 +72,10 @@ chimp_code_add_const (ChimpRef *self, ChimpRef *value)
     if (n >= 0) {
         return n;
     }
-    if (!chimp_array_push (self, value)) {
+    if (!chimp_array_push (CHIMP_CODE(self)->constants, value)) {
         return -1;
     }
-    return CHIMP_ARRAY_SIZE(self);
+    return CHIMP_ARRAY_SIZE(CHIMP_CODE(self)->constants);
 }
 
 chimp_bool_t
@@ -109,6 +110,17 @@ chimp_code_call (ChimpRef *self)
         return CHIMP_FALSE;
     }
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CALL);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_makearray (ChimpRef *self, uint8_t nargs)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    /* XXX this cast should happen automatically in the make_instr macro */
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(MAKEARRAY, (int32_t)nargs);
     return CHIMP_TRUE;
 }
 
