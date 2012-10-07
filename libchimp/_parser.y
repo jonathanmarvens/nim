@@ -30,7 +30,7 @@ extern ChimpRef *main_mod;
 
 %%
 
-module : stmt { $$ = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), chimp_array_new_var (NULL, $1, NULL)); }
+module : stmt { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), chimp_array_new_var (NULL, $1, NULL)); }
        ;
 
 stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
@@ -46,6 +46,8 @@ ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
       ;
 
 %%
+
+ChimpRef *main_mod = NULL;
 
 void
 yyerror (const char *format, ...)

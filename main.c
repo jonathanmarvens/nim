@@ -45,6 +45,7 @@ main (int argc, char **argv)
 
 extern int yyparse(void);
 extern FILE *yyin;
+extern ChimpRef *main_mod;
 
 static int
 real_main (int argc, char **argv)
@@ -61,6 +62,7 @@ real_main (int argc, char **argv)
     }
     rc = yyparse();
     fclose (yyin);
+    printf ("%p\n", main_mod);
     return rc;
 }
 
