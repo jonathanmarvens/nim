@@ -5,6 +5,7 @@
 #include <chimp/gc.h>
 #include <chimp/class.h>
 #include <chimp/str.h>
+#include <chimp/int.h>
 #include <chimp/array.h>
 #include <chimp/stackframe.h>
 #include <chimp/method.h>
@@ -23,6 +24,7 @@ typedef union _ChimpValue {
     ChimpClass      klass;
     ChimpObject     object;
     ChimpStr        str;
+    ChimpInt        integer;
     ChimpArray      array;
     ChimpHash       hash;
     ChimpMethod     method;

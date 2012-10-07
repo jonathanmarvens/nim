@@ -1,4 +1,5 @@
 #include <chimp.h>
+#include <inttypes.h>
 
 static ChimpRef *
 print_self (ChimpRef *self, ChimpRef *args)
@@ -118,6 +119,11 @@ real_main (int argc, char **argv)
     chimp_array_push (ref, chimp_nil);
     ref = chimp_object_str (NULL, ref);
     printf ("%s\n", CHIMP_STR_DATA(ref));
+
+    /* int? */
+    ref = chimp_int_new (NULL, 1024);
+    ref = chimp_object_str (NULL, ref);
+    printf ("int: %s\n", CHIMP_STR_DATA(ref));
 
     /* empty hash to string? */
     ref = chimp_hash_new (NULL);

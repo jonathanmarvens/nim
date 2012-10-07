@@ -4,6 +4,7 @@
 #include "chimp/lwhash.h"
 #include "chimp/class.h"
 #include "chimp/str.h"
+#include "chimp/int.h"
 #include "chimp/array.h"
 #include "chimp/method.h"
 #include "chimp/task.h"
@@ -188,6 +189,7 @@ chimp_core_startup (void *stack_start)
     if (chimp_false == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_false);
 
+    if (!chimp_int_class_bootstrap (NULL)) goto error;
     if (!chimp_array_class_bootstrap (NULL)) goto error;
     if (!chimp_hash_class_bootstrap (NULL)) goto error;
     if (!chimp_method_class_bootstrap (NULL)) goto error;
