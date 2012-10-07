@@ -480,7 +480,7 @@ chimp_gc_ref_type (ChimpRef *ref)
 static void
 chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data);
 
-static void
+void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 {
     if (ref == NULL) return;
@@ -528,19 +528,19 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
                 /* TODO */
-                /* chimp_ast_mod_mark (gc, ref); */
+                chimp_ast_mod_mark (gc, ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_STMT:
             {
                 /* TODO */
-                /* chimp_ast_stmt_mark (gc, ref); */
+                chimp_ast_stmt_mark (gc, ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_EXPR:
             {
                 /* TODO */
-                /* chimp_ast_expr_mark (gc, ref); */
+                chimp_ast_expr_mark (gc, ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:

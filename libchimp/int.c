@@ -5,6 +5,7 @@
 #include "chimp/int.h"
 #include "chimp/str.h"
 #include "chimp/class.h"
+#include "chimp/ast.h"
 
 #define CHIMP_INT_INIT(ref) \
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_INT; \

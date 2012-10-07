@@ -149,6 +149,9 @@ def header():
 
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
+            _("void")
+            _("%(app_name)s_ast_%(node_type)s_mark(%(node_ctype)s ref);", np)
+            _()
             for k in node_type_kinds(t):
                 kp = kind_params(k)
                 argp = kind_ctor_args_params(k)
@@ -193,6 +196,24 @@ def source():
         _("    return %(APP_NAME)s_TRUE;")
         _("}")
         _()
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            _("void")
+            _("%(app_name)s_ast_%(node_type)s_mark(%(node_ctype)s ref)", np)
+            _("{")
+            _("    switch (%(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type) {", np)
+            for k in node_type_kinds(t):
+                kp = kind_params(k)
+                _("        case %(APP_NAME)s_AST_%(NODE_TYPE)s_%(KIND)s:", merge(np, kp))
+                for a in node_kind_attrs(k):
+                    ap = attr_params(a)
+                    _("            chimp_gc_mark_ref (NULL, %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->%(kind)s.%(attr)s);", merge(np, kp, ap))
+                _("            break;") 
+            _("        default:")
+            _("            chimp_bug (__FILE__, __LINE__, \"unknown AST type?\");")
+            _("    };")
+            _("}")
+            _()
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
             for k in node_type_kinds(t):
