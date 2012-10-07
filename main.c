@@ -44,6 +44,7 @@ main (int argc, char **argv)
 }
 
 extern int yyparse(void);
+extern void yylex_destroy(void);
 extern FILE *yyin;
 extern ChimpRef *main_mod;
 
@@ -62,6 +63,7 @@ real_main (int argc, char **argv)
     }
     rc = yyparse();
     fclose (yyin);
+    yylex_destroy ();
     printf ("%p\n", main_mod);
     return rc;
 }

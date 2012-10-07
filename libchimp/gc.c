@@ -537,20 +537,22 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             }
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
-                /* TODO */
                 chimp_ast_mod_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_STMT:
             {
-                /* TODO */
                 chimp_ast_stmt_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_EXPR:
             {
-                /* TODO */
                 chimp_ast_expr_mark (ref);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_CODE:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->constants);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:
