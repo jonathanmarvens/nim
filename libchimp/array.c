@@ -179,3 +179,19 @@ chimp_array_get (ChimpRef *self, int32_t pos)
     }
 }
 
+int32_t
+chimp_array_find (ChimpRef *self, ChimpRef *value)
+{
+    size_t i;
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpCmpResult r = chimp_object_cmp (CHIMP_ARRAY_ITEM(self, i), value);
+        if (r == CHIMP_CMP_ERROR) {
+            return NULL;
+        }
+        else if (r == CHIMP_CMP_EQ) {
+            return (int32_t)i;
+        }
+    }
+    return -1;
+}
+

@@ -8,8 +8,10 @@
 #include <chimp/int.h>
 #include <chimp/array.h>
 #include <chimp/stackframe.h>
+#include <chimp/code.h>
 #include <chimp/method.h>
 #include <chimp/hash.h>
+#include <chimp/ast.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +29,12 @@ typedef union _ChimpValue {
     ChimpInt        integer;
     ChimpArray      array;
     ChimpHash       hash;
+    ChimpCode       code;
     ChimpMethod     method;
     ChimpStackFrame stack_frame;
+    ChimpAstMod     ast_mod;
+    ChimpAstStmt    ast_stmt;
+    ChimpAstExpr    ast_expr;
 } ChimpValue;
 
 ChimpRef *

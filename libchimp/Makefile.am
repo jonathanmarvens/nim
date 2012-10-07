@@ -24,6 +24,7 @@ libchimp_la_SOURCES = \
 	stackframe.c \
 	hash.c \
 	int.c \
+	code.c \
 	_parser.y \
 	scanner.l
 

@@ -32,6 +32,9 @@ chimp_array_pop (ChimpRef *self);
 ChimpRef *
 chimp_array_get (ChimpRef *self, int32_t pos);
 
+int32_t
+chimp_array_find (ChimpRef *self, ChimpRef *value);
+
 ChimpRef *
 chimp_array_first (ChimpRef *self);
 

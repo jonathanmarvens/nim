@@ -24,6 +24,7 @@ struct _ChimpRef {
 #define CHIMP_FAST_ARRAY(ref) (&((ref)->value->array))
 #define CHIMP_FAST_HASH(ref) (&((ref)->value->hash))
 #define CHIMP_FAST_METHOD(ref) (&((ref)->value->method))
+#define CHIMP_FAST_CODE(ref) (&((ref)->value->code))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
 
@@ -97,6 +98,10 @@ type_name (ChimpValueType type)
         case CHIMP_VALUE_TYPE_STACK_FRAME:
             {
                 return "stackframe";
+            }
+        case CHIMP_VALUE_TYPE_CODE:
+            {
+                return "code";
             }
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
@@ -335,6 +340,11 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_HASH(ref)->values);
                 break;
             }
+        case CHIMP_VALUE_TYPE_CODE:
+            {
+                CHIMP_FREE (CHIMP_FAST_CODE(ref)->bytecode);
+                break;
+            }
         case CHIMP_VALUE_TYPE_STACK_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
@@ -528,19 +538,19 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
                 /* TODO */
-                chimp_ast_mod_mark (gc, ref);
+                chimp_ast_mod_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_STMT:
             {
                 /* TODO */
-                chimp_ast_stmt_mark (gc, ref);
+                chimp_ast_stmt_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_EXPR:
             {
                 /* TODO */
-                chimp_ast_expr_mark (gc, ref);
+                chimp_ast_expr_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:
