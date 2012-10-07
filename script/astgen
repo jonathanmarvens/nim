@@ -230,6 +230,8 @@ def source():
                 _("    %(APP_NAME)s_ANY(ref)->type = %(APP_NAME)s_VALUE_TYPE_AST_%(NODE_TYPE)s;", np)
                 _("    %(APP_NAME)s_ANY(ref)->klass = %(app_name)s_ast_%(node_type)s_class;", np)
                 _()
+                _("    %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type = %(APP_NAME)s_AST_%(NODE_TYPE)s_%(KIND)s;", merge(np, kp))
+                _()
                 for a in node_kind_attrs(k):
                     ap = attr_params(a)
                     _("    %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->%(kind)s.%(attr)s = %(attr)s;", merge(np, kp, ap))
