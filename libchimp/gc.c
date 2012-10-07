@@ -98,6 +98,18 @@ type_name (ChimpValueType type)
             {
                 return "stackframe";
             }
+        case CHIMP_VALUE_TYPE_AST_MOD:
+            {
+                return "ast.mod";
+            }
+        case CHIMP_VALUE_TYPE_AST_STMT:
+            {
+                return "ast.stmt";
+            }
+        case CHIMP_VALUE_TYPE_AST_EXPR:
+            {
+                return "ast.expr";
+            }
         default:
             {
                 return "<unknown>";
@@ -327,6 +339,9 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_INT:
+        case CHIMP_VALUE_TYPE_AST_MOD:
+        case CHIMP_VALUE_TYPE_AST_STMT:
+        case CHIMP_VALUE_TYPE_AST_EXPR:
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type: %s", type_name (ref->value->any.type));
@@ -508,6 +523,24 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->self);
                 /* TODO mark code object ? */
+                break;
+            }
+        case CHIMP_VALUE_TYPE_AST_MOD:
+            {
+                /* TODO */
+                /* chimp_ast_mod_mark (gc, ref); */
+                break;
+            }
+        case CHIMP_VALUE_TYPE_AST_STMT:
+            {
+                /* TODO */
+                /* chimp_ast_stmt_mark (gc, ref); */
+                break;
+            }
+        case CHIMP_VALUE_TYPE_AST_EXPR:
+            {
+                /* TODO */
+                /* chimp_ast_expr_mark (gc, ref); */
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:

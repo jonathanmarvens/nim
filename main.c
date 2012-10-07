@@ -1,6 +1,7 @@
 #include <chimp.h>
 #include <inttypes.h>
 
+#if 0
 static ChimpRef *
 print_self (ChimpRef *self, ChimpRef *args)
 {
@@ -21,6 +22,8 @@ some_native_method (ChimpRef *self, ChimpRef *args)
     return CHIMP_STR_NEW(NULL, "Hello, World");
 }
 
+#endif
+
 static int
 real_main (int argc, char **argv);
 
@@ -30,6 +33,7 @@ main (int argc, char **argv)
     int rc;
 
     if (!chimp_core_startup ((void *)&rc)) {
+        fprintf (stderr, "error: unable to initialize chimp core\n");
         return 1;
     }
 
@@ -39,6 +43,28 @@ main (int argc, char **argv)
     return rc;
 }
 
+extern int yyparse(void);
+extern FILE *yyin;
+
+static int
+real_main (int argc, char **argv)
+{
+    int rc;
+    if (argc < 2) {
+        fprintf (stderr, "usage: %s <file>\n", argv[0]);
+        return 1;
+    }
+    yyin = fopen (argv[1], "r");
+    if (yyin == NULL) {
+        fprintf (stderr, "error: could not open input file: %s\n", argv[1]);
+        return 1;
+    }
+    rc = yyparse();
+    fclose (yyin);
+    return rc;
+}
+
+#if 0
 static int
 real_main (int argc, char **argv)
 {
@@ -191,4 +217,4 @@ real_main (int argc, char **argv)
 
     return 0;
 }
-
+#endif

@@ -1,8 +1,32 @@
-GENERATED_SOURCES = ast.c ast.h
-MOSTLYCLEANFILES = $(GENERATED_SOURCES)
+GENERATED_FILES = \
+	$(srcdir)/ast.c \
+	$(srcdir)/include/chimp/ast.h \
+	$(srcdir)/_parser.c \
+	$(srcdir)/include/chimp/_parser.h \
+	$(srcdir)/scanner.c
+
+MOSTLYCLEANFILES = $(GENERATED_FILES)
+
+AM_YFLAGS = --defines=$(top_srcdir)/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
-libchimp_la_SOURCES = gc.c core.c str.c class.c lwhash.c object.c array.c task.c method.c stackframe.c hash.c int.c ast.c
+libchimp_la_SOURCES = \
+	ast.c \
+	gc.c \
+	core.c \
+	str.c \
+	class.c \
+	lwhash.c \
+	object.c \
+	array.c \
+	task.c \
+	method.c \
+	stackframe.c \
+	hash.c \
+	int.c \
+	_parser.y \
+	scanner.l
+
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =
 

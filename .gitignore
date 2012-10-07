@@ -15,4 +15,7 @@ autom4te.cache
 /libtool
 /libchimp/ast.c
 /libchimp/include/chimp/ast.h
+/libchimp/_parser.c
+/libchimp/include/chimp/_parser.h
+/libchimp/scanner.c
 

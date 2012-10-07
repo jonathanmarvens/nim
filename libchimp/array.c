@@ -117,6 +117,25 @@ chimp_array_new (ChimpGC *gc)
     return ref;
 }
 
+ChimpRef *
+chimp_array_new_var (ChimpGC *gc, ...)
+{
+    va_list args;
+    ChimpRef *arg;
+    ChimpRef *ref = chimp_array_new (gc);
+    if (ref == NULL) {
+        return NULL;
+    }
+
+    va_start (args, gc);
+    while ((arg = va_arg (args, ChimpRef *)) != NULL) {
+        chimp_array_push (ref, arg);
+    }
+    va_end (args);
+
+    return ref;
+}
+
 chimp_bool_t
 chimp_array_push (ChimpRef *self, ChimpRef *value)
 {

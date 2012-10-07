@@ -20,10 +20,13 @@ AST_DESCRIPTOR = [
         ['root',
             ['name', 'str'],
             ['body', 'array']]],
+
     ['expr',
         ['call',
             ['target', 'expr'],
-            ['args', 'array']]],
+            ['args', 'array']],
+        ['ident',
+            ['id', 'str']]],
     ['stmt',
         ['expr',
             ['expr', 'expr']]]
@@ -168,6 +171,8 @@ def source():
     with open(SOURCE_FILE, "w+") as stream:
         set_output_stream(stream)
         _("#include \"%(app_name)s/ast.h\"")
+        _("#include \"%(app_name)s/str.h\"")
+        _("#include \"%(app_name)s/class.h\"")
         _()
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
@@ -177,7 +182,15 @@ def source():
         _(ctype("bool"))
         _("%(app_name)s_ast_class_bootstrap(void)")
         _("{")
-        _("    return %(APP_NAME)s_FALSE;")
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            _("    %(app_name)s_ast_%(node_type)s_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, \"%(node_type)s\"), NULL);", np)
+            _("    if (%(app_name)s_ast_%(node_type)s_class == NULL) {", np)
+            _("        return %(APP_NAME)s_FALSE;")
+            _("    }")
+            _("    chimp_gc_make_root (NULL, %(app_name)s_ast_%(node_type)s_class);", np)
+            _()
+        _("    return %(APP_NAME)s_TRUE;")
         _("}")
         _()
         for t in AST_DESCRIPTOR:
