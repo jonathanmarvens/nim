@@ -36,7 +36,7 @@ module : stmt { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), 
 stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
      ;
 
-expr : call
+expr : call { $$ = $1; }
      ;
 
 call : ident TOK_LBRACKET TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, chimp_array_new (NULL)); }

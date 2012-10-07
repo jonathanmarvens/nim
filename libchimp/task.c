@@ -5,11 +5,13 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 #include "chimp/stackframe.h"
+#include "chimp/vm.h"
 
 static __thread ChimpTask *current_task = NULL;
 
 struct _ChimpTask {
     ChimpGC  *gc;
+    ChimpVM  *vm;
     chimp_bool_t is_main;
     pthread_t thread;
     ChimpRef *impl;
@@ -27,6 +29,12 @@ chimp_task_thread_func (void *arg)
         return NULL;
     }
     current_task = task;
+    task->vm = chimp_vm_new ();
+    if (task->vm == NULL) {
+        chimp_gc_delete (task->gc);
+        CHIMP_FREE (task);
+        return NULL;
+    }
     if (task->impl != NULL) {
         chimp_object_call (task->impl, chimp_array_new (NULL));
     }
@@ -66,6 +74,12 @@ chimp_task_new_main (void *stack_start)
         return NULL;
     }
     current_task = task;
+    task->vm = chimp_vm_new ();
+    if (task->vm == NULL) {
+        chimp_gc_delete (task->gc);
+        CHIMP_FREE (task);
+        return NULL;
+    }
     return task;
 }
 
@@ -76,6 +90,7 @@ chimp_task_delete (ChimpTask *task)
         if (!task->done) {
             chimp_task_wait (task);
         }
+        chimp_vm_delete (task->vm);
         chimp_gc_delete (task->gc);
         CHIMP_FREE (task);
     }
@@ -145,6 +160,13 @@ chimp_task_get_gc (ChimpTask *task)
 {
     CHIMP_ASSERT(task != NULL);
 
-    return current_task->gc;
+    return task->gc;
 }
 
+ChimpVM *
+chimp_task_get_vm (ChimpTask *task)
+{
+    CHIMP_ASSERT(task != NULL);
+
+    return task->vm;
+}

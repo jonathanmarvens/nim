@@ -53,6 +53,7 @@ real_main (int argc, char **argv)
 {
     int rc;
     ChimpRef *code;
+    ChimpRef *result;
     if (argc < 2) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         return 1;
@@ -68,6 +69,8 @@ real_main (int argc, char **argv)
     printf ("%p\n", main_mod);
     code = chimp_compile_ast (main_mod);
     printf ("%p\n", code);
+    result = chimp_vm_eval (NULL, code);
+    printf ("%s\n", CHIMP_STR_DATA(chimp_object_str(NULL, result)));
     return rc;
 }
 

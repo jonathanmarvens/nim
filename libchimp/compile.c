@@ -89,6 +89,11 @@ chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr)
     ChimpRef *args;
     size_t i;
 
+    target = CHIMP_AST_EXPR(expr)->call.target;
+    if (chimp_compile_ast_expr (code, target) == NULL) {
+        return NULL;
+    }
+
     args = CHIMP_AST_EXPR(expr)->call.args;
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         if (chimp_compile_ast_expr (code, CHIMP_ARRAY_ITEM(args, i)) == NULL) {
@@ -100,11 +105,9 @@ chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr)
         return NULL;
     }
 
-    target = CHIMP_AST_EXPR(expr)->call.target;
-    if (chimp_compile_ast_expr (code, target) == NULL) {
+    if (!chimp_code_call (code)) {
         return NULL;
     }
-    chimp_code_call (code);
 
     return code;
 }

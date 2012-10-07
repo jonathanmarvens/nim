@@ -1,6 +1,7 @@
 #ifndef _CHIMP_TASK_H_INCLUDED_
 #define _CHIMP_TASK_H_INCLUDED_
 
+#include <chimp/vm.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,10 +35,14 @@ chimp_task_current (void);
 ChimpGC *
 chimp_task_get_gc (ChimpTask *task);
 
+ChimpVM *
+chimp_task_get_vm (ChimpTask *task);
+
 #define CHIMP_CURRENT_TASK chimp_task_current ()
 #define CHIMP_CURRENT_STACK_FRAME \
     chimp_task_top_stack_frame (chimp_task_current())
 #define CHIMP_CURRENT_GC chimp_task_get_gc (chimp_task_current())
+#define CHIMP_CURRENT_VM chimp_task_get_vm (chimp_task_current())
 
 #define CHIMP_PUSH_STACK_FRAME() \
     chimp_task_push_stack_frame (chimp_task_current ())

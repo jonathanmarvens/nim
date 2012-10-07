@@ -43,7 +43,22 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 
-#define CHIMP_CODE_OPCODE(ref, n) CHIMP_CODE(ref)->bytecode[n]
+#define CHIMP_CODE_INSTR(ref, n) CHIMP_CODE(ref)->bytecode[n]
+
+#define CHIMP_INSTR_OP(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0xff000000) >> 24)
+#define CHIMP_INSTR_ARG1(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x00ff0000) >> 16)
+#define CHIMP_INSTR_ARG2(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x0000ff00) >> 8)
+#define CHIMP_INSTR_ARG3(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x000000ff))
+
+#define CHIMP_INSTR_CONST1(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_CONSTANTS(ref), CHIMP_INSTR_ARG1(ref, n))
+
+#define CHIMP_INSTR_CONST2(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_CONSTANTS(ref), CHIMP_INSTR_ARG2(ref, n))
+
+#define CHIMP_INSTR_CONST3(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_CONSTANTS(ref), CHIMP_INSTR_ARG3(ref, n))
+
 #define CHIMP_CODE_SIZE(ref) CHIMP_CODE(ref)->used
 #define CHIMP_CODE_CONSTANTS(ref) CHIMP_CODE(ref)->constants
 
