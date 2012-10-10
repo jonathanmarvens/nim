@@ -16,6 +16,4 @@
   that makes more sense.
 * Constructors.
 * Generational GC one day. Erlang-style GC algorithm switching another.
-* Make class objects callable like they are in Python e.g. object(), str(),
-  hash() etc.
 
