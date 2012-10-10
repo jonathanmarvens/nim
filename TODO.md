@@ -1,4 +1,5 @@
 * Real unit tests for the runtime.
+* Do away with explicit GC pointers. Implicit per-thread GC is always available.
 * VM stacks are made roots on VM creation, but are not removed from the root
   set at destruction. Either figure out a way to let VMs mark themselves, or
   provide a means of clearing elements from the root set.
