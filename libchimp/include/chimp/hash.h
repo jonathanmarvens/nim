@@ -25,6 +25,9 @@ chimp_hash_new (ChimpGC *gc);
 chimp_bool_t
 chimp_hash_put (ChimpRef *self, ChimpRef *key, ChimpRef *value);
 
+chimp_bool_t
+chimp_hash_put_str (ChimpRef *self, const char *key, ChimpRef *value);
+
 ChimpRef *
 chimp_hash_get (ChimpRef *self, ChimpRef *key);
 

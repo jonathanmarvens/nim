@@ -160,6 +160,12 @@ chimp_hash_put (ChimpRef *self, ChimpRef *key, ChimpRef *value)
     return CHIMP_TRUE;
 }
 
+chimp_bool_t
+chimp_hash_put_str (ChimpRef *self, const char *key, ChimpRef *value)
+{
+    return chimp_hash_put (self, chimp_str_new (NULL, key, strlen(key)), value);
+}
+
 ChimpRef *
 chimp_hash_get (ChimpRef *self, ChimpRef *key)
 {
