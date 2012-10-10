@@ -1,7 +1,3 @@
-#include <check.h>
-
-#include <chimp.h>
-
 #define CHIMP_TEST_INSTANCE_CHECK(inst, klass, gc_type) \
     fail_unless ((inst) != NULL, "calling %s constructor failed", CHIMP_STR_DATA(CHIMP_CLASS_NAME(klass))); \
     fail_unless (CHIMP_ANY_TYPE((inst)) == (gc_type), "object should be GC type #%d", (gc_type)); \
@@ -31,8 +27,11 @@ END_TEST
 START_TEST(calling_class_class_should_create_a_new_class)
 {
     ChimpRef *instance;
+    ChimpRef *args = chimp_array_new (NULL);
+    chimp_array_push (args, CHIMP_STR_NEW (NULL, "foo"));
+    chimp_array_push (args, chimp_nil);
 
-    instance = chimp_object_call (chimp_class_class, chimp_array_new (NULL));
+    instance = chimp_object_call (chimp_class_class, args);
     CHIMP_TEST_INSTANCE_CHECK(instance, chimp_class_class, CHIMP_VALUE_TYPE_CLASS);
 }
 END_TEST
@@ -70,4 +69,10 @@ START_TEST(instances_of_new_classes_should_use_super_class)
 }
 END_TEST
 
+START_TEST(nil_value_should_have_nil_class)
+{
+    fail_unless (CHIMP_ANY_CLASS(chimp_nil) == chimp_nil_class,
+                "expected nil value to have nil class");
+}
+END_TEST
 

@@ -1,7 +1,3 @@
-#include <check.h>
-
-#include <chimp.h>
-
 START_TEST (test_startup_shutdown)
 {
     int stack;

@@ -87,6 +87,12 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name)
     return NULL;
 }
 
+ChimpRef *
+chimp_object_getattr_str (ChimpRef *self, const char *name)
+{
+    return chimp_object_getattr (self, CHIMP_STR_NEW (NULL, name));
+}
+
 chimp_bool_t
 chimp_object_instance_of (ChimpRef *object, ChimpRef *klass)
 {

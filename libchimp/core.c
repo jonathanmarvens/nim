@@ -131,6 +131,9 @@ _chimp_object_getattr (ChimpRef *self, ChimpRef *name)
     if (!chimp_lwhash_get (methods, name, &method)) {
         return NULL;
     }
+    if (method == NULL) {
+        return NULL;
+    }
     /* XXX binding on every call is probably dumb/slow */
     return chimp_method_new_bound (method, self);
 }
@@ -141,6 +144,9 @@ chimp_class_getattr (ChimpRef *self, ChimpRef *name)
     ChimpLWHash *methods = CHIMP_CLASS(self)->methods;
     ChimpRef *method;
     if (!chimp_lwhash_get (methods, name, &method)) {
+        return NULL;
+    }
+    if (method == NULL) {
         return NULL;
     }
     return method;

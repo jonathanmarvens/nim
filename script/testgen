@@ -8,6 +8,9 @@ TEST_REGEX = re.compile(r'^START_TEST\s*\(([^)]+)\)\s*$')
 SETUP_REGEX = re.compile(r'^(test_[a-zA-Z_0-9]+_setup)\s*\(')
 TEARDOWN_REGEX = re.compile(r'^(test_[a-zA-Z0-9]+_teardown)\s*\(')
 
+print "#include <check.h>"
+print "#include <chimp.h>"
+print
 print "void *stack_base = 0;"
 print
 
