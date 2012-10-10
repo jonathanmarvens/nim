@@ -37,12 +37,12 @@ chimp_vm_push (ChimpVM *vm, ChimpRef *value)
     return chimp_array_push (vm->stack, value);
 }
 
-ChimpRef *
-chimp_vm_eval (ChimpVM *vm, ChimpRef *code)
+static ChimpRef *
+chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
-    if (vm == NULL) {
-        vm = CHIMP_CURRENT_VM;
-    }
+    ChimpRef *code = CHIMP_FRAME(frame)->code;
+    ChimpRef *locals = CHIMP_FRAME(frame)->locals;
+
     size_t pc = 0;
     while (pc < CHIMP_CODE_SIZE(code)) {
         switch (CHIMP_INSTR_OP(code, pc)) {
@@ -54,6 +54,26 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code)
                     return NULL;
                 }
                 if (!chimp_vm_push(vm, value)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_PUSHNAME:
+            {
+                ChimpRef *value;
+                ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
+                if (name == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "unknown or missing const at pc=%d", pc);
+                    return NULL;
+                }
+                /* TODO find value in the current namespace */
+                value = chimp_hash_get (locals, name);
+                if (value == NULL || value == chimp_nil) {
+                    chimp_bug (__FILE__, __LINE__, "no such local: %s", CHIMP_STR_DATA(name));
+                    return NULL;
+                }
+                if (!chimp_vm_push (vm, value)) {
                     return NULL;
                 }
                 pc++;
@@ -99,6 +119,7 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code)
                 }
                 result = chimp_object_call (target, args);
                 if (result == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "target is not callable");
                     return NULL;
                 }
                 if (!chimp_vm_push (vm, result)) {
@@ -140,5 +161,23 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code)
     }
 
     return chimp_vm_pop(vm);
+}
+
+ChimpRef *
+chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
+{
+    ChimpRef *frame;
+    if (vm == NULL) {
+        vm = CHIMP_CURRENT_VM;
+    }
+    if (code == NULL) {
+        chimp_bug (__FILE__, __LINE__, "NULL code object passed to chimp_vm_eval");
+        return NULL;
+    }
+    frame = chimp_frame_new (NULL, code, locals);
+    if (frame == NULL) {
+        return NULL;
+    }
+    return chimp_vm_eval_frame (vm, frame);
 }
 

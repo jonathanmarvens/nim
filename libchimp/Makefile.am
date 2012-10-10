@@ -21,7 +21,7 @@ libchimp_la_SOURCES = \
 	array.c \
 	task.c \
 	method.c \
-	stackframe.c \
+	frame.c \
 	hash.c \
 	int.c \
 	code.c \

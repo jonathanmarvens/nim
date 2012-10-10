@@ -186,7 +186,7 @@ chimp_array_find (ChimpRef *self, ChimpRef *value)
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpCmpResult r = chimp_object_cmp (CHIMP_ARRAY_ITEM(self, i), value);
         if (r == CHIMP_CMP_ERROR) {
-            return NULL;
+            return -1;
         }
         else if (r == CHIMP_CMP_EQ) {
             return (int32_t)i;

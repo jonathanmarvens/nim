@@ -20,14 +20,16 @@ chimp_task_delete (ChimpTask *task);
 void
 chimp_task_wait (ChimpTask *task);
 
+/*
 ChimpRef *
-chimp_task_push_stack_frame (ChimpTask *task);
+chimp_task_push_frame (ChimpTask *task);
 
 ChimpRef *
-chimp_task_pop_stack_frame (ChimpTask *task);
+chimp_task_pop_frame (ChimpTask *task);
 
 ChimpRef *
-chimp_task_top_stack_frame (ChimpTask *task);
+chimp_task_get_frame (ChimpTask *task);
+*/
 
 ChimpTask *
 chimp_task_current (void);
@@ -43,6 +45,7 @@ chimp_task_get_vm (ChimpTask *task);
     chimp_task_top_stack_frame (chimp_task_current())
 #define CHIMP_CURRENT_GC chimp_task_get_gc (chimp_task_current())
 #define CHIMP_CURRENT_VM chimp_task_get_vm (chimp_task_current())
+/* #define CHIMP_CURRENT_FRAME chimp_task_get_frame (chimp_task_current()) */
 
 #define CHIMP_PUSH_STACK_FRAME() \
     chimp_task_push_stack_frame (chimp_task_current ())

@@ -27,6 +27,7 @@ chimp_code_new (void)
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
     CHIMP_CODE(ref)->constants = chimp_array_new (NULL);
+    CHIMP_CODE(ref)->names = chimp_array_new (NULL);
     CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, 32);
     if (CHIMP_CODE(ref)->bytecode == NULL) {
         return NULL;
@@ -75,7 +76,20 @@ chimp_code_add_const (ChimpRef *self, ChimpRef *value)
     if (!chimp_array_push (CHIMP_CODE(self)->constants, value)) {
         return -1;
     }
-    return CHIMP_ARRAY_SIZE(CHIMP_CODE(self)->constants);
+    return CHIMP_ARRAY_SIZE(CHIMP_CODE(self)->constants) - 1;
+}
+
+static int32_t
+chimp_code_add_name (ChimpRef *self, ChimpRef *id)
+{
+    int32_t n = chimp_array_find (CHIMP_CODE(self)->names, id);
+    if (n >= 0) {
+        return n;
+    }
+    if (!chimp_array_push (CHIMP_CODE(self)->names, id)) {
+        return -1;
+    }
+    return CHIMP_ARRAY_SIZE(CHIMP_CODE(self)->names) - 1;
 }
 
 chimp_bool_t
@@ -90,6 +104,21 @@ chimp_code_pushconst (ChimpRef *self, ChimpRef *value)
         return CHIMP_FALSE;
     }
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(PUSHCONST, arg);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_pushname (ChimpRef *self, ChimpRef *id)
+{
+    int32_t arg;
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    arg = chimp_code_add_name (self, id);
+    if (arg < 0) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(PUSHNAME, arg);
     return CHIMP_TRUE;
 }
 

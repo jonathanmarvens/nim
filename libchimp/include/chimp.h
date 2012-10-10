@@ -11,7 +11,7 @@
 #include <chimp/class.h>
 #include <chimp/task.h>
 #include <chimp/method.h>
-#include <chimp/stackframe.h>
+#include <chimp/frame.h>
 
 #include <chimp/ast.h>
 #include <chimp/code.h>

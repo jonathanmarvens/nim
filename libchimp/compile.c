@@ -115,7 +115,7 @@ chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr)
 static ChimpRef *
 chimp_compile_ast_expr_ident (ChimpRef *code, ChimpRef *expr)
 {
-    if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->ident.id) < 0) {
+    if (chimp_code_pushname (code, CHIMP_AST_EXPR(expr)->ident.id) < 0) {
         return NULL;
     }
     return code;

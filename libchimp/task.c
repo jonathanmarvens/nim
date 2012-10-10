@@ -4,7 +4,7 @@
 #include "chimp/task.h"
 #include "chimp/object.h"
 #include "chimp/array.h"
-#include "chimp/stackframe.h"
+#include "chimp/frame.h"
 #include "chimp/vm.h"
 
 static __thread ChimpTask *current_task = NULL;
@@ -15,7 +15,6 @@ struct _ChimpTask {
     chimp_bool_t is_main;
     pthread_t thread;
     ChimpRef *impl;
-    ChimpRef *stack;
     chimp_bool_t done;
 };
 
@@ -105,8 +104,9 @@ chimp_task_wait (ChimpTask *task)
     task->done = CHIMP_TRUE;
 }
 
+/*
 ChimpRef *
-chimp_task_push_stack_frame (ChimpTask *task)
+chimp_task_push_frame (ChimpTask *task)
 {
     ChimpRef *frame;
     if (task->stack == NULL) {
@@ -118,7 +118,7 @@ chimp_task_push_stack_frame (ChimpTask *task)
             return NULL;
         }
     }
-    frame = chimp_stack_frame_new (task->gc);
+    frame = chimp_frame_new (task->gc);
     if (!chimp_array_push (task->stack, frame)) {
         return NULL;
     }
@@ -126,7 +126,7 @@ chimp_task_push_stack_frame (ChimpTask *task)
 }
 
 ChimpRef *
-chimp_task_pop_stack_frame (ChimpTask *task)
+chimp_task_pop_frame (ChimpTask *task)
 {
     if (task->stack != NULL) {
         return chimp_array_pop (task->stack);
@@ -137,7 +137,7 @@ chimp_task_pop_stack_frame (ChimpTask *task)
 }
 
 ChimpRef *
-chimp_task_top_stack_frame (ChimpTask *task)
+chimp_task_get_frame (ChimpTask *task)
 {
     if (task->stack != NULL) {
         return CHIMP_ARRAY_LAST (task->stack);
@@ -146,6 +146,7 @@ chimp_task_top_stack_frame (ChimpTask *task)
         return chimp_nil;
     }
 }
+*/
 
 ChimpTask *
 chimp_task_current (void)

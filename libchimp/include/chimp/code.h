@@ -10,14 +10,16 @@ extern "C" {
 
 typedef enum _ChimpOpcode {
     CHIMP_OPCODE_PUSHCONST = 1,
-    CHIMP_OPCODE_GETATTR   = 2,
-    CHIMP_OPCODE_CALL      = 3,
-    CHIMP_OPCODE_MAKEARRAY = 4,
+    CHIMP_OPCODE_PUSHNAME  = 2,
+    CHIMP_OPCODE_GETATTR   = 3,
+    CHIMP_OPCODE_CALL      = 4,
+    CHIMP_OPCODE_MAKEARRAY = 5,
 } ChimpOpcode;
 
 typedef struct _ChimpCode {
     ChimpAny base;
     ChimpRef *constants;
+    ChimpRef *names;
     uint32_t *bytecode;
     size_t    used;
     size_t    allocated;
@@ -31,6 +33,9 @@ chimp_code_new (void);
 
 chimp_bool_t
 chimp_code_pushconst (ChimpRef *self, ChimpRef *value);
+
+chimp_bool_t
+chimp_code_pushname (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
 chimp_code_getattr (ChimpRef *self);
@@ -50,6 +55,8 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 #define CHIMP_INSTR_ARG2(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x0000ff00) >> 8)
 #define CHIMP_INSTR_ARG3(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x000000ff))
 
+/* constants */
+
 #define CHIMP_INSTR_CONST1(ref, n) \
     CHIMP_ARRAY_ITEM(CHIMP_CODE_CONSTANTS(ref), CHIMP_INSTR_ARG1(ref, n))
 
@@ -59,8 +66,20 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 #define CHIMP_INSTR_CONST3(ref, n) \
     CHIMP_ARRAY_ITEM(CHIMP_CODE_CONSTANTS(ref), CHIMP_INSTR_ARG3(ref, n))
 
+/* names */
+
+#define CHIMP_INSTR_NAME1(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_NAMES(ref), CHIMP_INSTR_ARG1(ref, n))
+
+#define CHIMP_INSTR_NAME2(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_NAMES(ref), CHIMP_INSTR_ARG2(ref, n))
+
+#define CHIMP_INSTR_NAME3(ref, n) \
+    CHIMP_ARRAY_ITEM(CHIMP_CODE_NAMES(ref), CHIMP_INSTR_ARG3(ref, n))
+
 #define CHIMP_CODE_SIZE(ref) CHIMP_CODE(ref)->used
 #define CHIMP_CODE_CONSTANTS(ref) CHIMP_CODE(ref)->constants
+#define CHIMP_CODE_NAMES(ref) CHIMP_CODE(ref)->names
 
 CHIMP_EXTERN_CLASS(code);
 

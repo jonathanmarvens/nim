@@ -7,7 +7,7 @@
 #include <chimp/str.h>
 #include <chimp/int.h>
 #include <chimp/array.h>
-#include <chimp/stackframe.h>
+#include <chimp/frame.h>
 #include <chimp/code.h>
 #include <chimp/method.h>
 #include <chimp/hash.h>
@@ -31,7 +31,7 @@ typedef union _ChimpValue {
     ChimpHash       hash;
     ChimpCode       code;
     ChimpMethod     method;
-    ChimpStackFrame stack_frame;
+    ChimpFrame      frame;
     ChimpAstMod     ast_mod;
     ChimpAstStmt    ast_stmt;
     ChimpAstExpr    ast_expr;

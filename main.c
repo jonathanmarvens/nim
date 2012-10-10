@@ -27,6 +27,13 @@ some_native_method (ChimpRef *self, ChimpRef *args)
 static int
 real_main (int argc, char **argv);
 
+static ChimpRef *
+_foo (ChimpRef *self, ChimpRef *args)
+{
+    printf ("foo\n");
+    return chimp_nil;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -54,6 +61,7 @@ real_main (int argc, char **argv)
     int rc;
     ChimpRef *code;
     ChimpRef *result;
+    ChimpRef *locals;
     if (argc < 2) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         return 1;
@@ -69,7 +77,13 @@ real_main (int argc, char **argv)
     printf ("%p\n", main_mod);
     code = chimp_compile_ast (main_mod);
     printf ("%p\n", code);
-    result = chimp_vm_eval (NULL, code);
+    locals = chimp_hash_new (NULL);
+    chimp_hash_put (locals, CHIMP_STR_NEW(NULL, "foo"), chimp_method_new_native (NULL, _foo));
+    result = chimp_vm_eval (NULL, code, locals);
+    if (result == NULL) {
+        fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
+        return 1;
+    }
     printf ("%s\n", CHIMP_STR_DATA(chimp_object_str(NULL, result)));
     return rc;
 }

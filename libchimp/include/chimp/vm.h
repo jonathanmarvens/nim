@@ -17,7 +17,7 @@ void
 chimp_vm_delete (ChimpVM *vm);
 
 ChimpRef *
-chimp_vm_eval (ChimpVM *vm, ChimpRef *code);
+chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals);
 
 #ifdef __cplusplus
 };
