@@ -30,7 +30,12 @@ real_main (int argc, char **argv);
 static ChimpRef *
 _print (ChimpRef *self, ChimpRef *args)
 {
-    printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_FIRST(args)));
+    size_t i;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+        printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, i)));
+    }
+
     return chimp_nil;
 }
 
