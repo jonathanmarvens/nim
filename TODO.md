@@ -16,6 +16,5 @@
 * ChimpFloat?
 * Cache bound methods on first access, or at object construction time if
   that makes more sense.
-* Constructors.
 * Generational GC one day. Erlang-style GC algorithm switching another.
 
