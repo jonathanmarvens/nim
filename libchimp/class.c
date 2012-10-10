@@ -28,6 +28,9 @@ chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
     if (ref == NULL) {
         return NULL;
     }
+    if (super == NULL) {
+        super = chimp_object_class;
+    }
     CHIMP_CLASS_INIT(ref);
     CHIMP_CLASS(ref)->name = name;
     CHIMP_CLASS(ref)->super = super;

@@ -4,7 +4,12 @@ import sys
 import os
 import re
 
-REGEX = re.compile(r'^START_TEST\s*\(([^)]+)\)\s*$')
+TEST_REGEX = re.compile(r'^START_TEST\s*\(([^)]+)\)\s*$')
+SETUP_REGEX = re.compile(r'^(test_[a-zA-Z_0-9]+_setup)\s*\(')
+TEARDOWN_REGEX = re.compile(r'^(test_[a-zA-Z0-9]+_teardown)\s*\(')
+
+print "void *stack_base = 0;"
+print
 
 for input_file in sys.argv[1:]:
     print "#include \"%s\"" % os.path.basename(input_file)
@@ -17,6 +22,8 @@ print "    int num_failed;"
 print "    SRunner *sr;"
 print "    Suite   *s;"
 print "    TCase   *tc;"
+print "    stack_base = &num_failed;"
+print
 
 first = True
 for input_file in sys.argv[1:]:
@@ -24,12 +31,24 @@ for input_file in sys.argv[1:]:
     print "    s = suite_create (\"%s\");" % suite_name
     print "    tc = tcase_create (\"all\");"
 
+    setup = None
+    teardown = None
     with open(input_file, "r") as stream:
         for line in stream:
-            m = REGEX.match(line)
+            m = TEST_REGEX.match(line)
             if m:
                 print "    tcase_add_test (tc, %s);" % m.group(1)
+            else:
+                m = SETUP_REGEX.match(line)
+                if m:
+                    setup = m.group(1)
+                else:
+                    m = TEARDOWN_REGEX.match(line)
+                    if m:
+                        teardown = m.group(1)
 
+    if setup or teardown:
+        print "    tcase_add_checked_fixture (tc, %s, %s);" % (setup, teardown)
     print "    suite_add_tcase (s, tc);"
     print
     if first:
