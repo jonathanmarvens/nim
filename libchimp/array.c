@@ -136,8 +136,8 @@ chimp_array_new_var (ChimpGC *gc, ...)
     return ref;
 }
 
-chimp_bool_t
-chimp_array_push (ChimpRef *self, ChimpRef *value)
+static chimp_bool_t
+chimp_array_grow (ChimpRef *self)
 {
     ChimpRef **items;
     ChimpArray *arr = CHIMP_ARRAY(self);
@@ -146,7 +146,35 @@ chimp_array_push (ChimpRef *self, ChimpRef *value)
         return CHIMP_FALSE;
     }
     arr->items = items;
-    items[arr->size++] = value;
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_array_unshift (ChimpRef *self, ChimpRef *value)
+{
+    size_t i;
+    ChimpArray *arr = CHIMP_ARRAY(self);
+    if (!chimp_array_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    if (arr->size > 0) {
+        for (i = arr->size - 1; i > 0; i--) {
+            arr->items[i+1] = arr->items[i];
+        }
+    }
+    arr->items[0] = value;
+    arr->size++;
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_array_push (ChimpRef *self, ChimpRef *value)
+{
+    ChimpArray *arr = CHIMP_ARRAY(self);
+    if (!chimp_array_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    arr->items[arr->size++] = value;
     return CHIMP_TRUE;
 }
 

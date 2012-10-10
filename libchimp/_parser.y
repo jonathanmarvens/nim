@@ -19,14 +19,16 @@ extern ChimpRef *main_mod;
     ChimpRef *ref;
 }
 
-%token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON
+%token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA
 
-%token <ref> TOK_IDENT
+%token <ref> TOK_IDENT TOK_STR
 
 %type <ref> module
 %type <ref> stmt
 %type <ref> expr
-%type <ref> call ident
+%type <ref> call
+%type <ref> opt_args args opt_args_tail
+%type <ref> ident str
 
 %%
 
@@ -37,13 +39,28 @@ stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
      ;
 
 expr : call { $$ = $1; }
+     | str { $$ = $1; }
      ;
 
-call : ident TOK_LBRACKET TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, chimp_array_new (NULL)); }
+call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
      ;
+
+opt_args : args        { $$ = $1; }
+         | /* empty */ { $$ = chimp_array_new (NULL); }
+         ;
+
+args : expr opt_args_tail { $$ = $2; chimp_array_unshift ($$, $1); }
+     ;
+
+opt_args_tail : TOK_COMMA expr opt_args_tail { $$ = $3; chimp_array_unshift ($$, $2); }
+              | /* empty */ { $$ = chimp_array_new (NULL); }
+              ;
 
 ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
       ;
+
+str : TOK_STR { $$ = chimp_ast_expr_new_str ($1); }
+    ;
 
 %%
 

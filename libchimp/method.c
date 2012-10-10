@@ -14,8 +14,13 @@ ChimpRef *chimp_method_class = NULL;
 static ChimpRef *
 chimp_method_call (ChimpRef *self, ChimpRef *args)
 {
-    /* TODO bytecode methods */
-    return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
+    if (CHIMP_METHOD_TYPE(self) == CHIMP_METHOD_TYPE_NATIVE) {
+        return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
+    }
+    else {
+        /* XXX self? */
+        return chimp_vm_eval (NULL, CHIMP_BYTECODE_METHOD(self)->code, args);
+    }
 }
 
 chimp_bool_t
@@ -39,8 +44,21 @@ chimp_method_new_native (ChimpGC *gc, ChimpNativeMethodFunc func)
         return NULL;
     }
     CHIMP_METHOD_INIT(ref);
-    CHIMP_METHOD(ref)->type = CHIMP_METHOD_NATIVE;
+    CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_NATIVE;
     CHIMP_NATIVE_METHOD(ref)->func = func;
+    return ref;
+}
+
+ChimpRef *
+chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *code)
+{
+    ChimpRef *ref = chimp_gc_new_object (gc);
+    if (ref == NULL) {
+        return NULL;
+    }
+    CHIMP_METHOD_INIT(ref);
+    CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_BYTECODE;
+    CHIMP_BYTECODE_METHOD(ref)->code = code;
     return ref;
 }
 
@@ -55,13 +73,13 @@ chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
     CHIMP_METHOD_INIT(ref);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD(unbound)->type;
     CHIMP_METHOD(ref)->self = self;
-    if (CHIMP_METHOD(ref)->type == CHIMP_METHOD_NATIVE) {
+    if (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_NATIVE) {
         CHIMP_NATIVE_METHOD(ref)->func = CHIMP_NATIVE_METHOD(unbound)->func;
-        return ref;
     }
     else {
-        chimp_bug (__FILE__, __LINE__, "code to bind bytecode methods not written yet");
-        return NULL;
+        CHIMP_BYTECODE_METHOD(ref)->code =
+            CHIMP_BYTECODE_METHOD(unbound)->code;
     }
+    return ref;
 }
 

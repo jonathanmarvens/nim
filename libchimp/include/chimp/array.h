@@ -24,6 +24,9 @@ ChimpRef *
 chimp_array_new_var (ChimpGC *gc, ...);
 
 chimp_bool_t
+chimp_array_unshift (ChimpRef *self, ChimpRef *value);
+
+chimp_bool_t
 chimp_array_push (ChimpRef *self, ChimpRef *value);
 
 ChimpRef *

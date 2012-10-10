@@ -9,8 +9,8 @@ extern "C" {
 #endif
 
 typedef enum _ChimpMethodType {
-    CHIMP_METHOD_NATIVE,
-    CHIMP_METHOD_BYTECODE
+    CHIMP_METHOD_TYPE_NATIVE,
+    CHIMP_METHOD_TYPE_BYTECODE
 } ChimpMethodType;
 
 typedef ChimpRef *(*ChimpNativeMethodFunc)(ChimpRef *, ChimpRef *);
@@ -24,7 +24,7 @@ typedef struct _ChimpMethod {
             ChimpNativeMethodFunc func;
         } native;
         struct {
-            /* TODO */
+            ChimpRef *code;
         } bytecode;
     };
 } ChimpMethod;
@@ -36,11 +36,17 @@ ChimpRef *
 chimp_method_new_native (ChimpGC *gc, ChimpNativeMethodFunc func);
 
 ChimpRef *
+chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *code);
+
+ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self);
 
 #define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), CHIMP_VALUE_TYPE_METHOD)
+#define CHIMP_METHOD_SELF(ref) (CHIMP_METHOD(ref)->self)
+#define CHIMP_METHOD_TYPE(ref) (CHIMP_METHOD(ref)->type)
 
 #define CHIMP_NATIVE_METHOD(ref) (&(CHIMP_METHOD(ref)->native))
+#define CHIMP_BYTECODE_METHOD(ref) (&(CHIMP_METHOD(ref)->bytecode))
 
 CHIMP_EXTERN_CLASS(method);
 

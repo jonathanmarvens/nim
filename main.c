@@ -28,9 +28,9 @@ static int
 real_main (int argc, char **argv);
 
 static ChimpRef *
-_foo (ChimpRef *self, ChimpRef *args)
+_print (ChimpRef *self, ChimpRef *args)
 {
-    printf ("foo\n");
+    printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_FIRST(args)));
     return chimp_nil;
 }
 
@@ -78,7 +78,7 @@ real_main (int argc, char **argv)
     code = chimp_compile_ast (main_mod);
     printf ("%p\n", code);
     locals = chimp_hash_new (NULL);
-    chimp_hash_put (locals, CHIMP_STR_NEW(NULL, "foo"), chimp_method_new_native (NULL, _foo));
+    chimp_hash_put (locals, CHIMP_STR_NEW(NULL, "print"), chimp_method_new_native (NULL, _print));
     result = chimp_vm_eval (NULL, code, locals);
     if (result == NULL) {
         fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
