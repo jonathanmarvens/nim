@@ -15,6 +15,9 @@ static ChimpRef *
 chimp_compile_ast_expr_ident (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
+chimp_compile_ast_expr_array (ChimpRef *code, ChimpRef *expr);
+
+static ChimpRef *
 chimp_compile_ast_expr_str (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
@@ -77,6 +80,8 @@ chimp_compile_ast_expr (ChimpRef *code, ChimpRef *expr)
     switch (CHIMP_AST_EXPR_TYPE(expr)) {
         case CHIMP_AST_EXPR_CALL:
             return chimp_compile_ast_expr_call (code, expr);
+        case CHIMP_AST_EXPR_ARRAY:
+            return chimp_compile_ast_expr_array (code, expr);
         case CHIMP_AST_EXPR_IDENT:
             return chimp_compile_ast_expr_ident (code, expr);
         case CHIMP_AST_EXPR_STR:
@@ -121,6 +126,22 @@ static ChimpRef *
 chimp_compile_ast_expr_ident (ChimpRef *code, ChimpRef *expr)
 {
     if (chimp_code_pushname (code, CHIMP_AST_EXPR(expr)->ident.id) < 0) {
+        return NULL;
+    }
+    return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_expr_array (ChimpRef *code, ChimpRef *expr)
+{
+    size_t i;
+    ChimpRef *arr = CHIMP_AST_EXPR(expr)->array.value;
+    for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
+        if (!chimp_compile_ast_expr (code, CHIMP_ARRAY_ITEM(arr, i))) {
+            return NULL;
+        }
+    }
+    if (!chimp_code_makearray (code, CHIMP_ARRAY_SIZE(arr))) {
         return NULL;
     }
     return code;

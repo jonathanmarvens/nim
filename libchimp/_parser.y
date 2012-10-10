@@ -20,6 +20,7 @@ extern ChimpRef *main_mod;
 }
 
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA
+%token TOK_LSQBRACKET TOK_RSQBRACKET
 
 %token <ref> TOK_IDENT TOK_STR
 
@@ -28,7 +29,8 @@ extern ChimpRef *main_mod;
 %type <ref> expr
 %type <ref> call
 %type <ref> opt_args args opt_args_tail
-%type <ref> ident str
+%type <ref> opt_array_elements array_elements opt_array_elements_tail
+%type <ref> ident str array
 
 %%
 
@@ -40,6 +42,7 @@ stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
 
 expr : call { $$ = $1; }
      | str { $$ = $1; }
+     | array { $$ = $1; }
      ;
 
 call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
@@ -61,6 +64,20 @@ ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
 
 str : TOK_STR { $$ = chimp_ast_expr_new_str ($1); }
     ;
+
+array : TOK_LSQBRACKET opt_array_elements TOK_RSQBRACKET { $$ = chimp_ast_expr_new_array ($2); }
+      ;
+
+opt_array_elements : array_elements { $$ = $1; }
+                   | /* empty */ { $$ = chimp_array_new (NULL); }
+                   ;
+
+array_elements : expr opt_array_elements_tail { $$ = $2; chimp_array_unshift ($$, $1); }
+               ;
+
+opt_array_elements_tail : TOK_COMMA expr opt_array_elements_tail { $$ = $3; chimp_array_unshift ($$, $2); }
+                        | /* empty */ { $$ = chimp_array_new (NULL); }
+                        ;
 
 %%
 

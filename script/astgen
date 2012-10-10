@@ -25,6 +25,8 @@ AST_DESCRIPTOR = [
         ['call',
             ['target', 'expr'],
             ['args', 'array']],
+        ['array',
+            ['value', 'array']],
         ['str',
             ['value', 'str']],
         ['ident',
