@@ -16,6 +16,11 @@ chimp_vm_new (void)
         return NULL;
     }
     vm->stack = chimp_array_new (NULL);
+    if (vm->stack == NULL) {
+        CHIMP_FREE (vm);
+        return NULL;
+    }
+    chimp_gc_make_root (NULL, vm->stack);
     return vm;
 }
 
@@ -37,6 +42,119 @@ chimp_vm_push (ChimpVM *vm, ChimpRef *value)
     return chimp_array_push (vm->stack, value);
 }
 
+static chimp_bool_t
+chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *value = CHIMP_INSTR_CONST1(code, pc);
+    if (value == NULL) {
+        chimp_bug (__FILE__, __LINE__, "unknown or missing const at pc=%d", pc);
+        return CHIMP_FALSE;
+    }
+    if (!chimp_vm_push(vm, value)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *value;
+    ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
+    if (name == NULL) {
+        int n = CHIMP_INSTR_ARG1(code, pc);
+        chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", n, pc);
+        return CHIMP_FALSE;
+    }
+    /* TODO scan globals? */
+    value = chimp_hash_get (locals, name);
+    if (value == NULL || value == chimp_nil) {
+        chimp_bug (__FILE__, __LINE__, "no such local: %s", CHIMP_STR_DATA(name));
+        return CHIMP_FALSE;;
+    }
+    if (!chimp_vm_push (vm, value)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_getattr (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *attr;
+    ChimpRef *target;
+    ChimpRef *result;
+    
+    attr = chimp_vm_pop (vm);
+    if (attr == NULL) {
+        return CHIMP_FALSE;
+    }
+    target = chimp_vm_pop (vm);
+    if (target == NULL) {
+        return CHIMP_FALSE;
+    }
+    result = chimp_object_getattr (target, attr);
+    if (result == NULL) {
+        return CHIMP_FALSE;
+    }
+    if (!chimp_vm_push (vm, result)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *args;
+    ChimpRef *target;
+    ChimpRef *result;
+
+    args = chimp_vm_pop (vm);
+    if (args == NULL) {
+        return CHIMP_FALSE;
+    }
+    target = chimp_vm_pop (vm);
+    if (target == NULL) {
+        return CHIMP_FALSE;
+    }
+    result = chimp_object_call (target, args);
+    if (result == NULL) {
+        chimp_bug (__FILE__, __LINE__, "target is not callable");
+        return CHIMP_FALSE;
+    }
+    if (!chimp_vm_push (vm, result)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_makearray (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *array;
+    int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
+    int32_t i;
+
+    array = chimp_array_new (NULL);
+    if (array == NULL) {
+        return CHIMP_FALSE;
+    }
+    for (i = 0; i < nargs; i++) {
+        ChimpRef *value = chimp_vm_pop (vm);
+        if (value == NULL) {
+            return CHIMP_FALSE;
+        }
+        if (!chimp_array_unshift (array, value)) {
+            return CHIMP_FALSE;
+        }
+    }
+    if (!chimp_vm_push (vm, array)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
 static ChimpRef *
 chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
@@ -48,12 +166,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
         switch (CHIMP_INSTR_OP(code, pc)) {
             case CHIMP_OPCODE_PUSHCONST:
             {
-                ChimpRef *value = CHIMP_INSTR_CONST1(code, pc);
-                if (value == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "unknown or missing const at pc=%d", pc);
-                    return NULL;
-                }
-                if (!chimp_vm_push(vm, value)) {
+                if (!chimp_vm_pushconst (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;
@@ -61,19 +174,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_PUSHNAME:
             {
-                ChimpRef *value;
-                ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
-                if (name == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "unknown or missing const at pc=%d", pc);
-                    return NULL;
-                }
-                /* TODO find value in the current namespace */
-                value = chimp_hash_get (locals, name);
-                if (value == NULL || value == chimp_nil) {
-                    chimp_bug (__FILE__, __LINE__, "no such local: %s", CHIMP_STR_DATA(name));
-                    return NULL;
-                }
-                if (!chimp_vm_push (vm, value)) {
+                if (!chimp_vm_pushname (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;
@@ -81,23 +182,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_GETATTR:
             {
-                ChimpRef *attr;
-                ChimpRef *target;
-                ChimpRef *result;
-                
-                attr = chimp_vm_pop (vm);
-                if (attr == NULL) {
-                    return NULL;
-                }
-                target = chimp_vm_pop (vm);
-                if (target == NULL) {
-                    return NULL;
-                }
-                result = chimp_object_getattr (target, attr);
-                if (result == NULL) {
-                    return NULL;
-                }
-                if (!chimp_vm_push (vm, result)) {
+                if (!chimp_vm_getattr (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;
@@ -105,24 +190,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_CALL:
             {
-                ChimpRef *args;
-                ChimpRef *target;
-                ChimpRef *result;
-
-                args = chimp_vm_pop (vm);
-                if (args == NULL) {
-                    return NULL;
-                }
-                target = chimp_vm_pop (vm);
-                if (target == NULL) {
-                    return NULL;
-                }
-                result = chimp_object_call (target, args);
-                if (result == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "target is not callable");
-                    return NULL;
-                }
-                if (!chimp_vm_push (vm, result)) {
+                if (!chimp_vm_call (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;
@@ -130,25 +198,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_MAKEARRAY:
             {
-                ChimpRef *array;
-                int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
-                int32_t i;
-
-                array = chimp_array_new (NULL);
-                if (array == NULL) {
+                if (!chimp_vm_makearray (vm, code, locals, pc)) {
                     return NULL;
                 }
-                for (i = 0; i < nargs; i++) {
-                    ChimpRef *value = chimp_vm_pop (vm);
-                    if (value == NULL) {
-                        return NULL;
-                    }
-                    chimp_array_push (array, value);
-                }
-                if (!chimp_vm_push (vm, array)) {
-                    return NULL;
-                }
-
                 pc++;
                 break;
             }

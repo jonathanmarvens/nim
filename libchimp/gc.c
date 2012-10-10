@@ -532,6 +532,9 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_METHOD:
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->self);
+                if (CHIMP_METHOD_TYPE(ref) == CHIMP_METHOD_TYPE_BYTECODE) {
+                    chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->bytecode.code);
+                }
                 /* TODO mark code object ? */
                 break;
             }
@@ -553,6 +556,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_CODE:
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->constants);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->names);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:

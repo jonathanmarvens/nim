@@ -158,8 +158,8 @@ chimp_array_unshift (ChimpRef *self, ChimpRef *value)
         return CHIMP_FALSE;
     }
     if (arr->size > 0) {
-        for (i = arr->size - 1; i > 0; i--) {
-            arr->items[i+1] = arr->items[i];
+        for (i = arr->size; i > 0; i--) {
+            arr->items[i] = arr->items[i-1];
         }
     }
     arr->items[0] = value;

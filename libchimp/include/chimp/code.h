@@ -50,7 +50,8 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 
 #define CHIMP_CODE_INSTR(ref, n) CHIMP_CODE(ref)->bytecode[n]
 
-#define CHIMP_INSTR_OP(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0xff000000) >> 24)
+#define CHIMP_INSTR_OP(ref, n) ((ChimpOpcode)((CHIMP_CODE_INSTR(ref, n) & 0xff000000) >> 24))
+
 #define CHIMP_INSTR_ARG1(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x00ff0000) >> 16)
 #define CHIMP_INSTR_ARG2(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x0000ff00) >> 8)
 #define CHIMP_INSTR_ARG3(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x000000ff))
