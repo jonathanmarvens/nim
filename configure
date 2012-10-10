@@ -679,6 +679,10 @@ LEX_OUTPUT_ROOT
 LEX
 YFLAGS
 YACC
+HAVE_CHECK_FALSE
+HAVE_CHECK_TRUE
+check_LIBS
+check_CFLAGS
 valgrind_LIBS
 valgrind_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -777,6 +781,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 valgrind_CFLAGS
 valgrind_LIBS
+check_CFLAGS
+check_LIBS
 YACC
 YFLAGS
 CC
@@ -1431,6 +1437,9 @@ Some influential environment variables:
               C compiler flags for valgrind, overriding pkg-config
   valgrind_LIBS
               linker flags for valgrind, overriding pkg-config
+  check_CFLAGS
+              C compiler flags for check, overriding pkg-config
+  check_LIBS  linker flags for check, overriding pkg-config
   YACC        The `Yet Another Compiler Compiler' implementation to use.
               Defaults to the first program found out of: `bison -y', `byacc',
               `yacc'.
@@ -2759,6 +2768,9 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
+MIN_VALGRIND_VERSION=3.0.0
+MIN_CHECK_VERSION=0.9.0
+
 
 
 
@@ -2888,12 +2900,12 @@ if test -n "$valgrind_CFLAGS"; then
     pkg_cv_valgrind_CFLAGS="$valgrind_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"valgrind >= 3.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "valgrind >= 3.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"valgrind >= \$MIN_VALGRIND_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "valgrind >= $MIN_VALGRIND_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_valgrind_CFLAGS=`$PKG_CONFIG --cflags "valgrind >= 3.0.0" 2>/dev/null`
+  pkg_cv_valgrind_CFLAGS=`$PKG_CONFIG --cflags "valgrind >= $MIN_VALGRIND_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -2905,12 +2917,12 @@ if test -n "$valgrind_LIBS"; then
     pkg_cv_valgrind_LIBS="$valgrind_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"valgrind >= 3.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "valgrind >= 3.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"valgrind >= \$MIN_VALGRIND_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "valgrind >= $MIN_VALGRIND_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_valgrind_LIBS=`$PKG_CONFIG --libs "valgrind >= 3.0.0" 2>/dev/null`
+  pkg_cv_valgrind_LIBS=`$PKG_CONFIG --libs "valgrind >= $MIN_VALGRIND_VERSION" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -2931,9 +2943,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        valgrind_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "valgrind >= 3.0.0" 2>&1`
+	        valgrind_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "valgrind >= $MIN_VALGRIND_VERSION" 2>&1`
         else
-	        valgrind_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "valgrind >= 3.0.0" 2>&1`
+	        valgrind_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "valgrind >= $MIN_VALGRIND_VERSION" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$valgrind_PKG_ERRORS" >&5
@@ -2951,10 +2963,96 @@ $as_echo "yes" >&6; }
 	HAVE_VALGRIND="yes"
 fi
 
-if test "x$HAVE_VALGRIND" = "xyes"; then :
+if test x$HAVE_VALGRIND = xyes; then :
   $as_echo "#define HAVE_VALGRIND 1" >>confdefs.h
 
 fi
+
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for check" >&5
+$as_echo_n "checking for check... " >&6; }
+
+if test -n "$check_CFLAGS"; then
+    pkg_cv_check_CFLAGS="$check_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"check >= \$MIN_CHECK_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "check >= $MIN_CHECK_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_check_CFLAGS=`$PKG_CONFIG --cflags "check >= $MIN_CHECK_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$check_LIBS"; then
+    pkg_cv_check_LIBS="$check_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"check >= \$MIN_CHECK_VERSION\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "check >= $MIN_CHECK_VERSION") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_check_LIBS=`$PKG_CONFIG --libs "check >= $MIN_CHECK_VERSION" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        check_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "check >= $MIN_CHECK_VERSION" 2>&1`
+        else
+	        check_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "check >= $MIN_CHECK_VERSION" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$check_PKG_ERRORS" >&5
+
+	HAVE_CHECK="no"
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	HAVE_CHECK="no"
+else
+	check_CFLAGS=$pkg_cv_check_CFLAGS
+	check_LIBS=$pkg_cv_check_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	HAVE_CHECK="yes"
+fi
+if test x$HAVE_CHECK = xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: check not detected: no tests available" >&5
+$as_echo "$as_me: WARNING: check not detected: no tests available" >&2;}
+fi
+
+
+ if test x$HAVE_CHECK = xyes; then
+  HAVE_CHECK_TRUE=
+  HAVE_CHECK_FALSE='#'
+else
+  HAVE_CHECK_TRUE='#'
+  HAVE_CHECK_FALSE=
+fi
+
 
 for ac_prog in 'bison -y' byacc
 do
@@ -12474,6 +12572,10 @@ else
   am__EXEEXT_FALSE=
 fi
 
+if test -z "${HAVE_CHECK_TRUE}" && test -z "${HAVE_CHECK_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CHECK\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
   as_fn_error $? "conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
