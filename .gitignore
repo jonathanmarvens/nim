@@ -21,4 +21,5 @@ autom4te.cache
 /tags
 /test/_test_main.c
 /test/all-native
+.dirstamp
 
