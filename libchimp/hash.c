@@ -106,6 +106,7 @@ chimp_hash_class_bootstrap (ChimpGC *gc)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
+    CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
     chimp_gc_make_root (gc, chimp_hash_class);
     chimp_class_add_native_method (gc, chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (gc, chimp_hash_class, "get", _chimp_hash_get);

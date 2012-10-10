@@ -98,6 +98,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
+    CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
     chimp_gc_make_root (gc, chimp_array_class);
     chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);

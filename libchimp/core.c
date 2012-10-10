@@ -179,6 +179,10 @@ chimp_core_startup (void *stack_start)
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_str_class);
 
+    if (!_chimp_bootstrap_L3 ()) {
+        return CHIMP_FALSE;
+    }
+
     chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "nil"), chimp_object_class);
     if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);

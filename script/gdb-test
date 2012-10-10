@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -ex
+
+TOP_SRCDIR="$(dirname "$0")/.."
+TOP_SRCDIR="$(cd "$TOP_SRCDIR" && pwd)"
+
+CK_FORK=no LD_LIBRARY_PATH="$TOP_SRCDIR/libchimp/.libs" gdb "$TOP_SRCDIR/test/.libs/all-native"
+

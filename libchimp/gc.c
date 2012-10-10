@@ -495,6 +495,10 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 {
     if (ref == NULL) return;
 
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
     if (!chimp_heap_contains (gc->heap, ref->value)) {
         /* this ref belongs to another GC */
         return;
@@ -577,7 +581,7 @@ chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, v
     chimp_gc_mark_ref (gc, value);
 }
 
-static void
+static size_t
 chimp_gc_sweep (ChimpGC *gc)
 {
     ChimpHeap *dest = (gc->heap == &gc->heaps[0] ? &gc->heaps[1] : &gc->heaps[0]);
@@ -616,6 +620,7 @@ chimp_gc_sweep (ChimpGC *gc)
 
     gc->heap = dest;
     fprintf (stderr, "sweep complete! freed %lu, kept %lu\n", freed, kept);
+    return freed;
 }
 
 chimp_bool_t
@@ -653,8 +658,6 @@ chimp_gc_collect (ChimpGC *gc)
         }
     }
 
-    chimp_gc_sweep (gc);
-
-    return CHIMP_TRUE;
+    return chimp_gc_sweep (gc) > 0;
 }
 

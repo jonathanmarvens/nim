@@ -33,7 +33,8 @@ _print (ChimpRef *self, ChimpRef *args)
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-        printf ("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, i)));
+        ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM (args, i));
+        printf ("%s\n", CHIMP_STR_DATA(str));
     }
 
     return chimp_nil;
@@ -87,6 +88,8 @@ real_main (int argc, char **argv)
         }
         locals = chimp_hash_new (NULL);
         chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
+        chimp_hash_put_str (locals, "hash", chimp_hash_class);
+        chimp_hash_put_str (locals, "array", chimp_array_class);
         result = chimp_vm_eval (NULL, code, locals);
         if (result == NULL) {
             fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");

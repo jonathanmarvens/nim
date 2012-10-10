@@ -9,6 +9,18 @@
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CLASS; \
     CHIMP_ANY(ref)->klass = chimp_class_class;
 
+static ChimpRef *
+chimp_class_call (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *ref = chimp_gc_new_object (NULL);
+    if (ref == NULL) {
+        return NULL;
+    }
+    CHIMP_ANY(ref)->klass = self;
+    CHIMP_ANY(ref)->type = CHIMP_CLASS(self)->inst_type;
+    return ref;
+}
+
 ChimpRef *
 chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
 {
@@ -20,6 +32,8 @@ chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
     CHIMP_CLASS(ref)->name = name;
     CHIMP_CLASS(ref)->super = super;
     CHIMP_CLASS(ref)->methods = chimp_lwhash_new ();
+    CHIMP_CLASS(ref)->call = chimp_class_call;
+    CHIMP_CLASS(ref)->inst_type = CHIMP_VALUE_TYPE_OBJECT;
     return ref;
 }
 
@@ -42,5 +56,23 @@ chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, Ch
         return CHIMP_FALSE;
     }
     return chimp_class_add_method (gc, self, name_ref, method_ref);
+}
+
+chimp_bool_t
+_chimp_bootstrap_L3 (void)
+{
+    CHIMP_CLASS(chimp_class_class)->methods = chimp_lwhash_new ();
+    CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
+    CHIMP_CLASS(chimp_class_class)->inst_type = CHIMP_VALUE_TYPE_CLASS;
+
+    CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();
+    CHIMP_CLASS(chimp_object_class)->call = chimp_class_call;
+    CHIMP_CLASS(chimp_object_class)->inst_type = CHIMP_VALUE_TYPE_OBJECT;
+
+    CHIMP_CLASS(chimp_str_class)->methods = chimp_lwhash_new ();
+    CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
+    CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
+
+    return CHIMP_TRUE;
 }
 
