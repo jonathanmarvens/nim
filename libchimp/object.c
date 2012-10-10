@@ -87,3 +87,16 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name)
     return NULL;
 }
 
+chimp_bool_t
+chimp_object_instance_of (ChimpRef *object, ChimpRef *klass)
+{
+    ChimpRef *c = CHIMP_ANY_CLASS(object);
+    while (c != NULL) {
+        if (c == klass) {
+            return CHIMP_TRUE;
+        }
+        c = CHIMP_CLASS(c)->super;
+    }
+    return CHIMP_FALSE;
+}
+

@@ -52,6 +52,9 @@ chimp_object_call (ChimpRef *target, ChimpRef *args);
 ChimpRef *
 chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 
+chimp_bool_t
+chimp_object_instance_of (ChimpRef *object, ChimpRef *klass);
+
 #define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
 
 CHIMP_EXTERN_CLASS(object);

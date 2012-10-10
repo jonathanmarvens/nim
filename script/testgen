@@ -4,37 +4,43 @@ import sys
 import os
 import re
 
-input_file = sys.argv[1]
-suite_name = ".".join(os.path.basename(input_file).split(".")[:-1])
-
 REGEX = re.compile(r'^START_TEST\s*\(([^)]+)\)\s*$')
 
-with open(input_file, 'r') as stream:
+for input_file in sys.argv[1:]:
     print "#include \"%s\"" % os.path.basename(input_file)
-    print
-    print "int"
-    print "main (int argc, char **argv)"
-    print "{"
-    print "    int num_failed;"
-    print "    SRunner *sr;"
-    print "    Suite   *s;"
-    print "    TCase   *tc;"
+
+print
+print "int"
+print "main (int argc, char **argv)"
+print "{"
+print "    int num_failed;"
+print "    SRunner *sr;"
+print "    Suite   *s;"
+print "    TCase   *tc;"
+
+first = True
+for input_file in sys.argv[1:]:
+    suite_name = ".".join(os.path.basename(input_file).split(".")[:-1])
     print "    s = suite_create (\"%s\");" % suite_name
     print "    tc = tcase_create (\"all\");"
-    print
 
-    for line in stream:
-        m = REGEX.match(line)
-        if m:
-            print "    tcase_add_test (tc, %s);" % m.group(1)
+    with open(input_file, "r") as stream:
+        for line in stream:
+            m = REGEX.match(line)
+            if m:
+                print "    tcase_add_test (tc, %s);" % m.group(1)
 
     print "    suite_add_tcase (s, tc);"
     print
+    if first:
+        print "    sr = srunner_create (s);"
+        first = False
+    else:
+        print "    srunner_add_suite (sr, s);"
 
-    print "    sr = srunner_create (s);"
-    print "    srunner_run_all (sr, CK_NORMAL);"
-    print "    num_failed = srunner_ntests_failed (sr);"
-    print "    srunner_free (sr);"
-    print "    return num_failed;"
-    print "}"
+print "    srunner_run_all (sr, CK_NORMAL);"
+print "    num_failed = srunner_ntests_failed (sr);"
+print "    srunner_free (sr);"
+print "    return num_failed;"
+print "}"
 
