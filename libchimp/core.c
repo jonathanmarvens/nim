@@ -31,7 +31,6 @@
 
 #define CHIMP_BOOTSTRAP_CLASS_L2(gc, c) \
     do { \
-        CHIMP_CLASS(c)->methods = chimp_lwhash_new (); \
     } while (0)
 
 ChimpRef *chimp_object_class = NULL;
