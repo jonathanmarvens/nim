@@ -72,7 +72,16 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     bs = CHIMP_STR(b);
 
     if (as->size != bs->size) {
-        return strcmp (as->data, bs->data);
+        int r = strcmp (as->data, bs->data);
+        if (r < 0) {
+            return CHIMP_CMP_LT;
+        }
+        else if (r > 0) {
+            return CHIMP_CMP_GT;
+        }
+        else {
+            return CHIMP_CMP_EQ;
+        }
     }
 
     return memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
