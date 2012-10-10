@@ -28,11 +28,11 @@ chimp_code_new (void)
     CHIMP_ANY(ref)->klass = chimp_code_class;
     CHIMP_CODE(ref)->constants = chimp_array_new (NULL);
     CHIMP_CODE(ref)->names = chimp_array_new (NULL);
-    CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, 32);
+    CHIMP_CODE(ref)->allocated = 256;
+    CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, CHIMP_CODE(ref)->allocated);
     if (CHIMP_CODE(ref)->bytecode == NULL) {
         return NULL;
     }
-    CHIMP_CODE(ref)->allocated = 256;
     return ref;
 }
 
