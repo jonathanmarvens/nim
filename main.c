@@ -74,17 +74,25 @@ real_main (int argc, char **argv)
     rc = yyparse();
     fclose (yyin);
     yylex_destroy ();
-    printf ("%p\n", main_mod);
-    code = chimp_compile_ast (main_mod);
-    printf ("%p\n", code);
-    locals = chimp_hash_new (NULL);
-    chimp_hash_put (locals, CHIMP_STR_NEW(NULL, "print"), chimp_method_new_native (NULL, _print));
-    result = chimp_vm_eval (NULL, code, locals);
-    if (result == NULL) {
-        fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
+    if (rc == 0) {
+        code = chimp_compile_ast (main_mod);
+        if (code == NULL) {
+            fprintf (stderr, "error: could not compile AST\n");
+            return 1;
+        }
+        locals = chimp_hash_new (NULL);
+        chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
+        result = chimp_vm_eval (NULL, code, locals);
+        if (result == NULL) {
+            fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
+            return 1;
+        }
+        /* printf ("%s\n", CHIMP_STR_DATA(chimp_object_str(NULL, result))); */
+    }
+    else {
+        fprintf (stderr, "error: parse failed\n");
         return 1;
     }
-    printf ("%s\n", CHIMP_STR_DATA(chimp_object_str(NULL, result)));
     return rc;
 }
 
