@@ -28,6 +28,7 @@ extern ChimpRef *main_mod;
 %type <ref> module
 %type <ref> stmt
 %type <ref> assign
+%type <ref> opt_stmts
 %type <ref> expr
 %type <ref> call
 %type <ref> opt_args args opt_args_tail
@@ -36,8 +37,12 @@ extern ChimpRef *main_mod;
 
 %%
 
-module : stmt { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), chimp_array_new_var (NULL, $1, NULL)); }
+module : opt_stmts { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1); }
        ;
+
+opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
+          | /* empty */ { $$ = chimp_array_new (NULL); }
+          ;
 
 stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
      | assign TOK_SEMICOLON { $$ = $1; }
@@ -49,6 +54,7 @@ assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
 expr : call { $$ = $1; }
      | str { $$ = $1; }
      | array { $$ = $1; }
+     | ident { $$ = $1; }
      ;
 
 call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
