@@ -10,6 +10,7 @@
 #include "chimp/task.h"
 #include "chimp/frame.h"
 #include "chimp/ast.h"
+#include "chimp/code.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -213,6 +214,7 @@ chimp_core_startup (void *stack_start)
     if (!chimp_hash_class_bootstrap (NULL)) goto error;
     if (!chimp_method_class_bootstrap (NULL)) goto error;
     if (!chimp_frame_class_bootstrap (NULL)) goto error;
+    if (!chimp_code_class_bootstrap ()) goto error;
     /*
     if (!chimp_task_push_frame (main_task)) goto error;
     */
