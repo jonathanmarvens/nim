@@ -1,2 +1,3 @@
-print(hash(), "hello", ["foo"], str("hi again"));
+x = "hello";
+print(hash(), x, ["foo"], str("hi again"));
 
