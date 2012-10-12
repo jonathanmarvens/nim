@@ -169,6 +169,40 @@ chimp_vm_makearray (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     return CHIMP_TRUE;
 }
 
+static chimp_bool_t
+chimp_vm_makehash (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *hash;
+    int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
+    int32_t i;
+
+    hash = chimp_hash_new (NULL);
+    if (hash == NULL) {
+        return CHIMP_FALSE;
+    }
+    for (i = 0; i < nargs; i++) {
+        ChimpRef *value;
+        ChimpRef *key;
+        
+        value = chimp_vm_pop (vm);
+        if (value == NULL) {
+            return CHIMP_FALSE;
+        }
+        key = chimp_vm_pop (vm);
+        if (key == NULL || key == chimp_nil) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_hash_put (hash, key, value)) {
+            return CHIMP_FALSE;
+        }
+    }
+    if (!chimp_vm_push (vm, hash)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
 static ChimpRef *
 chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
@@ -221,6 +255,14 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_MAKEHASH:
+            {
+                if (!chimp_vm_makehash (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;

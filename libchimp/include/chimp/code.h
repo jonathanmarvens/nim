@@ -16,6 +16,7 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_GETATTR,
     CHIMP_OPCODE_CALL,
     CHIMP_OPCODE_MAKEARRAY,
+    CHIMP_OPCODE_MAKEHASH
 } ChimpOpcode;
 
 typedef struct _ChimpCode {
@@ -50,6 +51,9 @@ chimp_code_call (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs);
+
+chimp_bool_t
+chimp_code_makehash (ChimpRef *self, uint8_t nargs);
 
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 

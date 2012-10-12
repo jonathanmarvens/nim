@@ -176,3 +176,13 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs)
     return CHIMP_TRUE;
 }
 
+chimp_bool_t
+chimp_code_makehash (ChimpRef *self, uint8_t nargs)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(MAKEHASH, (int32_t)nargs);
+    return CHIMP_TRUE;
+}
+

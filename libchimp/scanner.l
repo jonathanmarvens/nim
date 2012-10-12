@@ -23,6 +23,9 @@
 "["                         { CHIMP_TOKEN(TOK_LSQBRACKET) }
 "]"                         { CHIMP_TOKEN(TOK_RSQBRACKET) }
 "="                         { CHIMP_TOKEN(TOK_ASSIGN) }
+":"                         { CHIMP_TOKEN(TOK_COLON) }
+"{"                         { CHIMP_TOKEN(TOK_LBRACE) }
+"}"                         { CHIMP_TOKEN(TOK_RBRACE) }
 ["][^"]*["]                 { CHIMP_REF_TOKEN(TOK_STR, chimp_str_new (NULL, yytext + 1, yyleng - 2)) }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (NULL, yytext, yyleng)) }
 

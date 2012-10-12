@@ -27,6 +27,8 @@ AST_DESCRIPTOR = [
             ['args', 'array']],
         ['array',
             ['value', 'array']],
+        ['hash',
+            ['value', 'hash']],
         ['str',
             ['value', 'str']],
         ['ident',
