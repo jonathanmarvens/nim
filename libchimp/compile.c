@@ -49,6 +49,20 @@ chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
 }
 
 static ChimpRef *
+chimp_compile_ast_stmt_assign (ChimpRef *code, ChimpRef *stmt)
+{
+    if (!chimp_compile_ast_expr (code, CHIMP_AST_STMT(stmt)->assign.value)) {
+        return NULL;
+    }
+
+    if (!chimp_code_storename (code, CHIMP_AST_EXPR(CHIMP_AST_STMT(stmt)->assign.target)->ident.id)) {
+        return NULL;
+    }
+
+    return code;
+}
+
+static ChimpRef *
 chimp_compile_ast_stmt (ChimpRef *code, ChimpRef *stmt)
 {
     if (code == NULL) {
@@ -61,6 +75,8 @@ chimp_compile_ast_stmt (ChimpRef *code, ChimpRef *stmt)
     switch (CHIMP_AST_STMT_TYPE(stmt)) {
         case CHIMP_AST_STMT_EXPR:
             return chimp_compile_ast_expr (code, CHIMP_AST_STMT(stmt)->expr.expr);
+        case CHIMP_AST_STMT_ASSIGN:
+            return chimp_compile_ast_stmt_assign (code, stmt);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return NULL;
@@ -160,6 +176,9 @@ ChimpRef *
 chimp_compile_ast (ChimpRef *ast)
 {
     ChimpRef *code = chimp_code_new ();
+    if (code == NULL) {
+        return NULL;
+    }
 
     switch (CHIMP_ANY_TYPE(ast)) {
         case CHIMP_VALUE_TYPE_AST_MOD:

@@ -33,7 +33,10 @@ AST_DESCRIPTOR = [
             ['id', 'str']]],
     ['stmt',
         ['expr',
-            ['expr', 'expr']]]
+            ['expr', 'expr']],
+        ['assign',
+            ['target', 'expr'],
+            ['value', 'expr']]]
 ]
 
 class UnknownTypeError(Exception):

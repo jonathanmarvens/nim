@@ -57,6 +57,23 @@ chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 }
 
 static chimp_bool_t
+chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
+{
+    ChimpRef *value;
+    ChimpRef *target = CHIMP_INSTR_CONST1(code, pc);
+    if (target == NULL) {
+        chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", pc);
+        return CHIMP_FALSE;
+    }
+    value = chimp_vm_pop (vm);
+    if (value == NULL) {
+        chimp_bug (__FILE__, __LINE__, "empty stack during assignment to %s", CHIMP_STR_DATA(target));
+        return CHIMP_FALSE;
+    }
+    return chimp_hash_put (locals, target, value);
+}
+
+static chimp_bool_t
 chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *value;
@@ -72,10 +89,7 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         chimp_bug (__FILE__, __LINE__, "no such local: %s", CHIMP_STR_DATA(name));
         return CHIMP_FALSE;;
     }
-    if (!chimp_vm_push (vm, value)) {
-        return CHIMP_FALSE;
-    }
-    return CHIMP_TRUE;
+    return chimp_vm_push (vm, value);
 }
 
 static chimp_bool_t
@@ -167,6 +181,14 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHCONST:
             {
                 if (!chimp_vm_pushconst (vm, code, locals, pc)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_STORENAME:
+            {
+                if (!chimp_vm_storename (vm, code, locals, pc)) {
                     return NULL;
                 }
                 pc++;

@@ -183,7 +183,12 @@ ChimpRef *
 chimp_array_pop (ChimpRef *self)
 {
     ChimpArray *arr = CHIMP_ARRAY(self);
-    return arr->items[--arr->size];
+    if (arr->size > 0) {
+        return arr->items[--arr->size];
+    }
+    else {
+        return chimp_nil;
+    }
 }
 
 ChimpRef *
