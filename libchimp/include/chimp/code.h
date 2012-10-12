@@ -9,11 +9,13 @@ extern "C" {
 #endif
 
 typedef enum _ChimpOpcode {
-    CHIMP_OPCODE_PUSHCONST = 1,
-    CHIMP_OPCODE_PUSHNAME  = 2,
-    CHIMP_OPCODE_GETATTR   = 3,
-    CHIMP_OPCODE_CALL      = 4,
-    CHIMP_OPCODE_MAKEARRAY = 5,
+    CHIMP_OPCODE_NOOP,
+    CHIMP_OPCODE_PUSHCONST,
+    CHIMP_OPCODE_STORENAME,
+    CHIMP_OPCODE_PUSHNAME,
+    CHIMP_OPCODE_GETATTR,
+    CHIMP_OPCODE_CALL,
+    CHIMP_OPCODE_MAKEARRAY,
 } ChimpOpcode;
 
 typedef struct _ChimpCode {
@@ -36,6 +38,9 @@ chimp_code_pushconst (ChimpRef *self, ChimpRef *value);
 
 chimp_bool_t
 chimp_code_pushname (ChimpRef *self, ChimpRef *id);
+
+chimp_bool_t
+chimp_code_storename (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
 chimp_code_getattr (ChimpRef *self);
