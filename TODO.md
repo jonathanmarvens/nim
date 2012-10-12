@@ -1,4 +1,9 @@
-* Real unit tests for the runtime.
+* More tests.
+* Conditionals/branching.
+* Function definitions.
+* Class definitions.
+* ChimpModule?
+* Module definitions.
 * Revisit my half-baked crappy memory management ideas: tasks, threads & GC.
   (i.e. do we care right now? probably not ...)
 * Do away with explicit GC pointers. Implicit per-thread GC is always available.
@@ -11,11 +16,11 @@
   but not vice versa (i.e. values in new GCs may reference values in old GCs).
   XXX pretty sure this is dumb ^^
 * Are we rooting all the core classes correctly?
-* ChimpModule?
 * Arbitrary precision for ChimpInt.
 * ChimpFloat?
+* Hash & array literals containing only constants can be optimized at compile time.
+* Unicode! (lol)
 * Cache bound methods on first access, or at object construction time if
   that makes more sense. Er. Do we even need 'em at all?
   Implicit "self" on call?
-* Hash & array literals containing only constants can be optimized at compile time.
 * Generational GC one day. Erlang-style GC algorithm switching another.
