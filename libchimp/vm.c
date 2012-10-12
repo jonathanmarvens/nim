@@ -60,7 +60,7 @@ static chimp_bool_t
 chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *value;
-    ChimpRef *target = CHIMP_INSTR_CONST1(code, pc);
+    ChimpRef *target = CHIMP_INSTR_NAME1(code, pc);
     if (target == NULL) {
         chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", pc);
         return CHIMP_FALSE;
