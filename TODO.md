@@ -9,12 +9,13 @@
 * If a task creates a child task, I think (but haven't proven) that it's
   safe for the child to hold a reference to objects in the parent's GC,
   but not vice versa (i.e. values in new GCs may reference values in old GCs).
-* There's a whole slew of stuff just begging for more shorthand.
+  XXX pretty sure this is dumb ^^
 * Are we rooting all the core classes correctly?
 * ChimpModule?
 * Arbitrary precision for ChimpInt.
 * ChimpFloat?
 * Cache bound methods on first access, or at object construction time if
-  that makes more sense.
+  that makes more sense. Er. Do we even need 'em at all?
+  Implicit "self" on call?
+* Hash & array literals containing only constants can be optimized at compile time.
 * Generational GC one day. Erlang-style GC algorithm switching another.
-
