@@ -1,3 +1,4 @@
 x = "hello";
-print(hash(), x, ["foo"], str("hi again"));
+y = ["foo"];
+print(hash(), x, y, str("hi again"));
 
