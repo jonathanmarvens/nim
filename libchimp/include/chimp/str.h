@@ -23,6 +23,14 @@ chimp_str_new_take (ChimpGC *gc, char *data, size_t size);
 ChimpRef *
 chimp_str_new_concat (ChimpGC *gc, ...);
 
+/* XXX these mutate string state ... revisit me */
+
+chimp_bool_t
+chimp_str_append (ChimpRef *str, ChimpRef *append_me);
+
+chimp_bool_t
+chimp_str_append_str (ChimpRef *str, const char *s);
+
 #define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
 
 #define CHIMP_STR_DATA(ref) (CHIMP_STR(ref)->data)

@@ -58,3 +58,25 @@ chimp_str_new_concat (ChimpGC *gc, ...)
     return chimp_str_new_take (gc, ptr, size);
 }
 
+chimp_bool_t
+chimp_str_append (ChimpRef *self, ChimpRef *append_me)
+{
+    ChimpRef *append_str = chimp_object_str (NULL, append_me);
+    /* TODO error checking */
+    char *data = CHIMP_REALLOC (char, CHIMP_STR(self)->data, CHIMP_STR_SIZE(self) + CHIMP_STR_SIZE(append_str) + 1);
+    if (data == NULL) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_STR(self)->data = data;
+    memcpy (CHIMP_STR_DATA(self) + CHIMP_STR_SIZE(self), CHIMP_STR_DATA(append_str), CHIMP_STR_SIZE(append_str));
+    CHIMP_STR(self)->size += CHIMP_STR_SIZE(append_str);
+    CHIMP_STR(self)->data[CHIMP_STR(self)->size] = '\0';
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_str_append_str (ChimpRef *self, const char *s)
+{
+    return chimp_str_append (self, chimp_str_new (NULL, s, strlen(s)));
+}
+
