@@ -32,6 +32,9 @@ typedef struct _ChimpClass {
 ChimpRef *
 chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super);
 
+ChimpRef *
+chimp_class_new_instance (ChimpRef *klass, ...);
+
 chimp_bool_t
 chimp_class_add_method (ChimpGC *gc, ChimpRef *klass, ChimpRef *name, ChimpRef *method);
 

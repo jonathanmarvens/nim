@@ -12,6 +12,7 @@
 #include <chimp/method.h>
 #include <chimp/hash.h>
 #include <chimp/ast.h>
+#include <chimp/module.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +26,7 @@ typedef union _ChimpValue {
     ChimpAny        any;
     ChimpClass      klass;
     ChimpObject     object;
+    ChimpModule     module;
     ChimpStr        str;
     ChimpInt        integer;
     ChimpArray      array;

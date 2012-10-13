@@ -20,6 +20,7 @@ struct _ChimpRef {
 
 #define CHIMP_FAST_ANY(ref) (&((ref)->value->any))
 #define CHIMP_FAST_CLASS(ref) (&((ref)->value->klass))
+#define CHIMP_FAST_MODULE(ref) (&((ref)->value->module))
 #define CHIMP_FAST_STR(ref) (&((ref)->value->str))
 #define CHIMP_FAST_ARRAY(ref) (&((ref)->value->array))
 #define CHIMP_FAST_HASH(ref) (&((ref)->value->hash))
@@ -79,6 +80,14 @@ type_name (ChimpValueType type)
             {
                 return "str";
             }
+        case CHIMP_VALUE_TYPE_CODE:
+            {
+                return "code";
+            }
+        case CHIMP_VALUE_TYPE_MODULE:
+            {
+                return "module";
+            }
         case CHIMP_VALUE_TYPE_INT:
             {
                 return "int";
@@ -98,10 +107,6 @@ type_name (ChimpValueType type)
         case CHIMP_VALUE_TYPE_FRAME:
             {
                 return "stackframe";
-            }
-        case CHIMP_VALUE_TYPE_CODE:
-            {
-                return "code";
             }
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
@@ -345,6 +350,7 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_CODE(ref)->bytecode);
                 break;
             }
+        case CHIMP_VALUE_TYPE_MODULE:
         case CHIMP_VALUE_TYPE_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
@@ -514,6 +520,12 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->super);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->name);
                 chimp_lwhash_foreach (CHIMP_FAST_CLASS(ref)->methods, chimp_gc_mark_lwhash_items, gc);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_MODULE:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_MODULE(ref)->name);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_MODULE(ref)->locals);
                 break;
             }
         case CHIMP_VALUE_TYPE_ARRAY:

@@ -33,6 +33,7 @@ chimp_method_class_bootstrap (ChimpGC *gc)
     }
     chimp_gc_make_root (gc, chimp_method_class);
     CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
+    CHIMP_CLASS(chimp_method_class)->inst_type = CHIMP_VALUE_TYPE_METHOD;
     return CHIMP_TRUE;
 }
 

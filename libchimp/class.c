@@ -117,6 +117,28 @@ chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
     return ref;
 }
 
+ChimpRef *
+chimp_class_new_instance (ChimpRef *klass, ...)
+{
+    va_list args;
+    ChimpRef *arg;
+    ChimpRef *arr = chimp_array_new (NULL);
+    if (arr == NULL) {
+        return NULL;
+    }
+
+    va_start (args, klass);
+    while ((arg = va_arg(args, ChimpRef *)) != NULL) {
+        if (!chimp_array_push (arr, arg)) {
+            va_end (args);
+            return NULL;
+        }
+    }
+    va_end (args);
+
+    return chimp_class_call (klass, arr);
+}
+
 chimp_bool_t
 chimp_class_add_method (ChimpGC *gc, ChimpRef *self, ChimpRef *name, ChimpRef *method)
 {

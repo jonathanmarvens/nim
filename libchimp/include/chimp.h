@@ -4,6 +4,7 @@
 #include <chimp/core.h>
 #include <chimp/gc.h>
 #include <chimp/object.h>
+#include <chimp/module.h>
 #include <chimp/str.h>
 #include <chimp/int.h>
 #include <chimp/array.h>

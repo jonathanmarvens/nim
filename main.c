@@ -111,6 +111,7 @@ real_main (int argc, char **argv)
         chimp_hash_put_str (locals, "hash", chimp_hash_class);
         chimp_hash_put_str (locals, "array", chimp_array_class);
         chimp_hash_put_str (locals, "str", chimp_str_class);
+        chimp_hash_put_str (locals, "module", chimp_module_class);
         result = chimp_vm_eval (NULL, code, locals);
         if (result == NULL) {
             fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");

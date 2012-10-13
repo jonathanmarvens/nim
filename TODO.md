@@ -1,7 +1,6 @@
 * More tests.
 * Function definitions.
 * Class definitions.
-* ChimpModule?
 * Make it possible to call member methods.
 * Expose methods on more classes.
 * Rubyish keyword args:

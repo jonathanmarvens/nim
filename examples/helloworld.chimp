@@ -28,3 +28,6 @@ else {
 
 print (true and "test");
 
+m = module("main", {});
+print (str(m));
+
