@@ -4,6 +4,10 @@
 * ChimpModule?
 * Make it possible to call member methods.
 * Expose methods on more classes.
+* Rubyish keyword args:
+  foo(a, b, bar: 10, baz: 20)
+* Rubyish symbols?
+* Annotations?
 * Revisit the bytecode format.
   - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
   - MAKEARRAY for every call is probably slow/dumb.
