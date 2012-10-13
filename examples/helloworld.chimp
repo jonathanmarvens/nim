@@ -12,3 +12,6 @@ else {
     print ("omgbye");
 }
 
+print ("Enter your name:");
+print (str("Hey there, ", input()));
+

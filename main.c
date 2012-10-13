@@ -1,4 +1,5 @@
 #include <chimp.h>
+#include <stdio.h>
 #include <inttypes.h>
 
 #if 0
@@ -38,6 +39,23 @@ _print (ChimpRef *self, ChimpRef *args)
     }
 
     return chimp_nil;
+}
+
+static ChimpRef *
+_input (ChimpRef *self, ChimpRef *args)
+{
+    char buf[1024];
+    size_t len;
+
+    if (fgets (buf, sizeof(buf), stdin) == NULL) {
+        return chimp_nil;
+    }
+
+    len = strlen(buf);
+    if (len > 0 && buf[len-1] == '\n') {
+        buf[--len] = '\0';
+    }
+    return chimp_str_new (NULL, buf, len);
 }
 
 int
@@ -88,6 +106,7 @@ real_main (int argc, char **argv)
         }
         locals = chimp_hash_new (NULL);
         chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
+        chimp_hash_put_str (locals, "input", chimp_method_new_native (NULL, _input));
         chimp_hash_put_str (locals, "hash", chimp_hash_class);
         chimp_hash_put_str (locals, "array", chimp_array_class);
         chimp_hash_put_str (locals, "str", chimp_str_class);
