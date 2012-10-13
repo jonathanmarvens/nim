@@ -6,6 +6,7 @@
 #include "chimp/str.h"
 #include "chimp/array.h"
 #include "chimp/hash.h"
+#include "chimp/object.h"
 
 extern int yylex(void);
 
@@ -20,6 +21,7 @@ extern ChimpRef *main_mod;
     ChimpRef *ref;
 }
 
+%token TOK_TRUE TOK_FALSE
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
@@ -35,7 +37,7 @@ extern ChimpRef *main_mod;
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
-%type <ref> ident str array hash
+%type <ref> ident str array hash bool
 
 %%
 
@@ -58,6 +60,7 @@ expr : call { $$ = $1; }
      | array { $$ = $1; }
      | hash { $$ = $1; }
      | ident { $$ = $1; }
+     | bool { $$ = $1; }
      ;
 
 call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
@@ -79,6 +82,10 @@ ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
 
 str : TOK_STR { $$ = chimp_ast_expr_new_str ($1); }
     ;
+
+bool : TOK_TRUE { $$ = chimp_ast_expr_new_bool (chimp_true); }
+     | TOK_FALSE { $$ = chimp_ast_expr_new_bool (chimp_false); }
+     ;
 
 hash : TOK_LBRACE opt_hash_elements TOK_RBRACE { $$ = chimp_ast_expr_new_hash ($2); }
      ;
