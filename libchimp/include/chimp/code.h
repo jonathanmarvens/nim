@@ -93,6 +93,9 @@ chimp_code_neq (ChimpRef *self);
 chimp_bool_t
 chimp_code_pop (ChimpRef *self);
 
+ChimpRef *
+chimp_code_dump (ChimpRef *self);
+
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 
 #define CHIMP_CODE_INSTR(ref, n) CHIMP_CODE(ref)->bytecode[n]

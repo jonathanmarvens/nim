@@ -2,6 +2,7 @@
 #include "chimp/str.h"
 #include "chimp/class.h"
 #include "chimp/array.h"
+#include "chimp/int.h"
 
 ChimpRef *chimp_code_class = NULL;
 
@@ -300,5 +301,99 @@ chimp_code_pop (ChimpRef *self)
 
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(POP);
     return CHIMP_TRUE;
+}
+
+static const char *
+chimp_code_opcode_str (ChimpOpcode op)
+{
+    switch (op) {
+        case CHIMP_OPCODE_JUMPIFFALSE:
+            return "JUMP_IF_FALSE";
+        case CHIMP_OPCODE_JUMPIFTRUE:
+             return "JUMP_IF_TRUE";
+        case CHIMP_OPCODE_JUMP:
+             return "JUMP";
+        case CHIMP_OPCODE_PUSHCONST:
+             return "PUSHCONST";
+        case CHIMP_OPCODE_STORENAME:
+             return "STORENAME";
+        case CHIMP_OPCODE_PUSHNAME:
+             return "PUSHNAME";
+        case CHIMP_OPCODE_GETATTR:
+             return "GETATTR";
+        case CHIMP_OPCODE_CALL:
+             return "CALL";
+        case CHIMP_OPCODE_MAKEARRAY:
+             return "MAKEARRAY";
+        case CHIMP_OPCODE_MAKEHASH:
+             return "MAKEHASH";
+        case CHIMP_OPCODE_CMPEQ:
+             return "CMP_EQ";
+        case CHIMP_OPCODE_CMPNEQ:
+             return "CMP_NEQ";
+        case CHIMP_OPCODE_POP:
+             return "CMP_POP";
+        default:
+             return "???OPCODE???";
+    };
+}
+
+ChimpRef *
+chimp_code_dump (ChimpRef *self)
+{
+    /* XXX super duper inefficient & sloppy. */
+    /*     mostly for diagnostic purposes atm. */
+    size_t i;
+    ChimpRef *str = CHIMP_STR_NEW (NULL, "");
+    for (i = 0; i < CHIMP_CODE(self)->used; i++) {
+        int32_t instr = CHIMP_CODE_INSTR(self, i);
+        ChimpOpcode op = ((ChimpOpcode)((instr & 0xff000000) >> 24));
+        const char *op_str = chimp_code_opcode_str (op);
+        if (!chimp_str_append (str, chimp_int_new (NULL, i))) {
+            return NULL;
+        }
+        if (!chimp_str_append_str (str, " ")) {
+            return NULL;
+        }
+        if (!chimp_str_append_str (str, op_str)) {
+            return NULL;
+        }
+        if (op == CHIMP_OPCODE_PUSHNAME || op == CHIMP_OPCODE_STORENAME) {
+            if (!chimp_str_append_str (str, " ")) {
+                return NULL;
+            }
+            if (!chimp_str_append (str, CHIMP_INSTR_NAME1(self, i))) {
+                return NULL;
+            }
+        }
+        else if (op == CHIMP_OPCODE_PUSHCONST) {
+            if (!chimp_str_append_str (str, " ")) {
+                return NULL;
+            }
+            if (!chimp_str_append (str, CHIMP_INSTR_CONST1(self, i))) {
+                return NULL;
+            }
+        }
+        else if (op == CHIMP_OPCODE_MAKEARRAY || op == CHIMP_OPCODE_MAKEHASH) {
+            if (!chimp_str_append_str (str, " ")) {
+                return NULL;
+            }
+            if (!chimp_str_append (str, chimp_int_new (NULL, CHIMP_INSTR_ARG1(self, i)))) {
+                return NULL;
+            }
+        }
+        else if (op == CHIMP_OPCODE_JUMP || op == CHIMP_OPCODE_JUMPIFTRUE || op == CHIMP_OPCODE_JUMPIFFALSE) {
+            if (!chimp_str_append_str (str, " ")) {
+                return NULL;
+            }
+            if (!chimp_str_append (str, chimp_int_new (NULL, (instr & 0xffffff)))) {
+                return NULL;
+            }
+        }
+        if (!chimp_str_append_str (str, "\n")) {
+            return NULL;
+        }
+    }
+    return str;
 }
 
