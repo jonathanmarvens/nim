@@ -40,7 +40,7 @@ chimp_code_new (void)
     }
     CHIMP_CODE(ref)->names = temp;
     CHIMP_CODE(ref)->allocated = 256;
-    CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, CHIMP_CODE(ref)->allocated);
+    CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, sizeof(uint32_t) * CHIMP_CODE(ref)->allocated);
     if (CHIMP_CODE(ref)->bytecode == NULL) {
         return NULL;
     }
@@ -200,6 +200,10 @@ chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label)
         return CHIMP_FALSE;
     }
 
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
     *label = CHIMP_CODE(self)->used;
 
     /* the caller is expected to backpatch this later with a call to
@@ -218,6 +222,10 @@ chimp_code_jumpiffalse (ChimpRef *self, ChimpLabel *label)
         return CHIMP_FALSE;
     }
 
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
     *label = CHIMP_CODE(self)->used;
     
     /* the caller is expected to backpatch this later with a call to
@@ -233,6 +241,10 @@ chimp_code_jump (ChimpRef *self, ChimpLabel *label)
 {
     if (label == NULL) {
         chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_grow (self)) {
         return CHIMP_FALSE;
     }
 
@@ -260,6 +272,10 @@ chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label)
 chimp_bool_t
 chimp_code_eq (ChimpRef *self)
 {
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPEQ);
     return CHIMP_TRUE;
 }
@@ -267,6 +283,10 @@ chimp_code_eq (ChimpRef *self)
 chimp_bool_t
 chimp_code_neq (ChimpRef *self)
 {
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPNEQ);
     return CHIMP_TRUE;
 }
@@ -274,6 +294,10 @@ chimp_code_neq (ChimpRef *self)
 chimp_bool_t
 chimp_code_pop (ChimpRef *self)
 {
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(POP);
     return CHIMP_TRUE;
 }
