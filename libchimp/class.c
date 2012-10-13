@@ -44,9 +44,56 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         CHIMP_STR(self)->data = strdup (empty);
         CHIMP_STR(self)->size = 0;
     }
-    else {
+    else if (CHIMP_ARRAY_SIZE(args) == 1) {
         CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(chimp_object_str (NULL, CHIMP_ARRAY_FIRST(args))));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
+    }
+    else {
+        size_t i;
+        size_t len;
+        char *p;
+        ChimpRef *str_values = chimp_array_new (NULL);
+        if (str_values == NULL) {
+            return NULL;
+        }
+
+        /* 1. convert all constructor args to strings */
+        for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+            ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM(args, i));
+            if (str == NULL) {
+                return NULL;
+            }
+            if (!chimp_array_push (str_values, str)) {
+                return NULL;
+            }
+        }
+
+        /* 2. compute total length of the arg strings */
+        len = 0;
+        for (i = 0; i < CHIMP_ARRAY_SIZE(str_values); i++) {
+            ChimpRef *str = CHIMP_ARRAY_ITEM(str_values, i);
+            if (str == NULL) {
+                return NULL;
+            }
+            len += CHIMP_STR_SIZE(str);
+        }
+
+        /* 3. allocate buffer & copy arg strings into it */
+        CHIMP_STR(self)->data = CHIMP_MALLOC (char, len + 1);
+        if (CHIMP_STR(self)->data == NULL) {
+            return NULL;
+        }
+        CHIMP_STR(self)->size = len;
+        p = CHIMP_STR(self)->data;
+        for (i = 0; i < CHIMP_ARRAY_SIZE(str_values); i++) {
+            ChimpRef *str = CHIMP_ARRAY_ITEM(str_values, i);
+            if (str == NULL) {
+                return NULL;
+            }
+            memcpy (p, CHIMP_STR_DATA(str), CHIMP_STR_SIZE(str));
+            p += CHIMP_STR_SIZE(str);
+        }
+        *p = '\0';
     }
     return chimp_nil;
 }
