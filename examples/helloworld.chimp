@@ -1,5 +1,6 @@
 x = "hello";
 y = ["foo"];
 z = x;
-print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"});
+
+print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
 

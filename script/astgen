@@ -12,7 +12,7 @@ CORE_TYPES = {
     'int':   {'ctype': 'ChimpRef*'},
     'array': {'ctype': 'ChimpRef*'},
     'hash':  {'ctype': 'ChimpRef*'},
-    'bool':  {'ctype': 'chimp_bool_t'}
+    'bool':  {'ctype': 'ChimpRef*'}
 }
 
 AST_DESCRIPTOR = [
@@ -32,7 +32,9 @@ AST_DESCRIPTOR = [
         ['str',
             ['value', 'str']],
         ['ident',
-            ['id', 'str']]],
+            ['id', 'str']],
+        ['bool', 
+            ['value', 'bool']]],
     ['stmt',
         ['expr',
             ['expr', 'expr']],

@@ -24,6 +24,9 @@ static ChimpRef *
 chimp_compile_ast_expr_str (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
+chimp_compile_ast_expr_bool (ChimpRef *code, ChimpRef *expr);
+
+static ChimpRef *
 chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
@@ -107,6 +110,8 @@ chimp_compile_ast_expr (ChimpRef *code, ChimpRef *expr)
             return chimp_compile_ast_expr_ident (code, expr);
         case CHIMP_AST_EXPR_STR:
             return chimp_compile_ast_expr_str (code, expr);
+        case CHIMP_AST_EXPR_BOOL:
+            return chimp_compile_ast_expr_bool (code, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return NULL;
@@ -189,6 +194,15 @@ static ChimpRef *
 chimp_compile_ast_expr_str (ChimpRef *code, ChimpRef *expr)
 {
     if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->str.value) < 0) {
+        return NULL;
+    }
+    return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_expr_bool (ChimpRef *code, ChimpRef *expr)
+{
+    if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->bool.value) < 0) {
         return NULL;
     }
     return code;
