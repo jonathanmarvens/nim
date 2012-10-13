@@ -120,6 +120,10 @@ type_name (ChimpValueType type)
             {
                 return "ast.expr";
             }
+        case CHIMP_VALUE_TYPE_AST_DECL:
+            {
+                return "ast.decl";
+            }
         default:
             {
                 return "<unknown>";
@@ -357,6 +361,7 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_INT:
         case CHIMP_VALUE_TYPE_AST_MOD:
         case CHIMP_VALUE_TYPE_AST_STMT:
+        case CHIMP_VALUE_TYPE_AST_DECL:
         case CHIMP_VALUE_TYPE_AST_EXPR:
             break;
         default:
@@ -557,6 +562,11 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_AST_MOD:
             {
                 chimp_ast_mod_mark (ref);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_AST_DECL:
+            {
+                chimp_ast_decl_mark (ref);
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_STMT:

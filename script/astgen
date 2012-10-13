@@ -50,7 +50,12 @@ AST_DESCRIPTOR = [
             ['orelse', 'array']],
         ['assign',
             ['target', 'expr'],
-            ['value', 'expr']]]
+            ['value', 'expr']]],
+    ['decl',
+        ['func',
+            ['name', 'expr'],
+            ['args', 'array'],
+            ['body', 'array']]]
 ]
 
 class UnknownTypeError(Exception):

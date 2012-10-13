@@ -6,6 +6,9 @@
 #include "chimp/int.h"
 
 static ChimpRef *
+chimp_compile_ast_decl (ChimpRef *code, ChimpRef *decl);
+
+static ChimpRef *
 chimp_compile_ast_stmt (ChimpRef *code, ChimpRef *stmt);
 
 static ChimpRef *
@@ -47,6 +50,20 @@ chimp_compile_ast_stmts (ChimpRef *code, ChimpRef *stmts)
 }
 
 static ChimpRef *
+chimp_compile_ast_decls (ChimpRef *code, ChimpRef *decls)
+{
+    size_t i;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(decls); i++) {
+        if (chimp_compile_ast_decl (code, CHIMP_ARRAY_ITEM(decls, i)) == NULL) {
+            /* TODO error message? */
+            return NULL;
+        }
+    }
+    return code;
+}
+
+static ChimpRef *
 chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
 {
     ChimpRef *body = CHIMP_AST_MOD(mod)->root.body;
@@ -59,7 +76,7 @@ chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
     }
 
     /* TODO check CHIMP_AST_MOD_* type */
-    if (!chimp_compile_ast_stmts (code, body)) {
+    if (!chimp_compile_ast_decls (code, body)) {
         return NULL;
     }
 
@@ -124,6 +141,32 @@ chimp_compile_ast_stmt_if_ (ChimpRef *code, ChimpRef *stmt)
 
 
     return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_decl_func (ChimpRef *code, ChimpRef *decl)
+{
+    /* TODO */
+    return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_decl (ChimpRef *code, ChimpRef *decl)
+{
+    if (code == NULL) {
+        code = chimp_code_new ();
+        if (code == NULL) {
+            return NULL;
+        }
+    }
+
+    switch (CHIMP_AST_DECL_TYPE(decl)) {
+        case CHIMP_AST_DECL_FUNC:
+            return chimp_compile_ast_decl_func (code, decl);
+        default:
+            chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_DECL_TYPE(decl));
+            return NULL;
+    }
 }
 
 static ChimpRef *
@@ -374,6 +417,8 @@ chimp_compile_ast (ChimpRef *ast)
     switch (CHIMP_ANY_TYPE(ast)) {
         case CHIMP_VALUE_TYPE_AST_MOD:
             return chimp_compile_ast_mod (code, ast);
+        case CHIMP_VALUE_TYPE_AST_DECL:
+            return chimp_compile_ast_decl (code, ast);
         case CHIMP_VALUE_TYPE_AST_STMT:
             return chimp_compile_ast_stmt (code, ast);
         case CHIMP_VALUE_TYPE_AST_EXPR:

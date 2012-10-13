@@ -35,6 +35,7 @@ typedef union _ChimpValue {
     ChimpMethod     method;
     ChimpFrame      frame;
     ChimpAstMod     ast_mod;
+    ChimpAstDecl    ast_decl;
     ChimpAstStmt    ast_stmt;
     ChimpAstExpr    ast_expr;
 } ChimpValue;

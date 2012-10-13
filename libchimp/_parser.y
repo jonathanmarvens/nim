@@ -38,6 +38,9 @@ extern ChimpRef *main_mod;
 %type <ref> opt_stmts block opt_else
 %type <ref> expr simple
 %type <ref> call
+%type <ref> opt_decls
+%type <ref> func_decl
+%type <ref> opt_params opt_params2 opt_params2_tail param
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
@@ -45,8 +48,32 @@ extern ChimpRef *main_mod;
 
 %%
 
-module : opt_stmts { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1); }
+module : opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1); }
        ;
+
+opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
+          | /* empty */ { $$ = chimp_array_new (NULL); }
+          ;
+
+func_decl : ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
+            $$ = chimp_ast_decl_new_func ($1, $2, $4);
+          }
+          ;
+
+opt_params : TOK_LBRACKET opt_params2 TOK_RBRACKET { $$ = $2; }
+           | /* empty */ { $$ = chimp_array_new (NULL); }
+           ;
+
+opt_params2 : param opt_params2_tail { $$ = $2; chimp_array_unshift ($$, $1); }
+            | /* empty */ { $$ = chimp_array_new (NULL); }
+            ;
+
+opt_params2_tail : TOK_COMMA param opt_params2_tail { $$ = $3; chimp_array_unshift ($$, $2); }
+                 | /* empty */ { $$ = chimp_array_new (NULL); }
+                 ;
+
+param : ident { $$ = $1; }
+      ;
 
 opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (NULL); }
