@@ -27,13 +27,15 @@ extern ChimpRef *main_mod;
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE
 
+%left TOK_NEQ TOK_EQ
+
 %token <ref> TOK_IDENT TOK_STR
 
 %type <ref> module
 %type <ref> stmt simple_stmt compound_stmt
 %type <ref> assign
 %type <ref> opt_stmts block opt_else
-%type <ref> expr
+%type <ref> expr simple
 %type <ref> call
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
@@ -71,13 +73,18 @@ block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
        ;
 
-expr : call { $$ = $1; }
-     | str { $$ = $1; }
-     | array { $$ = $1; }
-     | hash { $$ = $1; }
-     | ident { $$ = $1; }
-     | bool { $$ = $1; }
+expr : expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3); }
+     | expr TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3); }
+     | simple { $$ = $1; }
      ;
+
+simple : call { $$ = $1; }
+       | str { $$ = $1; }
+       | array { $$ = $1; }
+       | hash { $$ = $1; }
+       | ident { $$ = $1; }
+       | bool { $$ = $1; }
+       ;
 
 call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
      ;

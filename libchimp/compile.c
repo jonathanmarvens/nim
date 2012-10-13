@@ -30,6 +30,9 @@ static ChimpRef *
 chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
+chimp_compile_ast_expr_binop (ChimpRef *code, ChimpRef *binop);
+
+static ChimpRef *
 chimp_compile_ast_stmts (ChimpRef *code, ChimpRef *stmts)
 {
     size_t i;
@@ -169,6 +172,8 @@ chimp_compile_ast_expr (ChimpRef *code, ChimpRef *expr)
             return chimp_compile_ast_expr_str (code, expr);
         case CHIMP_AST_EXPR_BOOL:
             return chimp_compile_ast_expr_bool (code, expr);
+        case CHIMP_AST_EXPR_BINOP:
+            return chimp_compile_ast_expr_binop (code, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return NULL;
@@ -262,6 +267,40 @@ chimp_compile_ast_expr_bool (ChimpRef *code, ChimpRef *expr)
     if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->bool.value) < 0) {
         return NULL;
     }
+    return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_expr_binop (ChimpRef *code, ChimpRef *expr)
+{
+    if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.left)) {
+        return NULL;
+    }
+
+    if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
+        return NULL;
+    }
+
+    switch (CHIMP_AST_EXPR(expr)->binop.op) {
+        case CHIMP_BINOP_EQ:
+            {
+                if (!chimp_code_eq (code)) {
+                    return NULL;
+                }
+                break;
+            }
+        case CHIMP_BINOP_NEQ:
+            {
+                if (!chimp_code_neq (code)) {
+                    return NULL;
+                }
+                break;
+            }
+        default:
+            chimp_bug (__FILE__, __LINE__, "unknown binop type: %d", CHIMP_AST_EXPR(expr)->binop.op);
+            return NULL;
+    }
+
     return code;
 }
 

@@ -12,7 +12,9 @@ CORE_TYPES = {
     'int':   {'ctype': 'ChimpRef*'},
     'array': {'ctype': 'ChimpRef*'},
     'hash':  {'ctype': 'ChimpRef*'},
-    'bool':  {'ctype': 'ChimpRef*'}
+    'bool':  {'ctype': 'ChimpRef*'},
+
+    'binop-type': {'ctype': 'ChimpBinopType'}
 }
 
 AST_DESCRIPTOR = [
@@ -22,6 +24,10 @@ AST_DESCRIPTOR = [
             ['body', 'array']]],
 
     ['expr',
+        ['binop',
+            ['op', 'binop-type'],
+            ['left', 'expr'],
+            ['right', 'expr']],
         ['call',
             ['target', 'expr'],
             ['args', 'array']],
@@ -105,7 +111,8 @@ def attr_params(a):
         "attr": name,
         "ATTR": name.upper(),
         "Attr": camelize(name),
-        "attr_ctype": ctype(a[1])
+        "attr_ctype": ctype(a[1]),
+        "is_gc_type": ctype(a[1]) == "ChimpRef*"
     }
 
 def kind_ctor_args_params(k):
@@ -133,6 +140,7 @@ def header():
         _()
         _("#include <chimp/gc.h>")
         _("#include <chimp/any.h>")
+        _("#include <chimp/code.h>")
         _()
         _("#ifdef __cplusplus")
         _("extern \"C\" {")
@@ -225,7 +233,8 @@ def source():
                 _("        case %(APP_NAME)s_AST_%(NODE_TYPE)s_%(KIND)s:", merge(np, kp))
                 for a in node_kind_attrs(k):
                     ap = attr_params(a)
-                    _("            chimp_gc_mark_ref (NULL, %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->%(kind)s.%(attr)s);", merge(np, kp, ap))
+                    if ap['is_gc_type']:
+                        _("            chimp_gc_mark_ref (NULL, %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->%(kind)s.%(attr)s);", merge(np, kp, ap))
                 _("            break;") 
             _("        default:")
             _("            chimp_bug (__FILE__, __LINE__, \"unknown AST type?\");")

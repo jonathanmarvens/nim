@@ -252,3 +252,17 @@ chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label)
     return CHIMP_TRUE;
 }
 
+chimp_bool_t
+chimp_code_eq (ChimpRef *self)
+{
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPEQ);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_neq (ChimpRef *self)
+{
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPNEQ);
+    return CHIMP_TRUE;
+}
+

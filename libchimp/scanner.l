@@ -14,9 +14,9 @@
 %option noyywrap
 
 %%
+
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
-
 [ \t\r\n]                   { /* do nothing */ }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
@@ -25,6 +25,8 @@
 "["                         { CHIMP_TOKEN(TOK_LSQBRACKET) }
 "]"                         { CHIMP_TOKEN(TOK_RSQBRACKET) }
 "="                         { CHIMP_TOKEN(TOK_ASSIGN) }
+"=="                        { CHIMP_TOKEN(TOK_EQ) }
+"!="                        { CHIMP_TOKEN(TOK_NEQ) }
 ":"                         { CHIMP_TOKEN(TOK_COLON) }
 "{"                         { CHIMP_TOKEN(TOK_LBRACE) }
 "}"                         { CHIMP_TOKEN(TOK_RBRACE) }

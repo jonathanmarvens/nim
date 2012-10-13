@@ -13,5 +13,11 @@ else {
 }
 
 print ("Enter your name:");
-print (str("Hey there, ", input()));
+name = input();
+if name == "dude" {
+    print ("Dude!");
+}
+else {
+    print (str("Hey there, ", name));
+}
 

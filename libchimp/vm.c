@@ -203,6 +203,35 @@ chimp_vm_makehash (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     return CHIMP_TRUE;
 }
 
+static chimp_bool_t
+chimp_vm_pushtrue (ChimpVM *vm)
+{
+    return chimp_vm_push (vm, chimp_true);
+}
+
+static chimp_bool_t
+chimp_vm_pushfalse (ChimpVM *vm)
+{
+    return chimp_vm_push (vm, chimp_false);
+}
+
+static ChimpCmpResult
+chimp_vm_cmp (ChimpVM *vm)
+{
+    ChimpRef *right = chimp_vm_pop (vm);
+    ChimpRef *left = chimp_vm_pop (vm);
+    ChimpCmpResult actual;
+    if (left == NULL || right == NULL) {
+        chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+        return CHIMP_FALSE;
+    }
+    actual = chimp_object_cmp (left, right);
+    if (actual == CHIMP_CMP_ERROR) {
+        chimp_bug (__FILE__, __LINE__, "TODO raise an exception");
+    }
+    return actual;
+}
+
 static ChimpRef *
 chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
@@ -303,6 +332,44 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_JUMP:
             {
                 pc = CHIMP_INSTR_ADDR(code, pc);
+                break;
+            }
+            case CHIMP_OPCODE_CMPEQ:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPNEQ:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
                 break;
             }
             default:
