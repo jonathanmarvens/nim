@@ -45,7 +45,8 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         CHIMP_STR(self)->size = 0;
     }
     else if (CHIMP_ARRAY_SIZE(args) == 1) {
-        CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(chimp_object_str (NULL, CHIMP_ARRAY_FIRST(args))));
+        ChimpRef *temp = chimp_object_str (NULL, CHIMP_ARRAY_FIRST(args));
+        CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(temp));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
     }
     else {
