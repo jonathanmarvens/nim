@@ -277,13 +277,13 @@ chimp_compile_ast_expr_binop (ChimpRef *code, ChimpRef *expr)
         return NULL;
     }
 
-    if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
-        return NULL;
-    }
-
     switch (CHIMP_AST_EXPR(expr)->binop.op) {
         case CHIMP_BINOP_EQ:
             {
+                if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return NULL;
+                }
+
                 if (!chimp_code_eq (code)) {
                     return NULL;
                 }
@@ -291,9 +291,65 @@ chimp_compile_ast_expr_binop (ChimpRef *code, ChimpRef *expr)
             }
         case CHIMP_BINOP_NEQ:
             {
+                if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return NULL;
+                }
+
                 if (!chimp_code_neq (code)) {
                     return NULL;
                 }
+                break;
+            }
+        case CHIMP_BINOP_OR:
+            {
+                /* short-circuited logical OR */
+                ChimpLabel right_label;
+                ChimpLabel end_label;
+
+                if (!chimp_code_jumpiffalse (code, &right_label)) {
+                    return NULL;
+                }
+                if (!chimp_code_jump (code, &end_label)) {
+                    return NULL;
+                }
+                if (!chimp_code_patch_jump_location (code, right_label)) {
+                    return NULL;
+                }
+                if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return NULL;
+                }
+                if (!chimp_code_patch_jump_location (code, end_label)) {
+                    return NULL;
+                }
+
+                break;
+            }
+        case CHIMP_BINOP_AND:
+            {
+                /* short-circuited logical AND */
+
+                ChimpLabel right_label;
+                ChimpLabel end_label;
+
+                if (!chimp_code_jumpiftrue (code, &right_label)) {
+                    return NULL;
+                }
+                if (!chimp_code_jump (code, &end_label)) {
+                    return NULL;
+                }
+                if (!chimp_code_patch_jump_location (code, right_label)) {
+                    return NULL;
+                }
+                if (!chimp_code_pop (code)) {
+                    return NULL;
+                }
+                if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return NULL;
+                }
+                if (!chimp_code_patch_jump_location (code, end_label)) {
+                    return NULL;
+                }
+
                 break;
             }
         default:

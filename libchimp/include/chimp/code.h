@@ -21,12 +21,16 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_MAKEHASH,
 
     CHIMP_OPCODE_CMPEQ,
-    CHIMP_OPCODE_CMPNEQ
+    CHIMP_OPCODE_CMPNEQ,
+
+    CHIMP_OPCODE_POP,
 } ChimpOpcode;
 
 typedef enum _ChimpBinopType {
     CHIMP_BINOP_EQ,
-    CHIMP_BINOP_NEQ
+    CHIMP_BINOP_NEQ,
+    CHIMP_BINOP_OR,
+    CHIMP_BINOP_AND
 } ChimpBinopType;
 
 typedef struct _ChimpCode {
@@ -85,6 +89,9 @@ chimp_code_eq (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_neq (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_pop (ChimpRef *self);
 
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 

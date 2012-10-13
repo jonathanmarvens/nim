@@ -372,6 +372,14 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_POP:
+            {
+                if (!chimp_vm_pop (vm)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
             default:
             {
                 chimp_bug (__FILE__, __LINE__, "unknown opcode: %d", CHIMP_INSTR_OP(code, pc));

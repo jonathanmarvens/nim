@@ -27,7 +27,7 @@ extern ChimpRef *main_mod;
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE
 
-%left TOK_NEQ TOK_EQ
+%left TOK_OR TOK_AND TOK_NEQ TOK_EQ
 
 %token <ref> TOK_IDENT TOK_STR
 
@@ -73,7 +73,9 @@ block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
        ;
 
-expr : expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3); }
+expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3); }
+     | expr TOK_AND expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3); }
+     | expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3); }
      | expr TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3); }
      | simple { $$ = $1; }
      ;

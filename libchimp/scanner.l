@@ -17,6 +17,8 @@
 
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
+"or"                        { CHIMP_TOKEN(TOK_OR) }
+"and"                       { CHIMP_TOKEN(TOK_AND) }
 [ \t\r\n]                   { /* do nothing */ }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
