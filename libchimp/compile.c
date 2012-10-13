@@ -340,9 +340,12 @@ chimp_compile_ast_expr_binop (ChimpRef *code, ChimpRef *expr)
                 if (!chimp_code_patch_jump_location (code, right_label)) {
                     return NULL;
                 }
+                /* JUMPIFTRUE will pop the value on our behalf */
+                /*
                 if (!chimp_code_pop (code)) {
                     return NULL;
                 }
+                */
                 if (!chimp_compile_ast_expr (code, CHIMP_AST_EXPR(expr)->binop.right)) {
                     return NULL;
                 }

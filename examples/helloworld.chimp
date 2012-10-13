@@ -26,3 +26,5 @@ else {
     print (str("Hey there, ", name));
 }
 
+print (true and "test");
+
