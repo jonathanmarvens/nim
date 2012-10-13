@@ -156,8 +156,8 @@ chimp_slab_new (ChimpSlabType type, size_t size)
             CHIMP_FREE (slab);
             return NULL;
     }
-    *pp = (ChimpValue *)(((char *) slab) + sizeof (*slab));
-    slab->head = slab->values;
+    *pp = (((char *) slab) + sizeof (*slab));
+    slab->head = *pp;
     return slab;
 }
 
