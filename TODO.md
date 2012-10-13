@@ -3,6 +3,9 @@
 * Function definitions.
 * Class definitions.
 * ChimpModule?
+* Revisit the bytecode format.
+* Add a method to ChimpCode objects such that they can disassemble themselves
+  to a string.
 * Module definitions.
 * Revisit my half-baked crappy memory management ideas: tasks, threads & GC.
   (i.e. do we care right now? probably not ...)
