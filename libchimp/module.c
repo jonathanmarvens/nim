@@ -8,7 +8,13 @@ static ChimpRef *
 chimp_module_init (ChimpRef *self, ChimpRef *args)
 {
     CHIMP_MODULE(self)->name = CHIMP_ARRAY_ITEM(args, 0);
-    CHIMP_MODULE(self)->locals = CHIMP_ARRAY_ITEM(args, 1);
+    if (CHIMP_ARRAY_SIZE(args) == 2) {
+        CHIMP_MODULE(self)->locals = CHIMP_ARRAY_ITEM(args, 1);
+    }
+    else {
+        ChimpRef *temp = chimp_hash_new (NULL);
+        CHIMP_MODULE(self)->locals = temp;
+    }
     return chimp_nil;
 }
 
