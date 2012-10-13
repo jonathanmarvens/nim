@@ -9,14 +9,16 @@ extern "C" {
 #endif
 
 typedef enum _ChimpOpcode {
-    CHIMP_OPCODE_NOOP,
+    CHIMP_OPCODE_JUMPIFFALSE,
+    CHIMP_OPCODE_JUMPIFTRUE,
+    CHIMP_OPCODE_JUMP,
     CHIMP_OPCODE_PUSHCONST,
     CHIMP_OPCODE_STORENAME,
     CHIMP_OPCODE_PUSHNAME,
     CHIMP_OPCODE_GETATTR,
     CHIMP_OPCODE_CALL,
     CHIMP_OPCODE_MAKEARRAY,
-    CHIMP_OPCODE_MAKEHASH
+    CHIMP_OPCODE_MAKEHASH,
 } ChimpOpcode;
 
 typedef struct _ChimpCode {
@@ -27,6 +29,9 @@ typedef struct _ChimpCode {
     size_t    used;
     size_t    allocated;
 } ChimpCode;
+
+/* XXX we'll probably need to do something less stupid one day. */
+typedef size_t ChimpLabel;
 
 chimp_bool_t
 chimp_code_class_bootstrap (void);
@@ -55,11 +60,24 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 chimp_bool_t
 chimp_code_makehash (ChimpRef *self, uint8_t nargs);
 
+chimp_bool_t
+chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label);
+
+chimp_bool_t
+chimp_code_jumpiffalse (ChimpRef *self, ChimpLabel *label);
+
+chimp_bool_t
+chimp_code_jump (ChimpRef *self, ChimpLabel *label);
+
+chimp_bool_t
+chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label);
+
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 
 #define CHIMP_CODE_INSTR(ref, n) CHIMP_CODE(ref)->bytecode[n]
 
 #define CHIMP_INSTR_OP(ref, n) ((ChimpOpcode)((CHIMP_CODE_INSTR(ref, n) & 0xff000000) >> 24))
+#define CHIMP_INSTR_ADDR(ref, n) (CHIMP_CODE_INSTR(ref, n) & 0x00ffffff)
 
 #define CHIMP_INSTR_ARG1(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x00ff0000) >> 16)
 #define CHIMP_INSTR_ARG2(ref, n) ((CHIMP_CODE_INSTR(ref, n) & 0x0000ff00) >> 8)

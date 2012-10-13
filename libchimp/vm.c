@@ -268,6 +268,43 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_JUMPIFTRUE:
+            {
+                ChimpRef *value = chimp_vm_pop (vm);
+                if (value == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+                    return NULL;
+                }
+                /* TODO test for truthiness */
+                if (value == chimp_true) {
+                    pc = CHIMP_INSTR_ADDR(code, pc);
+                }
+                else {
+                    pc++;
+                }
+                break;
+            }
+            case CHIMP_OPCODE_JUMPIFFALSE:
+            {
+                ChimpRef *value = chimp_vm_pop (vm);
+                if (value == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+                    return NULL;
+                }
+                /* TODO test for non-truthiness */
+                if (value == chimp_false || value == chimp_nil) {
+                    pc = CHIMP_INSTR_ADDR(code, pc);
+                }
+                else {
+                    pc++;
+                }
+                break;
+            }
+            case CHIMP_OPCODE_JUMP:
+            {
+                pc = CHIMP_INSTR_ADDR(code, pc);
+                break;
+            }
             default:
             {
                 chimp_bug (__FILE__, __LINE__, "unknown opcode: %d", CHIMP_INSTR_OP(code, pc));

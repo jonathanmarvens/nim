@@ -1,5 +1,4 @@
 * More tests.
-* Conditionals/branching.
 * Function definitions.
 * Class definitions.
 * ChimpModule?

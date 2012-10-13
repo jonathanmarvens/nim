@@ -42,6 +42,7 @@ chimp_code_new (void)
     return ref;
 }
 
+#define CHIMP_CURR_INSTR(co) CHIMP_CODE(co)->bytecode[CHIMP_CODE(co)->used]
 #define CHIMP_NEXT_INSTR(co) CHIMP_CODE(co)->bytecode[CHIMP_CODE(co)->used++]
 
 #define CHIMP_MAKE_INSTR0(op) \
@@ -183,6 +184,71 @@ chimp_code_makehash (ChimpRef *self, uint8_t nargs)
         return CHIMP_FALSE;
     }
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(MAKEHASH, (int32_t)nargs);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label)
+{
+    if (label == NULL) {
+        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        return CHIMP_FALSE;
+    }
+
+    *label = CHIMP_CODE(self)->used;
+
+    /* the caller is expected to backpatch this later with a call to
+     * chimp_code_patch_jump_location.
+     */
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMPIFTRUE);
+
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_jumpiffalse (ChimpRef *self, ChimpLabel *label)
+{
+    if (label == NULL) {
+        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        return CHIMP_FALSE;
+    }
+
+    *label = CHIMP_CODE(self)->used;
+    
+    /* the caller is expected to backpatch this later with a call to
+     * chimp_code_patch_jump_location.
+     */
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMPIFFALSE);
+
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_jump (ChimpRef *self, ChimpLabel *label)
+{
+    if (label == NULL) {
+        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        return CHIMP_FALSE;
+    }
+
+    *label = CHIMP_CODE(self)->used;
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMP);
+
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label)
+{
+    /* XXX limited to this by my current stupid choice of instr repr */
+    if (CHIMP_CODE(self)->used > 0x00ffffff) {
+        chimp_bug (__FILE__, __LINE__, "attempted to jump to an address > 24 bits");
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_CODE(self)->bytecode[label] |= (CHIMP_CODE(self)->used & 0x00ffffff);
+
     return CHIMP_TRUE;
 }
 

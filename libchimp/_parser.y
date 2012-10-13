@@ -25,13 +25,14 @@ extern ChimpRef *main_mod;
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
+%token TOK_IF TOK_ELSE
 
 %token <ref> TOK_IDENT TOK_STR
 
 %type <ref> module
-%type <ref> stmt
+%type <ref> stmt simple_stmt compound_stmt
 %type <ref> assign
-%type <ref> opt_stmts
+%type <ref> opt_stmts block opt_else
 %type <ref> expr
 %type <ref> call
 %type <ref> opt_args args opt_args_tail
@@ -48,9 +49,24 @@ opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (NULL); }
           ;
 
-stmt : expr TOK_SEMICOLON { $$ = chimp_ast_stmt_new_expr ($1); }
-     | assign TOK_SEMICOLON { $$ = $1; }
+stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
+     | compound_stmt { $$ = $1; }
      ;
+
+simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
+            | assign { $$ = $1; }
+            ;
+
+compound_stmt : TOK_IF expr block opt_else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
+              ;
+
+opt_else : TOK_ELSE block { $$ = $2; }
+         | /* empty */ { $$ = NULL; }
+         ;
+
+block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
+      | stmt { $$ = chimp_array_new (NULL); chimp_array_unshift ($$, $1); }
+      ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
        ;

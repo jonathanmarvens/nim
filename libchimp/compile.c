@@ -30,9 +30,22 @@ static ChimpRef *
 chimp_compile_ast_expr_call (ChimpRef *code, ChimpRef *expr);
 
 static ChimpRef *
-chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
+chimp_compile_ast_stmts (ChimpRef *code, ChimpRef *stmts)
 {
     size_t i;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(stmts); i++) {
+        if (chimp_compile_ast_stmt (code, CHIMP_ARRAY_ITEM(stmts, i)) == NULL) {
+            /* TODO error message? */
+            return NULL;
+        }
+    }
+    return code;
+}
+
+static ChimpRef *
+chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
+{
     ChimpRef *body = CHIMP_AST_MOD(mod)->root.body;
 
     if (code == NULL) {
@@ -43,12 +56,8 @@ chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
     }
 
     /* TODO check CHIMP_AST_MOD_* type */
-
-    for (i = 0; i < CHIMP_ARRAY_SIZE(body); i++) {
-        if (chimp_compile_ast_stmt (code, CHIMP_ARRAY_ITEM(body, i)) == NULL) {
-            /* TODO error message? */
-            return NULL;
-        }
+    if (!chimp_compile_ast_stmts (code, body)) {
+        return NULL;
     }
 
     return code;
@@ -69,6 +78,52 @@ chimp_compile_ast_stmt_assign (ChimpRef *code, ChimpRef *stmt)
 }
 
 static ChimpRef *
+chimp_compile_ast_stmt_if_ (ChimpRef *code, ChimpRef *stmt)
+{
+    ChimpLabel end_body;
+
+    if (!chimp_compile_ast_expr (code, CHIMP_AST_STMT(stmt)->if_.expr)) {
+        return NULL;
+    }
+
+    if (!chimp_code_jumpiffalse (code, &end_body)) {
+        return NULL;
+    }
+
+    if (!chimp_compile_ast_stmts (code, CHIMP_AST_STMT(stmt)->if_.body)) {
+        return NULL;
+    }
+
+    if (CHIMP_AST_STMT(stmt)->if_.orelse != NULL) {
+        ChimpLabel end_orelse;
+
+        if (!chimp_code_jump (code, &end_orelse)) {
+            return NULL;
+        }
+
+        if (!chimp_code_patch_jump_location (code, end_body)) {
+            return NULL;
+        }
+
+        if (!chimp_compile_ast_stmts (code, CHIMP_AST_STMT(stmt)->if_.orelse)) {
+            return NULL;
+        }
+
+        if (!chimp_code_patch_jump_location (code, end_orelse)) {
+            return NULL;
+        }
+    }
+    else {
+        if (!chimp_code_patch_jump_location (code, end_body)) {
+            return NULL;
+        }
+    }
+
+
+    return code;
+}
+
+static ChimpRef *
 chimp_compile_ast_stmt (ChimpRef *code, ChimpRef *stmt)
 {
     if (code == NULL) {
@@ -83,6 +138,8 @@ chimp_compile_ast_stmt (ChimpRef *code, ChimpRef *stmt)
             return chimp_compile_ast_expr (code, CHIMP_AST_STMT(stmt)->expr.expr);
         case CHIMP_AST_STMT_ASSIGN:
             return chimp_compile_ast_stmt_assign (code, stmt);
+        case CHIMP_AST_STMT_IF_:
+            return chimp_compile_ast_stmt_if_ (code, stmt);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return NULL;

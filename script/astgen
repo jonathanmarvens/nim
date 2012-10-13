@@ -38,6 +38,10 @@ AST_DESCRIPTOR = [
     ['stmt',
         ['expr',
             ['expr', 'expr']],
+        ['if',
+            ['expr', 'expr'],
+            ['body', 'array'],
+            ['orelse', 'array']],
         ['assign',
             ['target', 'expr'],
             ['value', 'expr']]]
@@ -81,6 +85,8 @@ def node_type_params(t):
 
 def kind_params(k):
     name = k[0]
+    if name in ('if',):
+        name += "_";
     return {
         "kind": name,
         "KIND": name.upper(),
@@ -155,7 +161,7 @@ def header():
             _("} %(AppName)sAst%(NodeType)s;", np)
             _()
 
-        _(ctype("bool"))
+        _("chimp_bool_t")
         _("%(app_name)s_ast_class_bootstrap(void);")
 
         for t in AST_DESCRIPTOR:
@@ -194,7 +200,7 @@ def source():
             # XXX class_ctype ?
             _("%(AppName)sRef *%(app_name)s_ast_%(node_type)s_class = NULL;", np)
         _()
-        _(ctype("bool"))
+        _("chimp_bool_t")
         _("%(app_name)s_ast_class_bootstrap(void)")
         _("{")
         for t in AST_DESCRIPTOR:
