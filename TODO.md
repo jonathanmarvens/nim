@@ -1,4 +1,6 @@
 * More tests.
+* A macro for safe assignment to object attributes with simultaneous
+  allocation.
 * Function definitions.
 * Class definitions.
 * Make it possible to call member methods.
