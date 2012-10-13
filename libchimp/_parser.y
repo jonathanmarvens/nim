@@ -27,7 +27,8 @@ extern ChimpRef *main_mod;
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE
 
-%left TOK_OR TOK_AND TOK_NEQ TOK_EQ
+%left TOK_OR TOK_AND
+%left TOK_NEQ TOK_EQ
 
 %token <ref> TOK_IDENT TOK_STR
 
