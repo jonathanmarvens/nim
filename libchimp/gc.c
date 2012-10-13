@@ -641,7 +641,9 @@ chimp_gc_sweep (ChimpGC *gc)
     }
 
     gc->heap = dest;
-    fprintf (stderr, "sweep complete! freed %lu, kept %lu\n", freed, kept);
+    if (getenv("CHIMP_DEBUG_MODE") != NULL) {
+        fprintf (stderr, "sweep complete! freed %lu, kept %lu\n", freed, kept);
+    } 
     return freed;
 }
 

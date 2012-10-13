@@ -104,7 +104,9 @@ real_main (int argc, char **argv)
             fprintf (stderr, "error: could not compile AST\n");
             return 1;
         }
-        printf ("%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
+        if (getenv("CHIMP_DEBUG_MODE")) {
+            fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
+        }
         locals = chimp_hash_new (NULL);
         chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
         chimp_hash_put_str (locals, "input", chimp_method_new_native (NULL, _input));
