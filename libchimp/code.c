@@ -21,19 +21,24 @@ ChimpRef *
 chimp_code_new (void)
 {
     ChimpRef *ref = chimp_gc_new_object (NULL);
+    ChimpRef *temp;
     if (ref == NULL) {
         return NULL;
     }
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
-    CHIMP_CODE(ref)->constants = chimp_array_new (NULL);
-    if (CHIMP_CODE(ref)->constants == NULL) {
+    temp = chimp_array_new (NULL);
+    if (temp == NULL) {
+        chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;
     }
-    CHIMP_CODE(ref)->names = chimp_array_new (NULL);
-    if (CHIMP_CODE(ref)->names == NULL) {
+    CHIMP_CODE(ref)->constants = temp;
+    temp = chimp_array_new (NULL);
+    if (temp == NULL) {
+        chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;
     }
+    CHIMP_CODE(ref)->names = temp;
     CHIMP_CODE(ref)->allocated = 256;
     CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, CHIMP_CODE(ref)->allocated);
     if (CHIMP_CODE(ref)->bytecode == NULL) {
@@ -263,6 +268,13 @@ chimp_bool_t
 chimp_code_neq (ChimpRef *self)
 {
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPNEQ);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_pop (ChimpRef *self)
+{
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(POP);
     return CHIMP_TRUE;
 }
 
