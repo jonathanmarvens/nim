@@ -2,9 +2,12 @@
 * Function definitions.
 * Class definitions.
 * ChimpModule?
+* Make it possible to call member methods.
+* Expose methods on more classes.
 * Revisit the bytecode format.
-* Add a method to ChimpCode objects such that they can disassemble themselves
-  to a string.
+  - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
+  - MAKEARRAY for every call is probably slow/dumb.
+* Immutable values ...
 * Module definitions.
 * Revisit my half-baked crappy memory management ideas: tasks, threads & GC.
   (i.e. do we care right now? probably not ...)
