@@ -25,7 +25,7 @@ extern ChimpRef *main_mod;
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE
+%token TOK_IF TOK_ELSE TOK_USE
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -38,7 +38,8 @@ extern ChimpRef *main_mod;
 %type <ref> opt_stmts block opt_else
 %type <ref> expr simple
 %type <ref> call
-%type <ref> opt_decls
+%type <ref> opt_decls opt_uses
+%type <ref> use
 %type <ref> func_decl
 %type <ref> opt_params opt_params2 opt_params2_tail param
 %type <ref> opt_args args opt_args_tail
@@ -48,8 +49,15 @@ extern ChimpRef *main_mod;
 
 %%
 
-module : opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1); }
+module : opt_uses opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1, $2); }
        ;
+
+opt_uses : use opt_uses { $$ = $2; chimp_array_unshift ($$, $1); }
+         | /* empty */ { $$ = chimp_array_new (NULL); }
+         ;
+
+use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use ($2); }
+    ;
 
 opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (NULL); }

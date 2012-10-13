@@ -31,6 +31,8 @@
 # m = module("main");
 # print (str(m));
 
+use io;
+
 main(argv) {
 }
 

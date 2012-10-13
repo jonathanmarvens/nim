@@ -66,6 +66,7 @@ chimp_compile_ast_decls (ChimpRef *code, ChimpRef *decls)
 static ChimpRef *
 chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
 {
+    ChimpRef *uses = CHIMP_AST_MOD(mod)->root.uses;
     ChimpRef *body = CHIMP_AST_MOD(mod)->root.body;
 
     if (code == NULL) {
@@ -73,6 +74,10 @@ chimp_compile_ast_mod (ChimpRef *code, ChimpRef *mod)
         if (code == NULL) {
             return NULL;
         }
+    }
+
+    if (!chimp_compile_ast_decls (code, uses)) {
+        return NULL;
     }
 
     /* TODO check CHIMP_AST_MOD_* type */
@@ -151,6 +156,13 @@ chimp_compile_ast_decl_func (ChimpRef *code, ChimpRef *decl)
 }
 
 static ChimpRef *
+chimp_compile_ast_decl_use (ChimpRef *code, ChimpRef *decl)
+{
+    /* TODO */
+    return code;
+}
+
+static ChimpRef *
 chimp_compile_ast_decl (ChimpRef *code, ChimpRef *decl)
 {
     if (code == NULL) {
@@ -163,6 +175,8 @@ chimp_compile_ast_decl (ChimpRef *code, ChimpRef *decl)
     switch (CHIMP_AST_DECL_TYPE(decl)) {
         case CHIMP_AST_DECL_FUNC:
             return chimp_compile_ast_decl_func (code, decl);
+        case CHIMP_AST_DECL_USE:
+            return chimp_compile_ast_decl_use (code, decl);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_DECL_TYPE(decl));
             return NULL;

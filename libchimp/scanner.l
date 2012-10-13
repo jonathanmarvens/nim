@@ -21,6 +21,7 @@
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
 "or"                        { CHIMP_TOKEN(TOK_OR) }
 "and"                       { CHIMP_TOKEN(TOK_AND) }
+"use"                       { CHIMP_TOKEN(TOK_USE) }
 [ \t\r\n]                   { /* do nothing */ }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }

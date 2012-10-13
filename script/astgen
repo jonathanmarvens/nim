@@ -21,6 +21,7 @@ AST_DESCRIPTOR = [
     ['mod',
         ['root',
             ['name', 'str'],
+            ['uses', 'array'],
             ['body', 'array']]],
 
     ['expr',
@@ -55,7 +56,9 @@ AST_DESCRIPTOR = [
         ['func',
             ['name', 'expr'],
             ['args', 'array'],
-            ['body', 'array']]]
+            ['body', 'array']],
+        ['use',
+            ['name', 'expr']]]
 ]
 
 class UnknownTypeError(Exception):
