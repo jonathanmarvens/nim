@@ -15,6 +15,8 @@
 
 %%
 
+[#][^\n]*                   { /* do nothing (comment) */ }
+
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
 "or"                        { CHIMP_TOKEN(TOK_OR) }

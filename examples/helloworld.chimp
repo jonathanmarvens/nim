@@ -1,3 +1,8 @@
+#
+# Er. Not exactly 'hello world' atm.
+# More of a horrible sandbox.
+#
+
 x = "hello";
 y = ["foo"];
 z = x;
