@@ -68,6 +68,7 @@ opt_else : TOK_ELSE block { $$ = $2; }
 
 block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
       | stmt { $$ = chimp_array_new (NULL); chimp_array_unshift ($$, $1); }
+      | TOK_SEMICOLON { $$ = chimp_array_new (NULL); }
       ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
