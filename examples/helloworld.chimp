@@ -1,8 +1,7 @@
 #!/usr/local/bin/chimp
 
-use io;
-
 main(argv) {
     print ("hello world");
+    print (io);
 }
 

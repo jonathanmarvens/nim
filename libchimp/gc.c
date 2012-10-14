@@ -26,6 +26,7 @@ struct _ChimpRef {
 #define CHIMP_FAST_HASH(ref) (&((ref)->value->hash))
 #define CHIMP_FAST_METHOD(ref) (&((ref)->value->method))
 #define CHIMP_FAST_CODE(ref) (&((ref)->value->code))
+#define CHIMP_FAST_FRAME(ref) (&((ref)->value->frame))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value->any.type)
 
@@ -556,6 +557,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 if (CHIMP_METHOD_TYPE(ref) == CHIMP_METHOD_TYPE_BYTECODE) {
                     chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->bytecode.code);
                 }
+                chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->module);
                 /* TODO mark code object ? */
                 break;
             }
@@ -585,10 +587,15 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->names);
                 break;
             }
+        case CHIMP_VALUE_TYPE_FRAME:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->method);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->locals);
+                break;
+            }
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_STR:
         case CHIMP_VALUE_TYPE_INT:
-        case CHIMP_VALUE_TYPE_FRAME:
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type '%s'", type_name (ref->value->any.type));
