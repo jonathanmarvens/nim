@@ -548,6 +548,7 @@ chimp_compile_ast (ChimpRef *ast)
     if (!chimp_code_compiler_push_unit (&c, CHIMP_UNIT_TYPE_MODULE)) {
         return NULL;
     }
+    CHIMP_GC_MAKE_STACK_ROOT(CHIMP_CURRENT_CODE_UNIT(&c)->module);
 
     switch (CHIMP_ANY_TYPE(ast)) {
         case CHIMP_VALUE_TYPE_AST_MOD:
