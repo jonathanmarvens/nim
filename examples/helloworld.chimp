@@ -4,5 +4,6 @@ main(argv) {
     print ("What's your name?");
     name = input();
     print (str("hello, ", name));
+    print (argv);
 }
 

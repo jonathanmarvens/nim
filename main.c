@@ -49,6 +49,31 @@ extern void yylex_destroy(void);
 extern FILE *yyin;
 extern ChimpRef *main_mod;
 
+static ChimpRef *
+parse_args (int argc, char **argv)
+{
+    int i;
+    ChimpRef *args;
+    ChimpRef *argv_ = chimp_array_new (NULL);
+    for (i = 0; i < argc; i++) {
+        ChimpRef *arg = chimp_str_new (NULL, argv[i], strlen(argv[i]));
+        if (arg == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (argv_, arg)) {
+            return NULL;
+        }
+    }
+    args = chimp_array_new (NULL);
+    if (args == NULL) {
+        return NULL;
+    }
+    if (!chimp_array_push (args, argv_)) {
+        return NULL;
+    }
+    return args;
+}
+
 static int
 real_main (int argc, char **argv)
 {
@@ -86,8 +111,7 @@ real_main (int argc, char **argv)
             fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
         }
         */
-        args = chimp_array_new (NULL);
-        chimp_array_push (args, chimp_array_new (NULL));
+        args = parse_args (argc, argv);
         result = chimp_vm_invoke (NULL, main_method, args);
         /*
         result = chimp_vm_eval (NULL, code, locals);
