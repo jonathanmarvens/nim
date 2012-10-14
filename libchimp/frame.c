@@ -12,32 +12,31 @@
 ChimpRef *chimp_frame_class = NULL;
 
 chimp_bool_t
-chimp_frame_class_bootstrap (ChimpGC *gc)
+chimp_frame_class_bootstrap (void)
 {
     chimp_frame_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "frame"), chimp_object_class);
+        chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "frame"), chimp_object_class);
     if (chimp_frame_class == NULL) {
         return CHIMP_FALSE;
     }
-    chimp_gc_make_root (gc, chimp_frame_class);
+    chimp_gc_make_root (NULL, chimp_frame_class);
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_frame_new (ChimpGC *gc, ChimpRef *code, ChimpRef *locals)
+chimp_frame_new (ChimpRef *method)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *locals;
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
     CHIMP_FRAME_INIT(ref);
+    locals = chimp_hash_new (NULL);
     if (locals == NULL) {
-        locals = chimp_hash_new (NULL);
-        if (locals == NULL) {
-            return NULL;
-        }
+        return NULL;
     }
-    CHIMP_FRAME(ref)->code = code;
+    CHIMP_FRAME(ref)->method = method;
     CHIMP_FRAME(ref)->locals = locals;
     return ref;
 }

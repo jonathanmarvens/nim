@@ -229,6 +229,7 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
     ChimpRef *func_code;
     ChimpRef *method;
     ChimpRef *args;
+    ChimpRef *mod;
     size_t i;
 
     CHIMP_PUSH_CODE_UNIT(c, CHIMP_FALSE);
@@ -253,7 +254,15 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
         return CHIMP_FALSE;
     }
 
-    method = chimp_method_new_bytecode (NULL, func_code);
+    if (CHIMP_CURRENT_CODE_UNIT(c)->type == CHIMP_UNIT_TYPE_MODULE) {
+        mod = CHIMP_CURRENT_CODE_UNIT(c)->module;
+    }
+    else {
+        /* XXX I think we want to go hunting for modules up the unit stack */
+        mod = NULL;
+    }
+
+    method = chimp_method_new_bytecode (NULL, mod, func_code);
     if (method == NULL) {
         return CHIMP_FALSE;
     }
@@ -269,7 +278,6 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
         }
     }
     else {
-        ChimpRef *mod = CHIMP_CURRENT_CODE_UNIT(c)->module;
         ChimpRef *name = CHIMP_AST_DECL(decl)->func.name;
         if (!chimp_module_add_local (mod, name, method)) {
             return CHIMP_FALSE;

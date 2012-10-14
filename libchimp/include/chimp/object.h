@@ -70,6 +70,7 @@ CHIMP_EXTERN_CLASS(nil);
 extern struct _ChimpRef *chimp_nil;
 extern struct _ChimpRef *chimp_true;
 extern struct _ChimpRef *chimp_false;
+extern struct _ChimpRef *chimp_builtins;
 
 #define CHIMP_BOOL_REF(b) ((b) ? chimp_true : chimp_false)
 

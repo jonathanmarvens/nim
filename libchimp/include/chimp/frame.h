@@ -10,18 +10,21 @@ extern "C" {
 
 typedef struct _ChimpFrame {
     ChimpAny   base;
-    ChimpRef  *code;
+    ChimpRef  *method;
     ChimpRef  *locals;
 } ChimpFrame;
 
 chimp_bool_t
-chimp_frame_class_bootstrap (ChimpGC *gc);
+chimp_frame_class_bootstrap (void);
 
 ChimpRef *
-chimp_frame_new (ChimpGC *gc, ChimpRef *code, ChimpRef *locals);
+chimp_frame_new (ChimpRef *method);
 
 #define CHIMP_FRAME(ref) \
     CHIMP_CHECK_CAST(ChimpFrame, (ref), CHIMP_VALUE_TYPE_FRAME)
+
+#define CHIMP_FRAME_CODE(ref) \
+    CHIMP_METHOD(CHIMP_FRAME(ref)->method)->bytecode.code
 
 CHIMP_EXTERN_CLASS(frame);
 

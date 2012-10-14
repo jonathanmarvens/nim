@@ -19,6 +19,7 @@ typedef struct _ChimpMethod {
     ChimpAny         base;
     ChimpRef        *self; /* NULL for unbound/function */
     ChimpMethodType  type;
+    ChimpRef        *module;
     union {
         struct {
             ChimpNativeMethodFunc func;
@@ -33,10 +34,10 @@ chimp_bool_t
 chimp_method_class_bootstrap (ChimpGC *gc);
 
 ChimpRef *
-chimp_method_new_native (ChimpGC *gc, ChimpNativeMethodFunc func);
+chimp_method_new_native (ChimpGC *gc, ChimpRef *module, ChimpNativeMethodFunc func);
 
 ChimpRef *
-chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *code);
+chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *module, ChimpRef *code);
 
 ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self);

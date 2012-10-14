@@ -83,7 +83,9 @@ chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 static chimp_bool_t
 chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
-    size_t i;
+    ChimpRef *value;
+    ChimpRef *frame;
+    ChimpRef *module;
     ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
     if (name == NULL) {
         int n = CHIMP_INSTR_ARG1(code, pc);
@@ -91,13 +93,36 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
 
-    for (i = 0; i < CHIMP_ARRAY_SIZE(vm->frames); i++) {
-        ChimpRef *frame = CHIMP_ARRAY_ITEM(vm->frames, CHIMP_ARRAY_SIZE(vm->frames) - i - 1);
-        ChimpRef *value = chimp_hash_get (CHIMP_FRAME(frame)->locals, name);
-        value = chimp_hash_get (locals, name);
-        if (value != NULL && value != chimp_nil) {
+    /* 1. check locals */
+    frame = CHIMP_ARRAY_LAST (vm->frames);
+    if (frame == NULL) {
+        return CHIMP_FALSE;
+    }
+    value = chimp_hash_get (CHIMP_FRAME(frame)->locals, name);
+    if (value == NULL) {
+        return CHIMP_FALSE;
+    }
+    else if (value != chimp_nil) {
+        return chimp_vm_push (vm, value);
+    }
+
+    /* 2. check module */
+    module = CHIMP_METHOD(CHIMP_FRAME(frame)->method)->module;
+    if (module != NULL) { /* builtins have no module */
+        value = chimp_object_getattr (module, name);
+        /* TODO discern between 'no-such-attr' and other errors */
+        if (value != NULL) {
             return chimp_vm_push (vm, value);
         }
+    }
+
+    /* 3. check builtins */
+    value = chimp_hash_get (chimp_builtins, name);
+    if (value == NULL) {
+        return CHIMP_FALSE;
+    }
+    else if (value != chimp_nil) {
+        return chimp_vm_push (vm, value);
     }
 
     chimp_bug (__FILE__, __LINE__, "unknown name: %s", CHIMP_STR_DATA(name));
@@ -247,7 +272,7 @@ chimp_vm_cmp (ChimpVM *vm)
 static ChimpRef *
 chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
-    ChimpRef *code = CHIMP_FRAME(frame)->code;
+    ChimpRef *code = CHIMP_FRAME_CODE(frame);
     ChimpRef *locals = CHIMP_FRAME(frame)->locals;
 
     if (!chimp_array_push (vm->frames, frame)) {
@@ -408,6 +433,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
     return chimp_vm_pop(vm);
 }
 
+/*
 ChimpRef *
 chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
 {
@@ -425,13 +451,14 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
     }
     return chimp_vm_eval_frame (vm, frame);
 }
+*/
 
 #define CHIMP_IS_BYTECODE_METHOD(ref) \
     (CHIMP_ANY(ref)->type == CHIMP_VALUE_TYPE_METHOD && \
         CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE)
 
 ChimpRef *
-chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args, ChimpRef *locals)
+chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
 {
     size_t i;
     ChimpRef *frame;
@@ -451,7 +478,7 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args, ChimpRef *locals
     if (getenv ("CHIMP_DEBUG_MODE")) {
         fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
     }
-    frame = chimp_frame_new (NULL, code, locals);
+    frame = chimp_frame_new (method);
     if (frame == NULL) {
         return NULL;
     }

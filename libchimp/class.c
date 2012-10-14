@@ -154,7 +154,8 @@ chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, Ch
     if (name_ref == NULL) {
         return CHIMP_FALSE;
     }
-    method_ref = chimp_method_new_native (gc, func);
+    /* XXX the module should strictly be the module in which this class is declared */
+    method_ref = chimp_method_new_native (gc, NULL, func);
     if (method_ref == NULL) {
         return CHIMP_FALSE;
     }

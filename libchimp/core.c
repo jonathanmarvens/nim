@@ -8,6 +8,7 @@
 #include "chimp/array.h"
 #include "chimp/method.h"
 #include "chimp/task.h"
+#include "chimp/hash.h"
 #include "chimp/frame.h"
 #include "chimp/ast.h"
 #include "chimp/code.h"
@@ -44,6 +45,7 @@ ChimpRef *chimp_bool_class = NULL;
 ChimpRef *chimp_nil = NULL;
 ChimpRef *chimp_true = NULL;
 ChimpRef *chimp_false = NULL;
+ChimpRef *chimp_builtins = NULL;
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
@@ -161,6 +163,90 @@ chimp_nil_str (ChimpGC *gc, ChimpRef *self)
 
 static ChimpTask *main_task = NULL;
 
+static ChimpRef *
+_print (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+        ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM (args, i));
+        printf ("%s\n", CHIMP_STR_DATA(str));
+    }
+
+    return chimp_nil;
+}
+
+static ChimpRef *
+_input (ChimpRef *self, ChimpRef *args)
+{
+    char buf[1024];
+    size_t len;
+
+    if (fgets (buf, sizeof(buf), stdin) == NULL) {
+        return chimp_nil;
+    }
+
+    len = strlen(buf);
+    if (len > 0 && buf[len-1] == '\n') {
+        buf[--len] = '\0';
+    }
+    return chimp_str_new (NULL, buf, len);
+}
+
+static ChimpRef *
+chimp_core_init_io_module (void)
+{
+    ChimpRef *io;
+    ChimpRef *exports;
+    ChimpRef *print_method;
+    ChimpRef *input_method;
+
+    print_method = chimp_method_new_native (NULL, NULL, _print);
+    input_method = chimp_method_new_native (NULL, NULL, _input);
+    exports = chimp_hash_new (NULL);
+    chimp_hash_put_str (exports, "print", print_method);
+    chimp_hash_put_str (exports, "readline", input_method);
+    
+    io = chimp_module_new_str ("io", exports);
+    if (io == NULL) {
+        return NULL;
+    }
+
+    /* XXX stupid hack because I can't think far enough ahead of myself */
+    CHIMP_METHOD(print_method)->module = io;
+    CHIMP_METHOD(input_method)->module = io;
+
+    return io;
+}
+
+static chimp_bool_t
+chimp_core_init_builtins (void)
+{
+    chimp_builtins = chimp_hash_new (NULL);
+    if (chimp_builtins == NULL) {
+        return CHIMP_FALSE;
+    }
+    chimp_gc_make_root (NULL, chimp_builtins);
+
+    /* XXX we can't call methods on the i/o module yet (we don't have the
+     *     syntax for it), so use these instead.
+     */
+    chimp_hash_put_str (chimp_builtins, "print",  chimp_method_new_native (NULL, NULL, _print));
+    chimp_hash_put_str (chimp_builtins, "input",  chimp_method_new_native (NULL, NULL, _input));
+
+    chimp_hash_put_str (chimp_builtins, "hash",   chimp_hash_class);
+    chimp_hash_put_str (chimp_builtins, "array",  chimp_array_class);
+    chimp_hash_put_str (chimp_builtins, "int",    chimp_int_class);
+    chimp_hash_put_str (chimp_builtins, "str",    chimp_str_class);
+    chimp_hash_put_str (chimp_builtins, "module", chimp_module_class);
+    chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
+    chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
+    chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
+    chimp_hash_put_str (chimp_builtins, "io", chimp_core_init_io_module ());
+
+    return CHIMP_TRUE;
+}
+
 chimp_bool_t
 chimp_core_startup (void *stack_start)
 {
@@ -214,7 +300,7 @@ chimp_core_startup (void *stack_start)
     if (!chimp_array_class_bootstrap (NULL)) goto error;
     if (!chimp_hash_class_bootstrap (NULL)) goto error;
     if (!chimp_method_class_bootstrap (NULL)) goto error;
-    if (!chimp_frame_class_bootstrap (NULL)) goto error;
+    if (!chimp_frame_class_bootstrap ()) goto error;
     if (!chimp_code_class_bootstrap ()) goto error;
     if (!chimp_module_class_bootstrap ()) goto error;
 
@@ -223,7 +309,7 @@ chimp_core_startup (void *stack_start)
     */
     if (!chimp_ast_class_bootstrap ()) goto error;
 
-    return CHIMP_TRUE;
+    return chimp_core_init_builtins ();
 
 error:
 

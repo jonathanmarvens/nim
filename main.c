@@ -28,36 +28,6 @@ some_native_method (ChimpRef *self, ChimpRef *args)
 static int
 real_main (int argc, char **argv);
 
-static ChimpRef *
-_print (ChimpRef *self, ChimpRef *args)
-{
-    size_t i;
-
-    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-        ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM (args, i));
-        printf ("%s\n", CHIMP_STR_DATA(str));
-    }
-
-    return chimp_nil;
-}
-
-static ChimpRef *
-_input (ChimpRef *self, ChimpRef *args)
-{
-    char buf[1024];
-    size_t len;
-
-    if (fgets (buf, sizeof(buf), stdin) == NULL) {
-        return chimp_nil;
-    }
-
-    len = strlen(buf);
-    if (len > 0 && buf[len-1] == '\n') {
-        buf[--len] = '\0';
-    }
-    return chimp_str_new (NULL, buf, len);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -84,7 +54,6 @@ real_main (int argc, char **argv)
 {
     int rc;
     ChimpRef *result;
-    ChimpRef *locals;
     if (argc < 2) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         return 1;
@@ -113,16 +82,9 @@ real_main (int argc, char **argv)
             fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
         }
         */
-        locals = chimp_hash_new (NULL);
-        chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
-        chimp_hash_put_str (locals, "input", chimp_method_new_native (NULL, _input));
-        chimp_hash_put_str (locals, "hash", chimp_hash_class);
-        chimp_hash_put_str (locals, "array", chimp_array_class);
-        chimp_hash_put_str (locals, "str", chimp_str_class);
-        chimp_hash_put_str (locals, "module", chimp_module_class);
         args = chimp_array_new (NULL);
         chimp_array_push (args, chimp_array_new (NULL));
-        result = chimp_vm_invoke (NULL, main_method, args, locals);
+        result = chimp_vm_invoke (NULL, main_method, args);
         /*
         result = chimp_vm_eval (NULL, code, locals);
         */

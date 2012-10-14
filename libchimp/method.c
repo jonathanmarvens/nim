@@ -2,6 +2,7 @@
 #include "chimp/class.h"
 #include "chimp/str.h"
 #include "chimp/task.h"
+#include "chimp/vm.h"
 
 #define CHIMP_METHOD_INIT(ref) \
     do { \
@@ -11,9 +12,6 @@
 
 ChimpRef *chimp_method_class = NULL;
 
-extern ChimpRef *
-chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args, ChimpRef *locals);
-
 static ChimpRef *
 chimp_method_call (ChimpRef *self, ChimpRef *args)
 {
@@ -21,7 +19,7 @@ chimp_method_call (ChimpRef *self, ChimpRef *args)
         return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
     }
     else {
-        return chimp_vm_invoke (NULL, self, args, NULL);
+        return chimp_vm_invoke (NULL, self, args);
     }
 }
 
@@ -40,7 +38,7 @@ chimp_method_class_bootstrap (ChimpGC *gc)
 }
 
 ChimpRef *
-chimp_method_new_native (ChimpGC *gc, ChimpNativeMethodFunc func)
+chimp_method_new_native (ChimpGC *gc, ChimpRef *module, ChimpNativeMethodFunc func)
 {
     ChimpRef *ref = chimp_gc_new_object (gc);
     if (ref == NULL) {
@@ -48,12 +46,13 @@ chimp_method_new_native (ChimpGC *gc, ChimpNativeMethodFunc func)
     }
     CHIMP_METHOD_INIT(ref);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_NATIVE;
+    CHIMP_METHOD(ref)->module = module;
     CHIMP_NATIVE_METHOD(ref)->func = func;
     return ref;
 }
 
 ChimpRef *
-chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *code)
+chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *module, ChimpRef *code)
 {
     ChimpRef *ref = chimp_gc_new_object (gc);
     if (ref == NULL) {
@@ -61,6 +60,7 @@ chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *code)
     }
     CHIMP_METHOD_INIT(ref);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_BYTECODE;
+    CHIMP_METHOD(ref)->module = module;
     CHIMP_BYTECODE_METHOD(ref)->code = code;
     return ref;
 }
@@ -76,6 +76,7 @@ chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
     CHIMP_METHOD_INIT(ref);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD(unbound)->type;
     CHIMP_METHOD(ref)->self = self;
+    CHIMP_METHOD(ref)->module = CHIMP_METHOD(unbound)->module;
     if (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_NATIVE) {
         CHIMP_NATIVE_METHOD(ref)->func = CHIMP_NATIVE_METHOD(unbound)->func;
     }
