@@ -1,4 +1,7 @@
 * More tests.
+* chimp\_compiler\_push\_unit should return the code object. Will simplify
+  keeping code object references on the stack & we can avoid the
+  CHIMP\_GC\_MAKE\_STACK\_ROOT call.
 * A macro for safe assignment to object attributes with simultaneous
   allocation.
 * Function definitions.

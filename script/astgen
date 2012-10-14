@@ -54,9 +54,11 @@ AST_DESCRIPTOR = [
             ['value', 'expr']]],
     ['decl',
         ['func',
-            ['name', 'expr'],
+            ['name', 'str'],
             ['args', 'array'],
             ['body', 'array']],
+        ['var',
+            ['name', 'str']],
         ['use',
             ['name', 'expr']]]
 ]

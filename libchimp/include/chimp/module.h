@@ -19,6 +19,9 @@ chimp_module_class_bootstrap (void);
 ChimpRef *
 chimp_module_new (ChimpRef *name, ChimpRef *locals);
 
+ChimpRef *
+chimp_module_new_str (const char *name, ChimpRef *locals);
+
 chimp_bool_t
 chimp_module_add_local (ChimpRef *self, ChimpRef *name, ChimpRef *value);
 

@@ -409,3 +409,40 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
     return chimp_vm_eval_frame (vm, frame);
 }
 
+#define CHIMP_IS_BYTECODE_METHOD(ref) \
+    (CHIMP_ANY(ref)->type == CHIMP_VALUE_TYPE_METHOD && \
+        CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE)
+
+ChimpRef *
+chimp_vm_eval_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *frame;
+    ChimpRef *code;
+
+    if (vm == NULL) {
+        vm = CHIMP_CURRENT_VM;
+    }
+
+    if (!CHIMP_IS_BYTECODE_METHOD(method)) {
+        chimp_bug (__FILE__, __LINE__,
+            "chimp_vm_eval_invoke called on a non-method (or native method)");
+        return NULL;
+    }
+
+    code = CHIMP_METHOD(method)->bytecode.code;
+    frame = chimp_frame_new (NULL, code, NULL);
+    if (frame == NULL) {
+        return NULL;
+    }
+
+    /* push args */
+    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+        if (!chimp_vm_push (vm, CHIMP_ARRAY_ITEM(args, i))) {
+            return NULL;
+        }
+    }
+
+    return chimp_vm_eval_frame (vm, frame);
+}
+

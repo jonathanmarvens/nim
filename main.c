@@ -83,7 +83,6 @@ static int
 real_main (int argc, char **argv)
 {
     int rc;
-    ChimpRef *code;
     ChimpRef *result;
     ChimpRef *locals;
     if (argc < 2) {
@@ -99,14 +98,21 @@ real_main (int argc, char **argv)
     fclose (yyin);
     yylex_destroy ();
     if (rc == 0) {
-        code = chimp_compile_ast (main_mod);
-        if (code == NULL) {
+        ChimpRef *module;
+        ChimpRef *main_method;
+        ChimpRef *args;
+
+        module = chimp_compile_ast (main_mod);
+        if (module == NULL) {
             fprintf (stderr, "error: could not compile AST\n");
             return 1;
         }
+        main_method = chimp_object_getattr_str (module, "main");
+        /*
         if (getenv("CHIMP_DEBUG_MODE")) {
             fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
         }
+        */
         locals = chimp_hash_new (NULL);
         chimp_hash_put_str (locals, "print", chimp_method_new_native (NULL, _print));
         chimp_hash_put_str (locals, "input", chimp_method_new_native (NULL, _input));
@@ -114,7 +120,12 @@ real_main (int argc, char **argv)
         chimp_hash_put_str (locals, "array", chimp_array_class);
         chimp_hash_put_str (locals, "str", chimp_str_class);
         chimp_hash_put_str (locals, "module", chimp_module_class);
+        args = chimp_array_new (NULL);
+        chimp_array_push (args, chimp_array_new (NULL));
+        result = chimp_object_call (main_method, args);
+        /*
         result = chimp_vm_eval (NULL, code, locals);
+        */
         if (result == NULL) {
             fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
             return 1;

@@ -39,6 +39,9 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref);
 
 #define CHIMP_REF_TYPE(ref) chimp_gc_ref_type(ref)
 
+#define CHIMP_GC_MAKE_STACK_ROOT(p) \
+    (*((ChimpRef **)alloca(sizeof(ChimpRef *)))) = (p)
+
 #ifdef __cplusplus
 };
 #endif

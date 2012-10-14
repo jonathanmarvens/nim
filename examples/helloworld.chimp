@@ -34,5 +34,6 @@
 use io;
 
 main(argv) {
+    print ("hello world");
 }
 

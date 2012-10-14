@@ -64,7 +64,7 @@ opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
           ;
 
 func_decl : ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
-            $$ = chimp_ast_decl_new_func ($1, $2, $4);
+            $$ = chimp_ast_decl_new_func (CHIMP_AST_EXPR($1)->ident.id, $2, $4);
           }
           ;
 
@@ -80,7 +80,7 @@ opt_params2_tail : TOK_COMMA param opt_params2_tail { $$ = $3; chimp_array_unshi
                  | /* empty */ { $$ = chimp_array_new (NULL); }
                  ;
 
-param : ident { $$ = $1; }
+param : ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($1)->ident.id); }
       ;
 
 opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
