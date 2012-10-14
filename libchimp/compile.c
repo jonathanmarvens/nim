@@ -635,28 +635,22 @@ chimp_compile_file (ChimpRef *name, const char *filename)
             ssize_t slash = -1;
             ssize_t dot = -1;
             size_t i;
-            char *temp;
             size_t len = strlen (filename);
 
             /* XXX this is just a shit O(n) basename() impl */
-            temp = strndup (filename, len);
-            if (temp == NULL) {
-                return NULL;
-            }
             for (i = 0; i < len; i++) {
-                if (temp[i] == '/') {
+                if (filename[i] == '/') {
                     slash = i + 1;
                     dot = -1;
                 }
-                else if (temp[i] == '.' && dot == -1) {
+                else if (filename[i] == '.' && dot == -1) {
                     dot = i;
                 }
             }
             if (dot == -1) dot = len;
             if (slash == -1) slash = 0;
 
-            name = chimp_str_new (NULL, temp + slash, dot - slash);
-            CHIMP_FREE (temp);
+            name = chimp_str_new (NULL, filename + slash, dot - slash);
             if (name == NULL) {
                 return NULL;
             }
