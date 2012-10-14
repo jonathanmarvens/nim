@@ -1,7 +1,8 @@
 #!/usr/local/bin/chimp
 
 main(argv) {
-    print ("hello world");
-    print (io);
+    print ("What's your name?");
+    name = input();
+    print (str("hello, ", name));
 }
 
