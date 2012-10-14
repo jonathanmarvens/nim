@@ -1,0 +1,35 @@
+#!/usr/local/bin/chimp
+#
+# Dirty sandbox.
+#
+
+main(argv) {
+    x = "hello";
+    y = ["foo"];
+    z = x;
+
+    print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
+
+    some_bool = false;
+    if some_bool {
+        print (x);
+    }
+    else {
+        print ("omgbye");
+    }
+
+    print ("Enter your name:");
+    name = input();
+    if name == "dude" {
+        print ("Dude!");
+    }
+    else {
+        print (str("Hey there, ", name));
+    }
+
+    print (true and "test");
+
+    m = module("main");
+    print (str(m));
+}
+
