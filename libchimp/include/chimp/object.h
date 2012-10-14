@@ -74,6 +74,8 @@ extern struct _ChimpRef *chimp_builtins;
 
 #define CHIMP_BOOL_REF(b) ((b) ? chimp_true : chimp_false)
 
+#define CHIMP_OBJECT_STR(ref) CHIMP_STR_DATA(chimp_object_str (NULL, (ref)))
+
 #ifdef __cplusplus
 };
 #endif
