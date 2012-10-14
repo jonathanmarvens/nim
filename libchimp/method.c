@@ -12,7 +12,7 @@
 ChimpRef *chimp_method_class = NULL;
 
 extern ChimpRef *
-chimp_vm_eval_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args);
+chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args, ChimpRef *locals);
 
 static ChimpRef *
 chimp_method_call (ChimpRef *self, ChimpRef *args)
@@ -21,7 +21,7 @@ chimp_method_call (ChimpRef *self, ChimpRef *args)
         return CHIMP_NATIVE_METHOD(self)->func (CHIMP_METHOD(self)->self, args);
     }
     else {
-        return chimp_vm_eval_invoke (NULL, self, args);
+        return chimp_vm_invoke (NULL, self, args, NULL);
     }
 }
 

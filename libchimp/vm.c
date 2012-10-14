@@ -6,6 +6,7 @@
 
 struct _ChimpVM {
     ChimpRef  *stack;
+    ChimpRef  *frames;
 };
 
 ChimpVM *
@@ -20,7 +21,13 @@ chimp_vm_new (void)
         CHIMP_FREE (vm);
         return NULL;
     }
+    vm->frames = chimp_array_new (NULL);
+    if (vm->frames == NULL) {
+        CHIMP_FREE (vm);
+        return NULL;
+    }
     chimp_gc_make_root (NULL, vm->stack);
+    chimp_gc_make_root (NULL, vm->frames);
     return vm;
 }
 
@@ -76,20 +83,25 @@ chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 static chimp_bool_t
 chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
-    ChimpRef *value;
+    size_t i;
     ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
     if (name == NULL) {
         int n = CHIMP_INSTR_ARG1(code, pc);
         chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", n, pc);
         return CHIMP_FALSE;
     }
-    /* TODO scan globals? */
-    value = chimp_hash_get (locals, name);
-    if (value == NULL || value == chimp_nil) {
-        chimp_bug (__FILE__, __LINE__, "no such local: %s", CHIMP_STR_DATA(name));
-        return CHIMP_FALSE;;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(vm->frames); i++) {
+        ChimpRef *frame = CHIMP_ARRAY_ITEM(vm->frames, CHIMP_ARRAY_SIZE(vm->frames) - i - 1);
+        ChimpRef *value = chimp_hash_get (CHIMP_FRAME(frame)->locals, name);
+        value = chimp_hash_get (locals, name);
+        if (value != NULL && value != chimp_nil) {
+            return chimp_vm_push (vm, value);
+        }
     }
-    return chimp_vm_push (vm, value);
+
+    chimp_bug (__FILE__, __LINE__, "unknown name: %s", CHIMP_STR_DATA(name));
+    return CHIMP_FALSE;
 }
 
 static chimp_bool_t
@@ -237,6 +249,10 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
 {
     ChimpRef *code = CHIMP_FRAME(frame)->code;
     ChimpRef *locals = CHIMP_FRAME(frame)->locals;
+
+    if (!chimp_array_push (vm->frames, frame)) {
+        return CHIMP_FALSE;
+    }
 
     size_t pc = 0;
     while (pc < CHIMP_CODE_SIZE(code)) {
@@ -388,6 +404,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
         };
     }
 
+    chimp_array_pop (vm->frames);
     return chimp_vm_pop(vm);
 }
 
@@ -414,7 +431,7 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
         CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE)
 
 ChimpRef *
-chimp_vm_eval_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
+chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args, ChimpRef *locals)
 {
     size_t i;
     ChimpRef *frame;
@@ -431,7 +448,10 @@ chimp_vm_eval_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     }
 
     code = CHIMP_METHOD(method)->bytecode.code;
-    frame = chimp_frame_new (NULL, code, NULL);
+    if (getenv ("CHIMP_DEBUG_MODE")) {
+        fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
+    }
+    frame = chimp_frame_new (NULL, code, locals);
     if (frame == NULL) {
         return NULL;
     }

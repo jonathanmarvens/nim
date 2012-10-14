@@ -122,7 +122,7 @@ real_main (int argc, char **argv)
         chimp_hash_put_str (locals, "module", chimp_module_class);
         args = chimp_array_new (NULL);
         chimp_array_push (args, chimp_array_new (NULL));
-        result = chimp_object_call (main_method, args);
+        result = chimp_vm_invoke (NULL, main_method, args, locals);
         /*
         result = chimp_vm_eval (NULL, code, locals);
         */
