@@ -26,18 +26,11 @@ typedef struct _ChimpCodeCompiler {
     ChimpCodeUnit *current_unit;
 } ChimpCodeCompiler;
 
-#define CHIMP_CURRENT_CODE_UNIT(c) (c)->current_unit
-#define CHIMP_PUSH_CODE_UNIT(c, error_value) \
-    if (!chimp_code_compiler_push_unit ((c), CHIMP_UNIT_TYPE_CODE)) { \
-        return (error_value); \
-    } \
-    CHIMP_GC_MAKE_STACK_ROOT((c)->current_unit->code)
+#define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
+#define CHIMP_COMPILER_MODULE(c) ((c)->current_unit)->module
 
-static chimp_bool_t
-chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type);
-
-static ChimpRef *
-chimp_code_compiler_pop_unit (ChimpCodeCompiler *c, ChimpUnitType type);
+#define CHIMP_COMPILER_IN_MODULE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_MODULE)
+#define CHIMP_COMPILER_IN_CODE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_CODE)
 
 static chimp_bool_t
 chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl);
@@ -69,12 +62,12 @@ chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr);
 static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *binop);
 
-static chimp_bool_t
+static ChimpRef *
 chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type)
 {
     ChimpCodeUnit *unit = CHIMP_MALLOC(ChimpCodeUnit, sizeof(*unit));
     if (unit == NULL) {
-        return CHIMP_FALSE;
+        return NULL;
     }
     memset (unit, 0, sizeof(*unit));
     switch (type) {
@@ -82,27 +75,39 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type)
             unit->code = chimp_code_new ();
             break;
         case CHIMP_UNIT_TYPE_MODULE:
+            /* XXX name hard-coded */
             unit->module = chimp_module_new_str ("main", NULL);
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown unit type: %d", type);
-            return CHIMP_FALSE;
+            return NULL;
     };
     if (unit->value == NULL) {
         CHIMP_FREE(unit);
-        return CHIMP_FALSE;
+        return NULL;
     }
     unit->type = type;
     unit->next = c->current_unit;
     c->current_unit = unit;
-    return CHIMP_TRUE;
+    return unit->value;
+}
+
+inline static ChimpRef *
+chimp_code_compiler_push_code_unit (ChimpCodeCompiler *c)
+{
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CODE);
+}
+
+inline static ChimpRef *
+chimp_code_compiler_push_module_unit (ChimpCodeCompiler *c)
+{
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_MODULE);
 }
 
 static ChimpRef *
 chimp_code_compiler_pop_unit (ChimpCodeCompiler *c, ChimpUnitType expected)
 {
-    ChimpRef *value;
-    ChimpCodeUnit *unit = CHIMP_CURRENT_CODE_UNIT(c);
+    ChimpCodeUnit *unit = c->current_unit;
     if (unit == NULL) {
         chimp_bug (__FILE__, __LINE__, "NULL code unit?");
         return NULL;
@@ -112,9 +117,25 @@ chimp_code_compiler_pop_unit (ChimpCodeCompiler *c, ChimpUnitType expected)
         return NULL;
     }
     c->current_unit = unit->next;
-    value = unit->value;
     CHIMP_FREE(unit);
-    return value;
+    if (c->current_unit != NULL) {
+        return c->current_unit->value;
+    }
+    else {
+        return chimp_true;
+    }
+}
+
+inline static ChimpRef *
+chimp_code_compiler_pop_code_unit (ChimpCodeCompiler *c)
+{
+    return chimp_code_compiler_pop_unit (c, CHIMP_UNIT_TYPE_CODE);
+}
+
+inline static ChimpRef *
+chimp_code_compiler_pop_module_unit (ChimpCodeCompiler *c)
+{
+    return chimp_code_compiler_pop_unit (c, CHIMP_UNIT_TYPE_MODULE);
 }
 
 static chimp_bool_t
@@ -166,7 +187,7 @@ chimp_compile_ast_mod (ChimpCodeCompiler *c, ChimpRef *mod)
 static chimp_bool_t
 chimp_compile_ast_stmt_assign (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->assign.value)) {
         return CHIMP_FALSE;
@@ -181,7 +202,7 @@ chimp_compile_ast_stmt_assign (ChimpCodeCompiler *c, ChimpRef *stmt)
 static chimp_bool_t
 chimp_compile_ast_stmt_if_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpLabel end_body;
 
     if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->if_.expr)) {
@@ -232,9 +253,10 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
     ChimpRef *mod;
     size_t i;
 
-    CHIMP_PUSH_CODE_UNIT(c, CHIMP_FALSE);
-
-    func_code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    func_code = chimp_code_compiler_push_code_unit (c);
+    if (func_code == NULL) {
+        return CHIMP_FALSE;
+    }
 
     /* unpack arguments */
     args = CHIMP_AST_DECL(decl)->func.args;
@@ -249,13 +271,12 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
         return CHIMP_FALSE;
     }
 
-    func_code = chimp_code_compiler_pop_unit (c, CHIMP_UNIT_TYPE_CODE);
-    if (func_code == NULL) {
+    if (!chimp_code_compiler_pop_code_unit (c)) {
         return CHIMP_FALSE;
     }
 
-    if (CHIMP_CURRENT_CODE_UNIT(c)->type == CHIMP_UNIT_TYPE_MODULE) {
-        mod = CHIMP_CURRENT_CODE_UNIT(c)->module;
+    if (CHIMP_COMPILER_IN_MODULE(c)) {
+        mod = CHIMP_COMPILER_MODULE(c);
     }
     else {
         /* XXX I think we want to go hunting for modules up the unit stack */
@@ -267,8 +288,8 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
         return CHIMP_FALSE;
     }
 
-    if (CHIMP_CURRENT_CODE_UNIT(c)->type == CHIMP_UNIT_TYPE_CODE) {
-        ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    if (CHIMP_COMPILER_IN_CODE(c)) {
+        ChimpRef *code = CHIMP_COMPILER_CODE(c);
         if (!chimp_code_pushconst (code, method)) {
             return CHIMP_FALSE;
         }
@@ -354,7 +375,7 @@ chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr)
     ChimpRef *target;
     ChimpRef *args;
     size_t i;
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     target = CHIMP_AST_EXPR(expr)->call.target;
     if (!chimp_compile_ast_expr (c, target)) {
@@ -382,7 +403,7 @@ chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_ident (ChimpCodeCompiler *c, ChimpRef *expr)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     if (chimp_code_pushname (code, CHIMP_AST_EXPR(expr)->ident.id) < 0) {
         return CHIMP_FALSE;
     }
@@ -393,7 +414,7 @@ static chimp_bool_t
 chimp_compile_ast_expr_array (ChimpCodeCompiler *c, ChimpRef *expr)
 {
     size_t i;
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpRef *arr = CHIMP_AST_EXPR(expr)->array.value;
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
         if (!chimp_compile_ast_expr (c, CHIMP_ARRAY_ITEM(arr, i))) {
@@ -410,7 +431,7 @@ static chimp_bool_t
 chimp_compile_ast_expr_hash (ChimpCodeCompiler *c, ChimpRef *expr)
 {
     size_t i;
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpRef *arr = CHIMP_AST_EXPR(expr)->hash.value;
     /* TODO ensure array size is even (key/value pairs) */
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
@@ -427,7 +448,7 @@ chimp_compile_ast_expr_hash (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_str (ChimpCodeCompiler *c, ChimpRef *expr)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->str.value) < 0) {
         return CHIMP_FALSE;
     }
@@ -437,7 +458,7 @@ chimp_compile_ast_expr_str (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_bool (ChimpCodeCompiler *c, ChimpRef *expr)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     if (chimp_code_pushconst (code, CHIMP_AST_EXPR(expr)->bool.value) < 0) {
         return CHIMP_FALSE;
     }
@@ -447,7 +468,7 @@ chimp_compile_ast_expr_bool (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
 {
-    ChimpRef *code = CHIMP_CURRENT_CODE_UNIT(c)->code;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.left)) {
         return CHIMP_FALSE;
     }
@@ -542,13 +563,15 @@ ChimpRef *
 chimp_compile_ast (ChimpRef *ast)
 {
     ChimpCodeUnit *unit;
+    ChimpRef *module;
     ChimpCodeCompiler c;
     memset (&c, 0, sizeof(c));
 
-    if (!chimp_code_compiler_push_unit (&c, CHIMP_UNIT_TYPE_MODULE)) {
+    module = chimp_code_compiler_push_module_unit (&c);
+    if (module == NULL) {
         return NULL;
     }
-    CHIMP_GC_MAKE_STACK_ROOT(CHIMP_CURRENT_CODE_UNIT(&c)->module);
+    CHIMP_GC_MAKE_STACK_ROOT(module);
 
     switch (CHIMP_ANY_TYPE(ast)) {
         case CHIMP_VALUE_TYPE_AST_MOD:
@@ -559,7 +582,10 @@ chimp_compile_ast (ChimpRef *ast)
             return NULL;
     };
 
-    return chimp_code_compiler_pop_unit (&c, CHIMP_UNIT_TYPE_MODULE);
+    if (!chimp_code_compiler_pop_unit (&c, CHIMP_UNIT_TYPE_MODULE)) {
+        return NULL;
+    }
+    return module;
 
 error:
     unit = c.current_unit;
