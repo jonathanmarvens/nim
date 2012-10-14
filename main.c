@@ -44,11 +44,6 @@ main (int argc, char **argv)
     return rc;
 }
 
-extern int yyparse(void);
-extern void yylex_destroy(void);
-extern FILE *yyin;
-extern ChimpRef *main_mod;
-
 static ChimpRef *
 parse_args (int argc, char **argv)
 {
@@ -77,47 +72,35 @@ parse_args (int argc, char **argv)
 static int
 real_main (int argc, char **argv)
 {
-    int rc;
     ChimpRef *result;
+    ChimpRef *module;
+    ChimpRef *main_method;
+    ChimpRef *args;
     if (argc < 2) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         return 1;
     }
-    yyin = fopen (argv[1], "r");
-    if (yyin == NULL) {
-        fprintf (stderr, "error: could not open input file: %s\n", argv[1]);
-        return 1;
-    }
-    rc = yyparse();
-    fclose (yyin);
-    yylex_destroy ();
-    if (rc == 0) {
-        ChimpRef *module;
-        ChimpRef *main_method;
-        ChimpRef *args;
 
-        module = CHIMP_COMPILE_MODULE_AST ("main", main_mod);
-        if (module == NULL) {
-            fprintf (stderr, "error: could not compile AST\n");
-            return 1;
-        }
-        main_method = chimp_object_getattr_str (module, "main");
-        if (main_method == NULL) {
-            fprintf (stderr, "error: could not find main method in this module\n");
-            return 1;
-        }
-        args = parse_args (argc, argv);
-        result = chimp_vm_invoke (NULL, main_method, args);
-        if (result == NULL) {
-            fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
-            return 1;
-        }
-    }
-    else {
-        fprintf (stderr, "error: parse failed\n");
+    module = CHIMP_COMPILE_MODULE_FROM_FILE ("main", argv[1]);
+    if (module == NULL) {
+        fprintf (stderr, "error: failed to compile %s\n", argv[0]);
         return 1;
     }
-    return rc;
+
+    main_method = chimp_object_getattr_str (module, "main");
+    if (main_method == NULL) {
+        fprintf (stderr, "error: could not find main method in this module\n");
+        return 1;
+    }
+
+    args = parse_args (argc, argv);
+    result = chimp_vm_invoke (NULL, main_method, args);
+    if (result == NULL) {
+        fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
+        return 1;
+    }
+
+    return 0;
 }
 
 #if 0

@@ -614,3 +614,53 @@ error:
     return NULL;
 }
 
+extern int yyparse(void);
+extern void yylex_destroy(void);
+extern FILE *yyin;
+extern ChimpRef *main_mod;
+
+ChimpRef *
+chimp_compile_file (ChimpRef *name, const char *filename)
+{
+    int rc;
+    yyin = fopen (filename, "r");
+    if (yyin == NULL) {
+        return NULL;
+    }
+    rc = yyparse();
+    fclose (yyin);
+    yylex_destroy ();
+    if (rc == 0) {
+        if (name == NULL) {
+            size_t n;
+            size_t dot = 0;
+            char *temp;
+
+            /* XXX this is essentially an ugly basename() */
+            temp = strdup (filename);
+            if (temp == NULL) {
+                return NULL;
+            }
+            n = strlen(temp) - 1;
+            while (temp + n >= temp) {
+                if (temp[n] == '/') {
+                    break;
+                }
+                else if (temp[n] == '.') {
+                    dot = '.';
+                }
+                n--;
+            }
+            name = chimp_str_new (NULL, temp + n, strlen(temp) - n - dot);
+            CHIMP_FREE (temp);
+            if (name == NULL) {
+                return NULL;
+            }
+        }
+        return chimp_compile_ast (name, main_mod);
+    }
+    else {
+        return NULL;
+    }
+}
+
