@@ -37,7 +37,7 @@ extern ChimpRef *main_mod;
 %type <ref> assign
 %type <ref> opt_stmts block opt_else
 %type <ref> expr simple
-%type <ref> call
+%type <ref> opt_simple_tail
 %type <ref> opt_decls opt_uses
 %type <ref> use
 %type <ref> func_decl
@@ -114,11 +114,18 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      | expr TOK_AND expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3); }
      | expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3); }
      | expr TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3); }
-     | simple { $$ = $1; }
+     | simple opt_simple_tail {
+        if ($2 != NULL) {
+            $$ = $2;
+            CHIMP_AST_EXPR($2)->targetable.target = $1;
+        }
+        else {
+            $$ = $1;
+        }
+     }
      ;
 
-simple : call { $$ = $1; }
-       | nil { $$ = $1; }
+simple : nil { $$ = $1; }
        | str { $$ = $1; }
        | array { $$ = $1; }
        | hash { $$ = $1; }
@@ -126,8 +133,9 @@ simple : call { $$ = $1; }
        | bool { $$ = $1; }
        ;
 
-call : ident TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call ($1, $3); }
-     ;
+opt_simple_tail : TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call (NULL, $2); }
+                | /* empty */ { $$ = NULL; }
+                ;
 
 opt_args : args        { $$ = $1; }
          | /* empty */ { $$ = chimp_array_new (NULL); }

@@ -176,6 +176,10 @@ def header():
                     ap = attr_params(a)
                     _("            %(attr_ctype)s %(attr)s;", ap)
                 _("        } %(kind)s;", kp)
+            if np['node_type'] == 'expr':
+                _("        struct {")
+                _("            ChimpRef *target;")
+                _("        } targetable;")
             _("    };")
             _("} %(AppName)sAst%(NodeType)s;", np)
             _()
