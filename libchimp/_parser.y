@@ -56,7 +56,7 @@ opt_uses : use opt_uses { $$ = $2; chimp_array_unshift ($$, $1); }
          | /* empty */ { $$ = chimp_array_new (NULL); }
          ;
 
-use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use ($2); }
+use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use (CHIMP_AST_EXPR($2)->ident.id); }
     ;
 
 opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }

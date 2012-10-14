@@ -228,6 +228,8 @@ chimp_core_init_builtins (void)
     }
     chimp_gc_make_root (NULL, chimp_builtins);
 
+    /* TODO error checking */
+
     /* XXX we can't call methods on the i/o module yet (we don't have the
      *     syntax for it), so use these instead.
      */
@@ -242,7 +244,8 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
-    chimp_hash_put_str (chimp_builtins, "io", chimp_core_init_io_module ());
+
+    chimp_task_add_module (NULL, chimp_core_init_io_module ());
 
     return CHIMP_TRUE;
 }

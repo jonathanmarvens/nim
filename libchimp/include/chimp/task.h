@@ -40,6 +40,12 @@ chimp_task_get_gc (ChimpTask *task);
 ChimpVM *
 chimp_task_get_vm (ChimpTask *task);
 
+chimp_bool_t
+chimp_task_add_module (ChimpTask *task, ChimpRef *module);
+
+ChimpRef *
+chimp_task_find_module (ChimpTask *task, ChimpRef *name);
+
 #define CHIMP_CURRENT_TASK chimp_task_current ()
 #define CHIMP_CURRENT_STACK_FRAME \
     chimp_task_top_stack_frame (chimp_task_current())

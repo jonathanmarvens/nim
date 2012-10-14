@@ -60,7 +60,7 @@ AST_DESCRIPTOR = [
         ['var',
             ['name', 'str']],
         ['use',
-            ['name', 'expr']]]
+            ['name', 'str']]]
 ]
 
 class UnknownTypeError(Exception):

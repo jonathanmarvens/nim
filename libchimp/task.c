@@ -7,15 +7,21 @@
 #include "chimp/frame.h"
 #include "chimp/vm.h"
 
+/* XXX consistency: when can I pass NULL for automatically getting the current
+ *     task ?
+ */
+
 static pthread_key_t current_task_key;
 static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 
 struct _ChimpTask {
     ChimpGC  *gc;
     ChimpVM  *vm;
+    struct _ChimpTask *parent;
     chimp_bool_t is_main;
     pthread_t thread;
     ChimpRef *impl;
+    ChimpRef *modules;
     chimp_bool_t done;
 };
 
@@ -66,6 +72,7 @@ chimp_task_new (ChimpRef *callable)
     memset (task, 0, sizeof (*task));
     /* XXX nothing ensures that 'callable' won't get collected by the active GC */
     /*     do we want to make it a root of the current GC? something else? */
+    task->parent = chimp_task_current ();
     task->impl = callable;
     task->is_main = CHIMP_FALSE;
     /* TODO error checking */
@@ -81,6 +88,7 @@ chimp_task_new_main (void *stack_start)
         return NULL;
     }
     memset (task, 0, sizeof (*task));
+    task->parent = NULL;
     task->impl = NULL;
     task->is_main = CHIMP_TRUE;
     task->gc = chimp_gc_new (stack_start);
@@ -187,3 +195,46 @@ chimp_task_get_vm (ChimpTask *task)
 
     return task->vm;
 }
+
+chimp_bool_t
+chimp_task_add_module (ChimpTask *task, ChimpRef *module)
+{
+    if (task == NULL) {
+        task = chimp_task_current ();
+    }
+
+    if (task->modules == NULL) {
+        task->modules = chimp_hash_new (NULL);
+        if (task->modules == NULL) {
+            return CHIMP_FALSE;
+        }
+        chimp_gc_make_root (NULL, task->modules);
+    }
+
+    return chimp_hash_put (task->modules, CHIMP_MODULE(module)->name, module);
+}
+
+ChimpRef *
+chimp_task_find_module (ChimpTask *task, ChimpRef *name)
+{
+    if (task == NULL) {
+        task = chimp_task_current ();
+    }
+
+    while (task != NULL) {
+        ChimpRef *value;
+        
+        if (task->modules != NULL) {
+            value = chimp_hash_get (task->modules, name);
+            if (value == NULL) {
+                return NULL;
+            }
+            else if (value != chimp_nil) {
+                return value;
+            }
+        }
+        task = task->parent;
+    }
+    return NULL;
+}
+

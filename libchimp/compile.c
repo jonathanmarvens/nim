@@ -6,6 +6,7 @@
 #include "chimp/int.h"
 #include "chimp/method.h"
 #include "chimp/object.h"
+#include "chimp/task.h"
 
 typedef enum _ChimpUnitType {
     CHIMP_UNIT_TYPE_CODE,
@@ -311,7 +312,21 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
 static chimp_bool_t
 chimp_compile_ast_decl_use (ChimpCodeCompiler *c, ChimpRef *decl)
 {
-    /* TODO */
+    ChimpRef *module = CHIMP_COMPILER_MODULE(c);
+    ChimpRef *import;
+    ChimpRef *name;
+
+    name = CHIMP_AST_DECL(decl)->use.name;
+    import = chimp_task_find_module (NULL, name);
+    if (import == NULL) {
+        /* TODO load new module from file */
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_module_add_local (module, name, import)) {
+        return CHIMP_FALSE;
+    }
+
     return CHIMP_TRUE;
 }
 
