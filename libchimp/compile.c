@@ -632,26 +632,30 @@ chimp_compile_file (ChimpRef *name, const char *filename)
     yylex_destroy ();
     if (rc == 0) {
         if (name == NULL) {
-            size_t n;
-            size_t dot = 0;
+            ssize_t slash = -1;
+            ssize_t dot = -1;
+            size_t i;
             char *temp;
+            size_t len = strlen (filename);
 
-            /* XXX this is essentially an ugly basename() */
-            temp = strdup (filename);
+            /* XXX this is just a shit O(n) basename() impl */
+            temp = strndup (filename, len);
             if (temp == NULL) {
                 return NULL;
             }
-            n = strlen(temp) - 1;
-            while (temp + n >= temp) {
-                if (temp[n] == '/') {
-                    break;
+            for (i = 0; i < len; i++) {
+                if (temp[i] == '/') {
+                    slash = i + 1;
+                    dot = -1;
                 }
-                else if (temp[n] == '.') {
-                    dot = '.';
+                else if (temp[i] == '.' && dot == -1) {
+                    dot = i;
                 }
-                n--;
             }
-            name = chimp_str_new (NULL, temp + n, strlen(temp) - n - dot);
+            if (dot == -1) dot = len;
+            if (slash == -1) slash = 0;
+
+            name = chimp_str_new (NULL, temp + slash, dot - slash);
             CHIMP_FREE (temp);
             if (name == NULL) {
                 return NULL;

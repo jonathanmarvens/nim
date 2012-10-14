@@ -81,9 +81,9 @@ real_main (int argc, char **argv)
         return 1;
     }
 
-    module = CHIMP_COMPILE_MODULE_FROM_FILE ("main", argv[1]);
+    module = CHIMP_COMPILE_MODULE_FROM_FILE (NULL, argv[1]);
     if (module == NULL) {
-        fprintf (stderr, "error: failed to compile %s\n", argv[0]);
+        fprintf (stderr, "error: failed to compile %s\n", argv[1]);
         return 1;
     }
 
