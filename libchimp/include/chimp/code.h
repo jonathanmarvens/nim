@@ -15,6 +15,7 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_PUSHCONST,
     CHIMP_OPCODE_STORENAME,
     CHIMP_OPCODE_PUSHNAME,
+    CHIMP_OPCODE_PUSHNIL,
     CHIMP_OPCODE_GETATTR,
     CHIMP_OPCODE_CALL,
     CHIMP_OPCODE_MAKEARRAY,
@@ -56,6 +57,9 @@ chimp_code_pushconst (ChimpRef *self, ChimpRef *value);
 
 chimp_bool_t
 chimp_code_pushname (ChimpRef *self, ChimpRef *id);
+
+chimp_bool_t
+chimp_code_pushnil (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_storename (ChimpRef *self, ChimpRef *id);

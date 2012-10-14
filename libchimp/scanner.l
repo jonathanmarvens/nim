@@ -19,6 +19,7 @@
 
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
+"nil"                       { CHIMP_TOKEN(TOK_NIL) }
 "or"                        { CHIMP_TOKEN(TOK_OR) }
 "and"                       { CHIMP_TOKEN(TOK_AND) }
 "use"                       { CHIMP_TOKEN(TOK_USE) }

@@ -376,6 +376,8 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_str (c, expr);
         case CHIMP_AST_EXPR_BOOL:
             return chimp_compile_ast_expr_bool (c, expr);
+        case CHIMP_AST_EXPR_NIL:
+            return chimp_code_pushnil (CHIMP_COMPILER_CODE(c));
         case CHIMP_AST_EXPR_BINOP:
             return chimp_compile_ast_expr_binop (c, expr);
         default:

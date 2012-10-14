@@ -309,6 +309,14 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_PUSHNIL:
+            {
+                if (!chimp_vm_push (vm, chimp_nil)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
             case CHIMP_OPCODE_GETATTR:
             {
                 if (!chimp_vm_getattr (vm, code, locals, pc)) {

@@ -25,7 +25,7 @@ extern ChimpRef *main_mod;
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE
+%token TOK_IF TOK_ELSE TOK_USE TOK_NIL
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -45,7 +45,7 @@ extern ChimpRef *main_mod;
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
-%type <ref> ident str array hash bool
+%type <ref> ident str array hash bool nil
 
 %%
 
@@ -118,6 +118,7 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      ;
 
 simple : call { $$ = $1; }
+       | nil { $$ = $1; }
        | str { $$ = $1; }
        | array { $$ = $1; }
        | hash { $$ = $1; }
@@ -143,6 +144,9 @@ ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
       ;
 
 str : TOK_STR { $$ = chimp_ast_expr_new_str ($1); }
+    ;
+
+nil : TOK_NIL { $$ = chimp_ast_expr_new_nil (); }
     ;
 
 bool : TOK_TRUE { $$ = chimp_ast_expr_new_bool (chimp_true); }

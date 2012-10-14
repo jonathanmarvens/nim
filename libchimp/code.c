@@ -136,6 +136,16 @@ chimp_code_pushname (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
+chimp_code_pushnil (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(PUSHNIL);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_storename (ChimpRef *self, ChimpRef *id)
 {
     int32_t arg;

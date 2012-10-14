@@ -40,6 +40,7 @@ AST_DESCRIPTOR = [
             ['value', 'str']],
         ['ident',
             ['id', 'str']],
+        ['nil'],
         ['bool', 
             ['value', 'bool']]],
     ['stmt',
