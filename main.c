@@ -77,8 +77,6 @@ real_main (int argc, char **argv)
             return 1;
         }
         main_method = chimp_object_getattr_str (module, "main");
-        printf ("%s\n", CHIMP_STR_DATA(module));
-        printf ("%s\n", CHIMP_STR_DATA(chimp_object_str (NULL, CHIMP_MODULE(module)->locals)));
         if (main_method == NULL) {
             fprintf (stderr, "error: could not find main method in this module\n");
             return 1;
