@@ -96,7 +96,7 @@ real_main (int argc, char **argv)
         ChimpRef *main_method;
         ChimpRef *args;
 
-        module = chimp_compile_ast (main_mod);
+        module = CHIMP_COMPILE_MODULE_AST ("main", main_mod);
         if (module == NULL) {
             fprintf (stderr, "error: could not compile AST\n");
             return 1;
@@ -106,21 +106,12 @@ real_main (int argc, char **argv)
             fprintf (stderr, "error: could not find main method in this module\n");
             return 1;
         }
-        /*
-        if (getenv("CHIMP_DEBUG_MODE")) {
-            fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
-        }
-        */
         args = parse_args (argc, argv);
         result = chimp_vm_invoke (NULL, main_method, args);
-        /*
-        result = chimp_vm_eval (NULL, code, locals);
-        */
         if (result == NULL) {
             fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
             return 1;
         }
-        /* printf ("%s\n", CHIMP_STR_DATA(chimp_object_str(NULL, result))); */
     }
     else {
         fprintf (stderr, "error: parse failed\n");

@@ -77,7 +77,7 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type)
             break;
         case CHIMP_UNIT_TYPE_MODULE:
             /* XXX name hard-coded */
-            unit->module = chimp_module_new_str ("main", NULL);
+            unit->module = chimp_module_new (chimp_nil, NULL);
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown unit type: %d", type);
@@ -577,7 +577,7 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
 }
 
 ChimpRef *
-chimp_compile_ast (ChimpRef *ast)
+chimp_compile_ast (ChimpRef *name, ChimpRef *ast)
 {
     ChimpCodeUnit *unit;
     ChimpRef *module;
@@ -588,7 +588,7 @@ chimp_compile_ast (ChimpRef *ast)
     if (module == NULL) {
         return NULL;
     }
-    CHIMP_GC_MAKE_STACK_ROOT(module);
+    CHIMP_MODULE(module)->name = name;
 
     switch (CHIMP_ANY_TYPE(ast)) {
         case CHIMP_VALUE_TYPE_AST_MOD:
