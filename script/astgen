@@ -53,6 +53,8 @@ AST_DESCRIPTOR = [
             ['expr', 'expr'],
             ['body', 'array'],
             ['orelse', 'array']],
+        ['ret',
+            ['expr', 'expr']],
         ['assign',
             ['target', 'expr'],
             ['value', 'expr']]],

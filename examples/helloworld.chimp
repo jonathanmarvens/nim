@@ -2,9 +2,13 @@
 
 use io;
 
-main(argv) {
+readname {
     io.print ("What's your name?");
-    name = io.readline();
+    ret io.readline();
+}
+
+main(argv) {
+    name = readname();
     io.print (str("hello, ", name));
     io.print (argv);
 }

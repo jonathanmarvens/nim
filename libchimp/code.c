@@ -190,6 +190,16 @@ chimp_code_call (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_ret (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(RET);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {

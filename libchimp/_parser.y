@@ -26,7 +26,7 @@ extern ChimpRef *main_mod;
 %token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE
+%token TOK_IF TOK_ELSE TOK_USE TOK_RET
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -37,7 +37,7 @@ extern ChimpRef *main_mod;
 %type <ref> stmt simple_stmt compound_stmt
 %type <ref> assign
 %type <ref> opt_stmts block opt_else
-%type <ref> expr simple
+%type <ref> opt_expr expr simple
 %type <ref> opt_simple_tail
 %type <ref> opt_decls opt_uses
 %type <ref> use
@@ -47,6 +47,7 @@ extern ChimpRef *main_mod;
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
 %type <ref> ident str array hash bool nil
+%type <ref> ret
 
 %%
 
@@ -94,6 +95,7 @@ stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
 
 simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
             | assign { $$ = $1; }
+            | ret { $$ = $1; }
             ;
 
 compound_stmt : TOK_IF expr block opt_else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
@@ -208,6 +210,13 @@ array_elements : expr opt_array_elements_tail { $$ = $2; chimp_array_unshift ($$
 opt_array_elements_tail : TOK_COMMA expr opt_array_elements_tail { $$ = $3; chimp_array_unshift ($$, $2); }
                         | /* empty */ { $$ = chimp_array_new (NULL); }
                         ;
+
+opt_expr : expr { $$ = $1; }
+         | /* empty */ { $$ = NULL; }
+         ;
+
+ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2); }
+    ;
 
 %%
 

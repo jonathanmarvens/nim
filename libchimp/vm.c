@@ -333,6 +333,10 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_RET:
+            {
+                goto done;
+            }
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {
@@ -440,6 +444,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
         };
     }
 
+done:
     chimp_array_pop (vm->frames);
     return chimp_vm_pop(vm);
 }

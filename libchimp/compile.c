@@ -249,6 +249,27 @@ chimp_compile_ast_stmt_if_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 }
 
 static chimp_bool_t
+chimp_compile_ast_stmt_ret (ChimpCodeCompiler *c, ChimpRef *stmt)
+{
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpRef *expr = CHIMP_AST_STMT(stmt)->ret.expr;
+    if (expr != NULL) {
+        if (!chimp_compile_ast_expr (c, expr)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else if (!chimp_code_pushnil (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_ret (code)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
 {
     ChimpRef *func_code;
@@ -357,6 +378,8 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
             return chimp_compile_ast_stmt_assign (c, stmt);
         case CHIMP_AST_STMT_IF_:
             return chimp_compile_ast_stmt_if_ (c, stmt);
+        case CHIMP_AST_STMT_RET:
+            return chimp_compile_ast_stmt_ret (c, stmt);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return CHIMP_FALSE;

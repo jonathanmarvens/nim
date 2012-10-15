@@ -23,6 +23,7 @@
 "or"                        { CHIMP_TOKEN(TOK_OR) }
 "and"                       { CHIMP_TOKEN(TOK_AND) }
 "use"                       { CHIMP_TOKEN(TOK_USE) }
+"ret"                       { CHIMP_TOKEN(TOK_RET) }
 [ \t\r\n]                   { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
