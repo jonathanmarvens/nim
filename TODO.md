@@ -2,7 +2,6 @@
 * A macro for safe assignment to object attributes with simultaneous
   allocation.
 * Class definitions.
-* Make it possible to call member methods.
 * Expose methods on more classes.
 * Rubyish keyword args:
   foo(a, b, bar: 10, baz: 20)
