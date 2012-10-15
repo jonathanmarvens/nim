@@ -7,9 +7,13 @@ readname {
     ret io.readline();
 }
 
-main(argv) {
-    name = readname();
+ohai(name) {
     io.print (str("hello, ", name));
+}
+
+main(argv) {
+    name = readname ();
+    ohai (name);
     io.print (argv);
 }
 
