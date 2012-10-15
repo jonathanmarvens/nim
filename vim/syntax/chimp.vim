@@ -14,7 +14,7 @@ syn keyword chimpConditional if else
 syn keyword chimpType str int hash class object array
 syn match chimpString '"[^"]*"'
 syn match chimpComment '#.*$'
-syn match chimpInt '[0-9]+'
+syn match chimpInt '[0-9][0-9]*'
 syn match chimpIdent '[a-zA-Z_][a-zA-Z0-9_]*'
 syn match chimpFunction '^[a-zA-Z_][a-zA-Z0-9_]*'
 
