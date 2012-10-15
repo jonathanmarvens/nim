@@ -3,17 +3,17 @@
 use io;
 
 readname {
-    io.print ("What's your name?");
-    ret io.readline();
+  io.print ("What's your name?");
+  ret io.readline();
 }
 
 ohai(name) {
-    io.print (str("hello, ", name));
+  io.print (str("hello, ", name));
 }
 
 main(argv) {
-    name = readname ();
-    ohai (name);
-    io.print (argv);
+  name = readname ();
+  ohai (name);
+  io.print (argv);
 }
 

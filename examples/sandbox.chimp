@@ -6,32 +6,32 @@
 use io;
 
 main(argv) {
-    x = "hello";
-    y = ["foo"];
-    z = x;
+  x = "hello";
+  y = ["foo"];
+  z = x;
 
-    io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
+  io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
 
-    some_bool = false;
-    if some_bool {
-        io.print (x);
-    }
-    else {
-        io.print ("omgbye");
-    }
+  some_bool = false;
+  if some_bool {
+      io.print (x);
+  }
+  else {
+      io.print ("omgbye");
+  }
 
-    io.print ("Enter your name:");
-    name = io.readline();
-    if name == "dude" {
-        io.print ("Dude!");
-    }
-    else {
-        io.print (str("Hey there, ", name));
-    }
+  io.print ("Enter your name:");
+  name = io.readline();
+  if name == "dude" {
+      io.print ("Dude!");
+  }
+  else {
+      io.print (str("Hey there, ", name));
+  }
 
-    io.print (true and "test");
+  io.print (true and "test");
 
-    m = module("main");
-    io.print (str(m));
+  m = module("main");
+  io.print (str(m));
 }
 
