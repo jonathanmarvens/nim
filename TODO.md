@@ -1,4 +1,7 @@
 * More tests.
+* Exceptions & exception handling.
+* File I/O.
+* Custom native types.
 * A macro for safe assignment to object attributes with simultaneous
   allocation.
 * Class definitions.
