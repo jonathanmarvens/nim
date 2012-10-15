@@ -230,12 +230,6 @@ chimp_core_init_builtins (void)
 
     /* TODO error checking */
 
-    /* XXX we can't call methods on the i/o module yet (we don't have the
-     *     syntax for it), so use these instead.
-     */
-    chimp_hash_put_str (chimp_builtins, "print",  chimp_method_new_native (NULL, NULL, _print));
-    chimp_hash_put_str (chimp_builtins, "input",  chimp_method_new_native (NULL, NULL, _input));
-
     chimp_hash_put_str (chimp_builtins, "hash",   chimp_hash_class);
     chimp_hash_put_str (chimp_builtins, "array",  chimp_array_class);
     chimp_hash_put_str (chimp_builtins, "int",    chimp_int_class);
