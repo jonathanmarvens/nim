@@ -3,33 +3,35 @@
 # Dirty sandbox.
 #
 
+use io;
+
 main(argv) {
     x = "hello";
     y = ["foo"];
     z = x;
 
-    print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
+    io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
 
     some_bool = false;
     if some_bool {
-        print (x);
+        io.print (x);
     }
     else {
-        print ("omgbye");
+        io.print ("omgbye");
     }
 
-    print ("Enter your name:");
-    name = input();
+    io.print ("Enter your name:");
+    name = io.readline();
     if name == "dude" {
-        print ("Dude!");
+        io.print ("Dude!");
     }
     else {
-        print (str("Hey there, ", name));
+        io.print (str("Hey there, ", name));
     }
 
-    print (true and "test");
+    io.print (true and "test");
 
     m = module("main");
-    print (str(m));
+    io.print (str(m));
 }
 
