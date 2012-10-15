@@ -163,12 +163,19 @@ chimp_code_storename (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
-chimp_code_getattr (ChimpRef *self)
+chimp_code_getattr (ChimpRef *self, ChimpRef *id)
 {
+    int32_t arg;
     if (!chimp_code_grow (self)) {
         return CHIMP_FALSE;
     }
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(GETATTR);
+
+    arg = chimp_code_add_name (self, id);
+    if (arg < 0) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(GETATTR, arg);
     return CHIMP_TRUE;
 }
 
@@ -368,7 +375,7 @@ chimp_code_dump (ChimpRef *self)
         if (!chimp_str_append_str (str, op_str)) {
             return NULL;
         }
-        if (op == CHIMP_OPCODE_PUSHNAME || op == CHIMP_OPCODE_STORENAME) {
+        if (op == CHIMP_OPCODE_PUSHNAME || op == CHIMP_OPCODE_STORENAME || op == CHIMP_OPCODE_GETATTR) {
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }

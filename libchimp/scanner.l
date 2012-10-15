@@ -24,6 +24,7 @@
 "and"                       { CHIMP_TOKEN(TOK_AND) }
 "use"                       { CHIMP_TOKEN(TOK_USE) }
 [ \t\r\n]                   { /* do nothing */ }
+"."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
 ";"                         { CHIMP_TOKEN(TOK_SEMICOLON) }

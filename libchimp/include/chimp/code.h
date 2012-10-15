@@ -65,7 +65,7 @@ chimp_bool_t
 chimp_code_storename (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
-chimp_code_getattr (ChimpRef *self);
+chimp_code_getattr (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
 chimp_code_call (ChimpRef *self);

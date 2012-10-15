@@ -139,7 +139,7 @@ chimp_vm_getattr (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     ChimpRef *target;
     ChimpRef *result;
     
-    attr = chimp_vm_pop (vm);
+    attr = CHIMP_INSTR_NAME1 (code, pc);
     if (attr == NULL) {
         return CHIMP_FALSE;
     }

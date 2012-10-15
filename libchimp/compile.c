@@ -61,6 +61,9 @@ static chimp_bool_t
 chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
+chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr);
+
+static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *binop);
 
 static ChimpRef *
@@ -366,6 +369,8 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
     switch (CHIMP_AST_EXPR_TYPE(expr)) {
         case CHIMP_AST_EXPR_CALL:
             return chimp_compile_ast_expr_call (c, expr);
+        case CHIMP_AST_EXPR_GETATTR:
+            return chimp_compile_ast_expr_getattr (c, expr);
         case CHIMP_AST_EXPR_ARRAY:
             return chimp_compile_ast_expr_array (c, expr);
         case CHIMP_AST_EXPR_HASH:
@@ -411,6 +416,30 @@ chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr)
     }
 
     if (!chimp_code_call (code)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr)
+{
+    ChimpRef *target;
+    ChimpRef *attr;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+    target = CHIMP_AST_EXPR(expr)->getattr.target;
+    if (!chimp_compile_ast_expr (c, target)) {
+        return CHIMP_FALSE;
+    }
+
+    attr = CHIMP_AST_EXPR(expr)->getattr.attr;
+    if (attr == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getattr (code, attr)) {
         return CHIMP_FALSE;
     }
 

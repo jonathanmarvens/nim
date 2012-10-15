@@ -32,6 +32,9 @@ AST_DESCRIPTOR = [
         ['call',
             ['target', 'expr'],
             ['args', 'array']],
+        ['getattr',
+            ['target', 'expr'],
+            ['attr', 'str']],
         ['array',
             ['value', 'array']],
         ['hash',
@@ -184,6 +187,15 @@ def header():
             _("} %(AppName)sAst%(NodeType)s;", np)
             _()
 
+        _("#define CHIMP_AST_EXPR_TARGETABLE_INNER(ref, value) \\")
+        _("    do { \\")
+        _("        ChimpRef *r = (ref); \\")
+        _("        while (CHIMP_AST_EXPR(r)->targetable.target) { \\")
+        _("            r = CHIMP_AST_EXPR(r)->targetable.target; \\")
+        _("        } \\")
+        _("        CHIMP_AST_EXPR(r)->targetable.target = (value); \\")
+        _("    } while (0)")
+        _()
         _("chimp_bool_t")
         _("%(app_name)s_ast_class_bootstrap(void);")
 

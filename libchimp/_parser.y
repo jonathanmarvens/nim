@@ -23,6 +23,7 @@ extern ChimpRef *main_mod;
 
 %token TOK_TRUE TOK_FALSE TOK_NIL
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
+%token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE
@@ -115,12 +116,10 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      | expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3); }
      | expr TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3); }
      | simple opt_simple_tail {
+        $$ = $1;
         if ($2 != NULL) {
             $$ = $2;
-            CHIMP_AST_EXPR($2)->targetable.target = $1;
-        }
-        else {
-            $$ = $1;
+            CHIMP_AST_EXPR_TARGETABLE_INNER($$, $1);
         }
      }
      ;
@@ -133,7 +132,28 @@ simple : nil { $$ = $1; }
        | bool { $$ = $1; }
        ;
 
-opt_simple_tail : TOK_LBRACKET opt_args TOK_RBRACKET { $$ = chimp_ast_expr_new_call (NULL, $2); }
+opt_simple_tail : TOK_LBRACKET opt_args TOK_RBRACKET opt_simple_tail {
+                    ChimpRef *call;
+                    call = chimp_ast_expr_new_call (NULL, $2);
+                    if ($4 != NULL) {
+                        $$ = $4;
+                        CHIMP_AST_EXPR_TARGETABLE_INNER($$, call);
+                    }
+                    else {
+                        $$ = call;
+                    }
+                }
+                | TOK_FULLSTOP ident opt_simple_tail {
+                    ChimpRef *getattr;
+                    getattr = chimp_ast_expr_new_getattr (NULL, CHIMP_AST_EXPR($2)->ident.id);
+                    if ($3 != NULL) {
+                        $$ = $3;
+                        CHIMP_AST_EXPR_TARGETABLE_INNER($$, getattr);
+                    }
+                    else {
+                        $$ = getattr;
+                    }
+                }
                 | /* empty */ { $$ = NULL; }
                 ;
 
