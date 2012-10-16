@@ -41,6 +41,8 @@ AST_DESCRIPTOR = [
             ['value', 'hash']],
         ['str',
             ['value', 'str']],
+        ['int',
+            ['value', 'int']],
         ['ident',
             ['id', 'str']],
         ['nil'],
@@ -107,7 +109,7 @@ def node_type_params(t):
 
 def kind_params(k):
     name = k[0]
-    if name in ('if',):
+    if name in ('if', 'int'):
         name += "_";
     return {
         "kind": name,

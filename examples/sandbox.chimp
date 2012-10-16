@@ -10,7 +10,7 @@ main(argv) {
   y = ["foo"];
   z = x;
 
-  io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true);
+  io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true, 5);
 
   some_bool = false;
   if some_bool {
