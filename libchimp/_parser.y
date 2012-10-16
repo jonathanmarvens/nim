@@ -4,6 +4,7 @@
 #include "chimp/any.h"
 #include "chimp/ast.h"
 #include "chimp/str.h"
+#include "chimp/int.h"
 #include "chimp/array.h"
 #include "chimp/hash.h"
 #include "chimp/object.h"
@@ -31,7 +32,7 @@ extern ChimpRef *main_mod;
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
 
-%token <ref> TOK_IDENT TOK_STR
+%token <ref> TOK_IDENT TOK_STR TOK_INT
 
 %type <ref> module
 %type <ref> stmt simple_stmt compound_stmt
@@ -46,7 +47,7 @@ extern ChimpRef *main_mod;
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
-%type <ref> ident str array hash bool nil
+%type <ref> ident str array hash bool nil int
 %type <ref> ret
 
 %%
@@ -128,6 +129,7 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
 
 simple : nil { $$ = $1; }
        | str { $$ = $1; }
+       | int { $$ = $1; }
        | array { $$ = $1; }
        | hash { $$ = $1; }
        | ident { $$ = $1; }
@@ -174,6 +176,9 @@ ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
       ;
 
 str : TOK_STR { $$ = chimp_ast_expr_new_str ($1); }
+    ;
+
+int : TOK_INT { $$ = chimp_ast_expr_new_int_ ($1); }
     ;
 
 nil : TOK_NIL { $$ = chimp_ast_expr_new_nil (); }
