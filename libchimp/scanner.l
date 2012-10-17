@@ -2,6 +2,7 @@
 
 #include "chimp/str.h"
 #include "chimp/_parser.h"
+#include "chimp/int.h"
 
 
 #define CHIMP_REF_TOKEN(token, r) yylval.ref = (r); return (token);
