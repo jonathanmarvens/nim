@@ -1,3 +1,4 @@
+AC_PREREQ(2.69)
 AC_INIT([chimp],[0.0.1],[github@tomlee.co])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([1.9 foreign])
