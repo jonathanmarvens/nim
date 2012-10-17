@@ -23,7 +23,7 @@
         CHIMP_CLASS(c)->name = chimp_gc_new_object ((gc)); \
         CHIMP_ANY(CHIMP_CLASS(c)->name)->type = CHIMP_VALUE_TYPE_STR; \
         CHIMP_ANY(CHIMP_CLASS(c)->name)->klass = chimp_str_class; \
-        CHIMP_STR(CHIMP_CLASS(c)->name)->data = strndup ((n), (sizeof(n)-1)); \
+        CHIMP_STR(CHIMP_CLASS(c)->name)->data = fake_strndup ((n), (sizeof(n)-1)); \
         if (CHIMP_STR(CHIMP_CLASS(c)->name)->data == NULL) { \
             chimp_task_delete (main_task); \
             main_task = NULL; \
@@ -47,6 +47,19 @@ ChimpRef *chimp_nil = NULL;
 ChimpRef *chimp_true = NULL;
 ChimpRef *chimp_false = NULL;
 ChimpRef *chimp_builtins = NULL;
+
+/* XXX clean me up -- strndup is a GNU extension */
+static char *
+fake_strndup (const char *s, size_t len)
+{
+    char *buf = malloc (len + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    memcpy (buf, s, len);
+    buf[len] = '\0';
+    return buf;
+}
 
 static ChimpCmpResult
 chimp_str_cmp (ChimpRef *a, ChimpRef *b)
