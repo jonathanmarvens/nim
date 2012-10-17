@@ -4,7 +4,11 @@ set -ex
 
 aclocal --install -I m4
 autoconf
-libtoolize --copy
+if [ "$(uname -r)" = "Darwin" ]; then
+    glibtoolize
+else
+    libtoolize --copy
+fi
 automake --add-missing --copy
 ./configure "$@"
 
