@@ -30,7 +30,8 @@ libchimp_la_SOURCES = \
 	_parser.y \
 	scanner.l \
 	module.c \
-	modules/iomod.c
+	modules/iomod.c \
+	modules/assertmod.c
 
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =

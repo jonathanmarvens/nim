@@ -102,7 +102,8 @@ am_libchimp_la_OBJECTS = libchimp_la-ast.lo libchimp_la-gc.lo \
 	libchimp_la-frame.lo libchimp_la-hash.lo libchimp_la-int.lo \
 	libchimp_la-code.lo libchimp_la-compile.lo libchimp_la-vm.lo \
 	libchimp_la-_parser.lo libchimp_la-scanner.lo \
-	libchimp_la-module.lo libchimp_la-iomod.lo
+	libchimp_la-module.lo libchimp_la-iomod.lo \
+	libchimp_la-assertmod.lo
 libchimp_la_OBJECTS = $(am_libchimp_la_OBJECTS)
 libchimp_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libchimp_la_CFLAGS) \
@@ -296,7 +297,8 @@ libchimp_la_SOURCES = \
 	_parser.y \
 	scanner.l \
 	module.c \
-	modules/iomod.c
+	modules/iomod.c \
+	modules/assertmod.c
 
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD = 
@@ -377,6 +379,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-_parser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-array.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-assertmod.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-ast.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-class.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-code.Plo@am__quote@
@@ -556,6 +559,13 @@ libchimp_la-iomod.lo: modules/iomod.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='modules/iomod.c' object='libchimp_la-iomod.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-iomod.lo `test -f 'modules/iomod.c' || echo '$(srcdir)/'`modules/iomod.c
+
+libchimp_la-assertmod.lo: modules/assertmod.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -MT libchimp_la-assertmod.lo -MD -MP -MF $(DEPDIR)/libchimp_la-assertmod.Tpo -c -o libchimp_la-assertmod.lo `test -f 'modules/assertmod.c' || echo '$(srcdir)/'`modules/assertmod.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libchimp_la-assertmod.Tpo $(DEPDIR)/libchimp_la-assertmod.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='modules/assertmod.c' object='libchimp_la-assertmod.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-assertmod.lo `test -f 'modules/assertmod.c' || echo '$(srcdir)/'`modules/assertmod.c
 
 .l.c:
 	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)

@@ -11,6 +11,9 @@ extern "C" {
 ChimpRef *
 chimp_init_io_module (void);
 
+ChimpRef *
+chimp_init_assert_module (void);
+
 #ifdef __cplusplus
 };
 #endif
