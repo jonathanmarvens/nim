@@ -690,6 +690,7 @@ ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename)
 {
     int rc;
+    ChimpRef *mod;
     yyin = fopen (filename, "r");
     if (yyin == NULL) {
         return NULL;
@@ -698,6 +699,8 @@ chimp_compile_file (ChimpRef *name, const char *filename)
     fclose (yyin);
     yylex_destroy ();
     if (rc == 0) {
+        /* keep a ptr to main_mod on the stack so it doesn't get collected */
+        mod = main_mod;
         if (name == NULL) {
             ssize_t slash = -1;
             ssize_t dot = -1;
@@ -722,7 +725,7 @@ chimp_compile_file (ChimpRef *name, const char *filename)
                 return NULL;
             }
         }
-        return chimp_compile_ast (name, main_mod);
+        return chimp_compile_ast (name, mod);
     }
     else {
         return NULL;
