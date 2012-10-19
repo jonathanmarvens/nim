@@ -207,6 +207,30 @@ chimp_compile_ast_stmt_assign (ChimpCodeCompiler *c, ChimpRef *stmt)
 }
 
 static chimp_bool_t
+chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
+{
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpLabel end_body;
+
+    if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->while_.expr)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, &end_body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->while_.body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_patch_jump_location (code, end_body)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_compile_ast_stmt_if_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
@@ -381,6 +405,8 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
             return chimp_compile_ast_stmt_assign (c, stmt);
         case CHIMP_AST_STMT_IF_:
             return chimp_compile_ast_stmt_if_ (c, stmt);
+        case CHIMP_AST_STMT_WHILE_:
+            return chimp_compile_ast_stmt_while_ (c, stmt);
         case CHIMP_AST_STMT_RET:
             return chimp_compile_ast_stmt_ret (c, stmt);
         default:

@@ -7,7 +7,7 @@ TOP_SRCDIR="$(cd "$TOP_SRCDIR" && pwd)"
 
 LIBDIR="$TOP_SRCDIR/libchimp/.libs"
 
-cmd='exec gdb "$TOP_SRCDIR/.libs/chimp"'
+cmd='exec ddd "$TOP_SRCDIR/.libs/chimp"'
 
 if [ "$(uname)" = "Darwin" ]; then
     cmd="DYLD_LIBRARY_PATH='$LIBDIR' $cmd"

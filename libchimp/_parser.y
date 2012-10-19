@@ -27,7 +27,7 @@ extern ChimpRef *main_mod;
 %token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE TOK_RET
+%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_WHILE
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -100,6 +100,7 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
             ;
 
 compound_stmt : TOK_IF expr block opt_else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
+              | TOK_WHILE expr block { $$ = chimp_ast_stmt_new_while_ ($2, $3); }
               ;
 
 opt_else : TOK_ELSE block { $$ = $2; }

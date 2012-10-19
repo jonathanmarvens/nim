@@ -20,6 +20,10 @@ main(argv) {
       io.print ("omgbye");
   }
 
+  while true {
+    io.print ("while you wait");
+  }
+
   io.print ("Enter your name:");
   name = io.readline();
   if name == "dude" {
