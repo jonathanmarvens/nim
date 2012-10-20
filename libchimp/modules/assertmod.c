@@ -2,31 +2,62 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 #include "chimp/str.h"
+#include "chimp/vm.h"
 
 static ChimpRef *
 _chimp_assert_equal (ChimpRef *self, ChimpRef *args)
 {
     ChimpCmpResult r;
+    ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 1);
 
-    r = chimp_object_cmp (CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
+    r = chimp_object_cmp (left, right);
 
     if (r == CHIMP_CMP_ERROR) {
         return NULL;
     }
-    return (r == CHIMP_CMP_EQ) ? chimp_true : chimp_false;
+    if (r != CHIMP_CMP_EQ) {
+        chimp_vm_panic (
+            NULL,
+            chimp_str_new_format (
+                NULL,
+                "expected %s to be not equal to %s",
+                CHIMP_STR_DATA(left),
+                CHIMP_STR_DATA(right))
+        );
+        return NULL;
+    }
+    else {
+        return chimp_nil;
+    }
 }
 
 static ChimpRef *
 _chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
 {
     ChimpCmpResult r;
+    ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 1);
 
-    r = chimp_object_cmp (CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
+    r = chimp_object_cmp (left, right);
 
     if (r == CHIMP_CMP_ERROR) {
         return NULL;
     }
-    return (r == CHIMP_CMP_EQ) ? chimp_false : chimp_true;
+    if (r == CHIMP_CMP_EQ) {
+        chimp_vm_panic (
+            NULL,
+            chimp_str_new_format (
+                NULL,
+                "expected %s to be not equal to %s",
+                CHIMP_STR_DATA(left),
+                CHIMP_STR_DATA(right))
+        );
+        return NULL;
+    }
+    else {
+        return chimp_nil;
+    }
 }
 
 ChimpRef *

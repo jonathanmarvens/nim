@@ -24,6 +24,9 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals);
 ChimpRef *
 chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args);
 
+void
+chimp_vm_panic (ChimpVM *vm, ChimpRef *value);
+
 #ifdef __cplusplus
 };
 #endif

@@ -21,6 +21,9 @@ ChimpRef *
 chimp_str_new_take (ChimpGC *gc, char *data, size_t size);
 
 ChimpRef *
+chimp_str_new_format (ChimpGC *gc, const char *fmt, ...);
+
+ChimpRef *
 chimp_str_new_concat (ChimpGC *gc, ...);
 
 /* XXX these mutate string state ... revisit me */

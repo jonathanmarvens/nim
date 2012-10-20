@@ -340,16 +340,8 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PANIC:
             {
                 ChimpRef *value;
-                /* TODO make panics rescuable */
                 value = chimp_vm_pop (vm);
-                value = chimp_object_str (NULL, value);
-                if (value == NULL || value == chimp_nil) {
-                    fprintf (stderr, "panic\n");
-                }
-                else {
-                    fprintf (stderr, "panic: %s\n", CHIMP_STR_DATA(value));
-                }
-                exit(1);
+                chimp_vm_panic (vm, value);
                 break;
             }
             case CHIMP_OPCODE_MAKEARRAY:
@@ -522,5 +514,24 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     }
 
     return chimp_vm_eval_frame (vm, frame);
+}
+
+void
+chimp_vm_panic (ChimpVM *vm, ChimpRef *value)
+{
+    /* TODO make panics rescuable */
+    if (value == NULL || value == chimp_nil) {
+        fprintf (stderr, "panic: no message provided\n");
+    }
+    else {
+        value = chimp_object_str (NULL, value);
+        if (value == NULL) {
+            fprintf (stderr, "panic: no message available\n");
+        }
+        else {
+            fprintf (stderr, "panic: %s\n", CHIMP_STR_DATA(value));
+        }
+    }
+    exit(1);
 }
 

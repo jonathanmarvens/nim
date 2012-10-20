@@ -30,6 +30,33 @@ chimp_str_new_take (ChimpGC *gc, char *data, size_t size)
 }
 
 ChimpRef *
+chimp_str_new_format (ChimpGC *gc, const char *fmt, ...)
+{
+    va_list args;
+    int size;
+    char *buf;
+
+    va_start(args, fmt);
+    size = vsnprintf (NULL, 0, fmt, args);
+    va_end(args);
+
+    if (size >= 0) {
+        buf = CHIMP_MALLOC(char, size + 1);
+        if (buf == NULL) {
+            return NULL;
+        }
+
+        va_start(args, fmt);
+        vsnprintf (buf, size + 1, fmt, args);
+        va_end(args);
+        return chimp_str_new_take (gc, buf, size);
+    }
+    else {
+        return NULL;
+    }
+}
+
+ChimpRef *
 chimp_str_new_concat (ChimpGC *gc, ...)
 {
     va_list args;
