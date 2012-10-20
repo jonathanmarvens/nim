@@ -26,6 +26,7 @@
 "and"                       { CHIMP_TOKEN(TOK_AND) }
 "use"                       { CHIMP_TOKEN(TOK_USE) }
 "ret"                       { CHIMP_TOKEN(TOK_RET) }
+"panic"                     { CHIMP_TOKEN(TOK_PANIC) }
 [ \t\r\n]                   { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }

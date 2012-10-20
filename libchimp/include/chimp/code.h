@@ -27,6 +27,7 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_POP,
 
     CHIMP_OPCODE_RET,
+    CHIMP_OPCODE_PANIC,
 } ChimpOpcode;
 
 typedef enum _ChimpBinopType {
@@ -74,6 +75,9 @@ chimp_code_call (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_ret (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_panic (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs);

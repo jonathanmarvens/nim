@@ -337,6 +337,21 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 goto done;
             }
+            case CHIMP_OPCODE_PANIC:
+            {
+                ChimpRef *value;
+                /* TODO make panics rescuable */
+                value = chimp_vm_pop (vm);
+                value = chimp_object_str (NULL, value);
+                if (value == NULL || value == chimp_nil) {
+                    fprintf (stderr, "panic\n");
+                }
+                else {
+                    fprintf (stderr, "panic: %s\n", CHIMP_STR_DATA(value));
+                }
+                exit(1);
+                break;
+            }
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {

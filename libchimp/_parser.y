@@ -27,7 +27,7 @@ extern ChimpRef *main_mod;
 %token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE TOK_RET
+%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -48,7 +48,7 @@ extern ChimpRef *main_mod;
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
 %type <ref> ident str array hash bool nil int
-%type <ref> ret
+%type <ref> ret panic
 
 %%
 
@@ -97,6 +97,7 @@ stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
 simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
             | assign { $$ = $1; }
             | ret { $$ = $1; }
+            | panic { $$ = $1; }
             ;
 
 compound_stmt : TOK_IF expr block opt_else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
@@ -219,6 +220,9 @@ opt_array_elements_tail : TOK_COMMA expr opt_array_elements_tail { $$ = $3; chim
 opt_expr : expr { $$ = $1; }
          | /* empty */ { $$ = NULL; }
          ;
+
+panic : TOK_PANIC opt_expr { $$ = chimp_ast_stmt_new_panic ($2); }
+      ;
 
 ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2); }
     ;

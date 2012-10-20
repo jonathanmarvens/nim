@@ -8,7 +8,7 @@ if exists("b:current_syntax")
     finish
 endif
 
-syn keyword chimpKeyword nil use ret var and or
+syn keyword chimpKeyword nil use ret var and or panic
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
 syn keyword chimpType str int hash class object array
