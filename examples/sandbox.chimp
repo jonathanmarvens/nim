@@ -5,7 +5,7 @@
 
 use io;
 
-main(argv) {
+main argv {
   x = "hello";
   y = ["foo"];
   z = x;
