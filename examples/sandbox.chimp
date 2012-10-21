@@ -14,6 +14,9 @@ main argv {
 
   num_array = [1, 2, 3];
   str_array = num_array.map(str);
+  if str_array.contains("1") {
+    io.print("str_array contains '1'!");
+  }
   io.print(num_array);
   io.print(str_array);
   num_array.each(io.print);

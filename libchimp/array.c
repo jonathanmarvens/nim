@@ -75,6 +75,26 @@ _chimp_array_each (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_contains (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 0);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpCmpResult r;
+        ChimpRef *left = CHIMP_ARRAY_ITEM(self, i);
+        
+        r = chimp_object_cmp (left, right);
+        if (r == CHIMP_CMP_ERROR) {
+            return NULL;
+        }
+        else if (r == CHIMP_CMP_EQ) {
+            return chimp_true;
+        }
+    }
+    return chimp_false;
+}
+
+static ChimpRef *
 chimp_array_str (ChimpGC *gc, ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
@@ -151,6 +171,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (gc, chimp_array_class, "map", _chimp_array_map);
     chimp_class_add_native_method (gc, chimp_array_class, "each", _chimp_array_each);
+    chimp_class_add_native_method (gc, chimp_array_class, "contains", _chimp_array_contains);
     return CHIMP_TRUE;
 }
 
