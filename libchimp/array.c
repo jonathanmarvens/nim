@@ -95,6 +95,36 @@ _chimp_array_contains (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_filter (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *result;
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+
+    result = chimp_array_new (NULL);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *value = CHIMP_ARRAY_ITEM(self, i);
+        ChimpRef *fn_args;
+        ChimpRef *r;
+        
+        fn_args = chimp_array_new_var (NULL, value, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+        r = chimp_object_call (fn, fn_args);
+        if (r == NULL) {
+            return NULL;
+        }
+        if (r == chimp_true) {
+            if (!chimp_array_push (result, value)) {
+                return NULL;
+            }
+        }
+    }
+    return result;
+}
+
+static ChimpRef *
 chimp_array_str (ChimpGC *gc, ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
@@ -170,6 +200,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (gc, chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (gc, chimp_array_class, "filter", _chimp_array_filter);
     chimp_class_add_native_method (gc, chimp_array_class, "each", _chimp_array_each);
     chimp_class_add_native_method (gc, chimp_array_class, "contains", _chimp_array_contains);
     return CHIMP_TRUE;
