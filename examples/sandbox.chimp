@@ -16,6 +16,7 @@ main argv {
   str_array = num_array.map(str);
   io.print(num_array);
   io.print(str_array);
+  num_array.each(io.print);
 
   some_bool = false;
   if some_bool {

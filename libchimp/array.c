@@ -54,6 +54,27 @@ _chimp_array_map (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_each (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *fn_args;
+        ChimpRef *value;
+        
+        value = CHIMP_ARRAY_ITEM(self, i);
+        fn_args = chimp_array_new_var (NULL, value, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+        if (chimp_object_call (fn, fn_args) == NULL) {
+            return NULL;
+        }
+    }
+    return chimp_nil;
+}
+
+static ChimpRef *
 chimp_array_str (ChimpGC *gc, ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
@@ -129,6 +150,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (gc, chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (gc, chimp_array_class, "each", _chimp_array_each);
     return CHIMP_TRUE;
 }
 
