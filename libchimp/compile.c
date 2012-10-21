@@ -63,6 +63,9 @@ chimp_compile_ast_expr_bool (ChimpCodeCompiler *c, ChimpRef *expr);
 static chimp_bool_t
 chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr);
 
+chimp_bool_t
+chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr);
+
 static chimp_bool_t
 chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr);
 
@@ -293,46 +296,68 @@ chimp_compile_ast_stmt_panic (ChimpCodeCompiler *c, ChimpRef *stmt)
     return CHIMP_TRUE;
 }
 
-static chimp_bool_t
-chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
+static ChimpRef *
+chimp_compile_get_current_module (ChimpCodeCompiler *c)
 {
+    if (CHIMP_COMPILER_IN_MODULE(c)) {
+        return CHIMP_COMPILER_MODULE(c);
+    }
+    else {
+        /* XXX I think we want to go hunting for modules up the unit stack */
+        return NULL;
+    }
+}
+
+static ChimpRef *
+chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *args, ChimpRef *body)
+{
+    ChimpRef *mod;
     ChimpRef *func_code;
     ChimpRef *method;
-    ChimpRef *args;
-    ChimpRef *mod;
     size_t i;
 
     func_code = chimp_code_compiler_push_code_unit (c);
     if (func_code == NULL) {
-        return CHIMP_FALSE;
+        return NULL;
     }
 
     /* unpack arguments */
-    args = CHIMP_AST_DECL(decl)->func.args;
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         ChimpRef *var_decl = CHIMP_ARRAY_ITEM(args, CHIMP_ARRAY_SIZE(args) - i - 1);
         if (!chimp_code_storename (func_code, CHIMP_AST_DECL(var_decl)->var.name)) {
-            return CHIMP_FALSE;
+            return NULL;
         }
     }
     
-    if (!chimp_compile_ast_stmts (c, CHIMP_AST_DECL(decl)->func.body)) {
-        return CHIMP_FALSE;
+    if (!chimp_compile_ast_stmts (c, body)) {
+        return NULL;
     }
 
     if (!chimp_code_compiler_pop_code_unit (c)) {
-        return CHIMP_FALSE;
+        return NULL;
     }
 
-    if (CHIMP_COMPILER_IN_MODULE(c)) {
-        mod = CHIMP_COMPILER_MODULE(c);
-    }
-    else {
-        /* XXX I think we want to go hunting for modules up the unit stack */
-        mod = NULL;
-    }
+    mod = chimp_compile_get_current_module (c);
 
     method = chimp_method_new_bytecode (NULL, mod, func_code);
+    if (method == NULL) {
+        return NULL;
+    }
+
+    return method;
+}
+
+static chimp_bool_t
+chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
+{
+    ChimpRef *method;
+    ChimpRef *mod;
+
+    method = chimp_compile_bytecode_method (
+        c,
+        CHIMP_AST_DECL(decl)->func.args,
+        CHIMP_AST_DECL(decl)->func.body
+    );
     if (method == NULL) {
         return CHIMP_FALSE;
     }
@@ -348,6 +373,7 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
         }
     }
     else {
+        mod = chimp_compile_get_current_module (c);
         ChimpRef *name = CHIMP_AST_DECL(decl)->func.name;
         if (!chimp_module_add_local (mod, name, method)) {
             return CHIMP_FALSE;
@@ -436,6 +462,8 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_binop (c, expr);
         case CHIMP_AST_EXPR_INT_:
             return chimp_compile_ast_expr_int_ (c, expr);
+        case CHIMP_AST_EXPR_FN:
+            return chimp_compile_ast_expr_fn (c, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;
@@ -664,6 +692,21 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
     }
 
     return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
+{
+    ChimpRef *method;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+    method = chimp_compile_bytecode_method (
+        c, CHIMP_AST_EXPR(expr)->fn.args, CHIMP_AST_EXPR(expr)->fn.body);
+    if (method == NULL) {
+        return CHIMP_FALSE;
+    }
+    
+    return chimp_code_pushconst (code, method);
 }
 
 ChimpRef *

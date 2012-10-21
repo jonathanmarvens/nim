@@ -5,10 +5,6 @@
 
 use io;
 
-ditch_b value {
-  ret value != "b";
-}
-
 main argv {
   x = "hello";
   y = ["foo"];
@@ -25,7 +21,7 @@ main argv {
   io.print(str_array);
   num_array.each(io.print);
 
-  if ["a", "b", "c"].filter(ditch_b).contains("b") {
+  if ["a", "b", "c"].filter(fn x { ret x != "b"; }).contains("b") {
     panic "array should not contain 'b'";
   }
 
