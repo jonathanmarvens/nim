@@ -67,6 +67,7 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     ChimpStr *as;
     ChimpStr *bs;
     ChimpValueType at, bt;
+    int r;
 
     if (a == b) {
         return CHIMP_CMP_EQ;
@@ -89,7 +90,7 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     bs = CHIMP_STR(b);
 
     if (as->size != bs->size) {
-        int r = strcmp (as->data, bs->data);
+        r = strcmp (as->data, bs->data);
         if (r < 0) {
             return CHIMP_CMP_LT;
         }
@@ -101,7 +102,16 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
         }
     }
 
-    return memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
+    r = memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
+    if (r < 0) {
+        return CHIMP_CMP_LT;
+    }
+    else if (r > 0) {
+        return CHIMP_CMP_GT;
+    }
+    else {
+        return CHIMP_CMP_EQ;
+    }
 }
 
 static ChimpRef *
