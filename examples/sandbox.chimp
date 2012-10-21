@@ -12,6 +12,11 @@ main argv {
 
   io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true, 9223372036854775807);
 
+  num_array = [1, 2, 3];
+  str_array = num_array.map(str);
+  io.print(num_array);
+  io.print(str_array);
+
   some_bool = false;
   if some_bool {
       io.print (x);
