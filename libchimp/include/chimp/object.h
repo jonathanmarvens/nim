@@ -41,13 +41,13 @@ typedef union _ChimpValue {
 } ChimpValue;
 
 ChimpRef *
-chimp_object_new (ChimpGC *gc, ChimpRef *klass);
+chimp_object_new (ChimpRef *klass);
 
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
 
 ChimpRef *
-chimp_object_str (ChimpGC *gc, ChimpRef *self);
+chimp_object_str (ChimpRef *self);
 
 ChimpRef *
 chimp_object_call (ChimpRef *target, ChimpRef *args);

@@ -10,7 +10,7 @@ _print (ChimpRef *self, ChimpRef *args)
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-        ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM (args, i));
+        ChimpRef *str = chimp_object_str (CHIMP_ARRAY_ITEM (args, i));
         printf ("%s\n", CHIMP_STR_DATA(str));
     }
 

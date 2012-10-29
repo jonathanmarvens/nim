@@ -524,7 +524,7 @@ chimp_vm_panic (ChimpVM *vm, ChimpRef *value)
         fprintf (stderr, "panic: no message provided\n");
     }
     else {
-        value = chimp_object_str (NULL, value);
+        value = chimp_object_str (value);
         if (value == NULL) {
             fprintf (stderr, "panic: no message available\n");
         }

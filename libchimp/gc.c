@@ -324,7 +324,7 @@ static void
 chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
 {
     if (!chimp_heap_contains (gc->heap, ref->value)) {
-        chimp_bug (__FILE__, __LINE__, "destructor called on value that belongs to another GC: %s", CHIMP_STR(chimp_object_str (gc, ref))->data);
+        chimp_bug (__FILE__, __LINE__, "destructor called on value that belongs to another GC: %s", CHIMP_STR(chimp_object_str (ref))->data);
         return;
     }
 

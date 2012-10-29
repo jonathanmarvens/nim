@@ -36,7 +36,7 @@ chimp_hash_str (ChimpRef *self)
                 /* for surrounding quotes */
                 total_len += 2;
             }
-            ref = chimp_object_str (NULL, ref);
+            ref = chimp_object_str (ref);
             if (ref == NULL) {
                 return NULL;
             }

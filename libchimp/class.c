@@ -45,7 +45,7 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         CHIMP_STR(self)->size = 0;
     }
     else if (CHIMP_ARRAY_SIZE(args) == 1) {
-        ChimpRef *temp = chimp_object_str (NULL, CHIMP_ARRAY_FIRST(args));
+        ChimpRef *temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
         CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(temp));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
     }
@@ -60,7 +60,7 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
 
         /* 1. convert all constructor args to strings */
         for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-            ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM(args, i));
+            ChimpRef *str = chimp_object_str (CHIMP_ARRAY_ITEM(args, i));
             if (str == NULL) {
                 return NULL;
             }

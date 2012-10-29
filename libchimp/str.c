@@ -93,7 +93,7 @@ chimp_str_new_concat (const char *a, ...)
 chimp_bool_t
 chimp_str_append (ChimpRef *self, ChimpRef *append_me)
 {
-    ChimpRef *append_str = chimp_object_str (NULL, append_me);
+    ChimpRef *append_str = chimp_object_str (append_me);
     /* TODO error checking */
     char *data = CHIMP_REALLOC (char, CHIMP_STR(self)->data, CHIMP_STR_SIZE(self) + CHIMP_STR_SIZE(append_str) + 1);
     if (data == NULL) {

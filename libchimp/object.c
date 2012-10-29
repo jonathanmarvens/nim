@@ -9,9 +9,9 @@
     } while (0)
 
 ChimpRef *
-chimp_object_new (ChimpGC *gc, ChimpRef *klass)
+chimp_object_new (ChimpRef *klass)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -44,7 +44,7 @@ chimp_object_cmp (ChimpRef *a, ChimpRef *b)
 }
 
 ChimpRef *
-chimp_object_str (ChimpGC *gc, ChimpRef *self)
+chimp_object_str (ChimpRef *self)
 {
     ChimpRef *klass = CHIMP_ANY_CLASS(self);
 
