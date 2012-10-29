@@ -50,7 +50,7 @@ chimp_object_str (ChimpGC *gc, ChimpRef *self)
 
     while (klass != NULL) {
         if (CHIMP_CLASS(klass)->str != NULL) {
-            return CHIMP_CLASS(klass)->str (gc, self);
+            return CHIMP_CLASS(klass)->str (self);
         }
         klass = CHIMP_CLASS(klass)->super;
     }

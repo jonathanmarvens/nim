@@ -23,23 +23,23 @@ typedef struct _ChimpClass {
     ChimpRef *super;
     ChimpValueType inst_type;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
-    ChimpRef *(*str)(ChimpGC *, ChimpRef *);
+    ChimpRef *(*str)(ChimpRef *);
     ChimpRef *(*call)(ChimpRef *, ChimpRef *);
     ChimpRef *(*getattr)(ChimpRef *, ChimpRef *);
     struct _ChimpLWHash *methods;
 } ChimpClass;
 
 ChimpRef *
-chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super);
+chimp_class_new (ChimpRef *name, ChimpRef *super);
 
 ChimpRef *
 chimp_class_new_instance (ChimpRef *klass, ...);
 
 chimp_bool_t
-chimp_class_add_method (ChimpGC *gc, ChimpRef *klass, ChimpRef *name, ChimpRef *method);
+chimp_class_add_method (ChimpRef *klass, ChimpRef *name, ChimpRef *method);
 
 chimp_bool_t
-chimp_class_add_native_method (ChimpGC *gc, ChimpRef *klass, const char *name, ChimpNativeMethodFunc func);
+chimp_class_add_native_method (ChimpRef *klass, const char *name, ChimpNativeMethodFunc func);
 
 chimp_bool_t
 _chimp_bootstrap_L3 (void);

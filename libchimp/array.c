@@ -125,7 +125,7 @@ _chimp_array_filter (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
-chimp_array_str (ChimpGC *gc, ChimpRef *self)
+chimp_array_str (ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
     /* '[' + ']' + (', ' x (size-1)) + '\0' */
@@ -136,7 +136,7 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
     size_t i, j;
 
 
-    item_strs = chimp_array_new (gc);
+    item_strs = chimp_array_new (NULL);
     if (item_strs == NULL) {
         return NULL;
     }
@@ -148,7 +148,7 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
             /* for surrounding quotes */
             total_len += 2;
         }
-        ref = chimp_object_str (gc, ref);
+        ref = chimp_object_str (NULL, ref);
         if (ref == NULL) {
             return NULL;
         }
@@ -190,19 +190,19 @@ chimp_bool_t
 chimp_array_class_bootstrap (ChimpGC *gc)
 {
     chimp_array_class =
-        chimp_class_new (gc, CHIMP_STR_NEW("array"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("array"), chimp_object_class);
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
     chimp_gc_make_root (gc, chimp_array_class);
-    chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
-    chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
-    chimp_class_add_native_method (gc, chimp_array_class, "map", _chimp_array_map);
-    chimp_class_add_native_method (gc, chimp_array_class, "filter", _chimp_array_filter);
-    chimp_class_add_native_method (gc, chimp_array_class, "each", _chimp_array_each);
-    chimp_class_add_native_method (gc, chimp_array_class, "contains", _chimp_array_contains);
+    chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
+    chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
+    chimp_class_add_native_method (chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
+    chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
+    chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
     return CHIMP_TRUE;
 }
 

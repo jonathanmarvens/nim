@@ -17,7 +17,7 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
     
     /* XXX having two code paths here is probably wrong/begging for trouble */
     if (self == chimp_class_class) {
-        ref = chimp_class_new (NULL, CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
+        ref = chimp_class_new (CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
     }
     else {
         ref = chimp_gc_new_object (NULL);
@@ -100,9 +100,9 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
 }
 
 ChimpRef *
-chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
+chimp_class_new (ChimpRef *name, ChimpRef *super)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -141,13 +141,13 @@ chimp_class_new_instance (ChimpRef *klass, ...)
 }
 
 chimp_bool_t
-chimp_class_add_method (ChimpGC *gc, ChimpRef *self, ChimpRef *name, ChimpRef *method)
+chimp_class_add_method (ChimpRef *self, ChimpRef *name, ChimpRef *method)
 {
     return chimp_lwhash_put (CHIMP_CLASS(self)->methods, name, method);
 }
 
 chimp_bool_t
-chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
+chimp_class_add_native_method (ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
 {
     ChimpRef *method_ref;
     ChimpRef *name_ref = chimp_str_new (name, strlen (name));
@@ -159,7 +159,7 @@ chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, Ch
     if (method_ref == NULL) {
         return CHIMP_FALSE;
     }
-    return chimp_class_add_method (gc, self, name_ref, method_ref);
+    return chimp_class_add_method (self, name_ref, method_ref);
 }
 
 chimp_bool_t
@@ -176,7 +176,7 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_str_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
-    chimp_class_add_native_method (NULL, chimp_str_class, "init", chimp_str_init);
+    chimp_class_add_native_method (chimp_str_class, "init", chimp_str_init);
 
     return CHIMP_TRUE;
 }

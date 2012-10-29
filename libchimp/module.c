@@ -40,7 +40,7 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
 }
 
 static ChimpRef *
-chimp_module_str (ChimpGC *gc, ChimpRef *self)
+chimp_module_str (ChimpRef *self)
 {
     ChimpRef *name = CHIMP_STR_NEW ("<module \"");
     chimp_str_append (name, CHIMP_MODULE(self)->name);
@@ -51,7 +51,7 @@ chimp_module_str (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_module_class_bootstrap (void)
 {
-    chimp_module_class = chimp_class_new (NULL, CHIMP_STR_NEW ("module"), NULL);
+    chimp_module_class = chimp_class_new (CHIMP_STR_NEW ("module"), NULL);
     if (chimp_module_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -59,7 +59,7 @@ chimp_module_class_bootstrap (void)
     CHIMP_CLASS(chimp_module_class)->inst_type = CHIMP_VALUE_TYPE_MODULE;
     CHIMP_CLASS(chimp_module_class)->str = chimp_module_str;
     CHIMP_CLASS(chimp_module_class)->getattr = chimp_module_getattr;
-    if (!chimp_class_add_native_method (NULL, chimp_module_class, "init", chimp_module_init)) {
+    if (!chimp_class_add_native_method (chimp_module_class, "init", chimp_module_init)) {
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;

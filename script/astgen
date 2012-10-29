@@ -249,7 +249,7 @@ def source():
         _("{")
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
-            _("    %(app_name)s_ast_%(node_type)s_class = chimp_class_new (NULL, CHIMP_STR_NEW(\"%(node_type)s\"), NULL);", np)
+            _("    %(app_name)s_ast_%(node_type)s_class = chimp_class_new (CHIMP_STR_NEW(\"%(node_type)s\"), NULL);", np)
             _("    if (%(app_name)s_ast_%(node_type)s_class == NULL) {", np)
             _("        return %(APP_NAME)s_FALSE;")
             _("    }")

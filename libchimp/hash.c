@@ -8,7 +8,7 @@
 ChimpRef *chimp_hash_class = NULL;
 
 static ChimpRef *
-chimp_hash_str (ChimpGC *gc, ChimpRef *self)
+chimp_hash_str (ChimpRef *self)
 {
     size_t size = CHIMP_HASH_SIZE(self);
     /* '{' + '}' + (': ' x size) + (', ' x (size-1)) + '\0' */
@@ -19,7 +19,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
     size_t i, k;
 
 
-    strs = chimp_array_new (gc);
+    strs = chimp_array_new (NULL);
     if (strs == NULL) {
         return NULL;
     }
@@ -36,7 +36,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
                 /* for surrounding quotes */
                 total_len += 2;
             }
-            ref = chimp_object_str (gc, ref);
+            ref = chimp_object_str (NULL, ref);
             if (ref == NULL) {
                 return NULL;
             }
@@ -101,15 +101,15 @@ chimp_bool_t
 chimp_hash_class_bootstrap (ChimpGC *gc)
 {
     chimp_hash_class =
-        chimp_class_new (gc, CHIMP_STR_NEW("hash"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("hash"), chimp_object_class);
     if (chimp_hash_class == NULL) {
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
     CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
     chimp_gc_make_root (gc, chimp_hash_class);
-    chimp_class_add_native_method (gc, chimp_hash_class, "put", _chimp_hash_put);
-    chimp_class_add_native_method (gc, chimp_hash_class, "get", _chimp_hash_get);
+    chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
+    chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);
     return CHIMP_TRUE;
 }
 

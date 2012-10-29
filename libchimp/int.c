@@ -14,7 +14,7 @@
 ChimpRef *chimp_int_class = NULL;
 
 static ChimpRef *
-chimp_int_str (ChimpGC *gc, ChimpRef *self)
+chimp_int_str (ChimpRef *self)
 {
     char buf[32];
     int len;
@@ -36,7 +36,7 @@ chimp_bool_t
 chimp_int_class_bootstrap (ChimpGC *gc)
 {
     chimp_int_class =
-        chimp_class_new (gc, CHIMP_STR_NEW ("int"), NULL);
+        chimp_class_new (CHIMP_STR_NEW ("int"), NULL);
     if (chimp_int_class == NULL) {
         return CHIMP_FALSE;
     }
