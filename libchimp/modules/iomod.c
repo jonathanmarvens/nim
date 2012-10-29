@@ -31,7 +31,7 @@ _input (ChimpRef *self, ChimpRef *args)
     if (len > 0 && buf[len-1] == '\n') {
         buf[--len] = '\0';
     }
-    return chimp_str_new (NULL, buf, len);
+    return chimp_str_new (buf, len);
 }
 
 ChimpRef *

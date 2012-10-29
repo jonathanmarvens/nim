@@ -183,14 +183,14 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
     data[j++] = ']';
     data[j] = '\0';
 
-    return chimp_str_new_take (gc, data, total_len-1);
+    return chimp_str_new_take (data, total_len-1);
 }
 
 chimp_bool_t
 chimp_array_class_bootstrap (ChimpGC *gc)
 {
     chimp_array_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "array"), chimp_object_class);
+        chimp_class_new (gc, CHIMP_STR_NEW("array"), chimp_object_class);
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }

@@ -82,7 +82,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
     data[k++] = '}';
     data[k] = '\0';
 
-    return chimp_str_new_take (gc, data, total_len-1);
+    return chimp_str_new_take (data, total_len-1);
 }
 
 static ChimpRef *
@@ -101,7 +101,7 @@ chimp_bool_t
 chimp_hash_class_bootstrap (ChimpGC *gc)
 {
     chimp_hash_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "hash"), chimp_object_class);
+        chimp_class_new (gc, CHIMP_STR_NEW("hash"), chimp_object_class);
     if (chimp_hash_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -164,7 +164,7 @@ chimp_hash_put (ChimpRef *self, ChimpRef *key, ChimpRef *value)
 chimp_bool_t
 chimp_hash_put_str (ChimpRef *self, const char *key, ChimpRef *value)
 {
-    return chimp_hash_put (self, chimp_str_new (NULL, key, strlen(key)), value);
+    return chimp_hash_put (self, chimp_str_new (key, strlen(key)), value);
 }
 
 ChimpRef *

@@ -15,16 +15,16 @@ typedef struct _ChimpStr {
 } ChimpStr;
 
 ChimpRef *
-chimp_str_new (ChimpGC *gc, const char *data, size_t size);
+chimp_str_new (const char *data, size_t size);
 
 ChimpRef *
-chimp_str_new_take (ChimpGC *gc, char *data, size_t size);
+chimp_str_new_take (char *data, size_t size);
 
 ChimpRef *
-chimp_str_new_format (ChimpGC *gc, const char *fmt, ...);
+chimp_str_new_format (const char *fmt, ...);
 
 ChimpRef *
-chimp_str_new_concat (ChimpGC *gc, ...);
+chimp_str_new_concat (const char *a, ...);
 
 /* XXX these mutate string state ... revisit me */
 
@@ -39,7 +39,7 @@ chimp_str_append_str (ChimpRef *str, const char *s);
 #define CHIMP_STR_DATA(ref) (CHIMP_STR(ref)->data)
 #define CHIMP_STR_SIZE(ref) (CHIMP_STR(ref)->size)
 
-#define CHIMP_STR_NEW(gc, data) chimp_str_new ((gc), (data), sizeof(data)-1)
+#define CHIMP_STR_NEW(data) chimp_str_new ((data), sizeof(data)-1)
 
 CHIMP_EXTERN_CLASS(str);
 

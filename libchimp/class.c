@@ -150,7 +150,7 @@ chimp_bool_t
 chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
 {
     ChimpRef *method_ref;
-    ChimpRef *name_ref = chimp_str_new (gc, name, strlen (name));
+    ChimpRef *name_ref = chimp_str_new (name, strlen (name));
     if (name_ref == NULL) {
         return CHIMP_FALSE;
     }

@@ -90,7 +90,7 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name)
 ChimpRef *
 chimp_object_getattr_str (ChimpRef *self, const char *name)
 {
-    return chimp_object_getattr (self, chimp_str_new (NULL, name, strlen (name)));
+    return chimp_object_getattr (self, chimp_str_new (name, strlen (name)));
 }
 
 chimp_bool_t

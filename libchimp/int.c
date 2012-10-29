@@ -29,14 +29,14 @@ chimp_int_str (ChimpGC *gc, ChimpRef *self)
         return NULL;
     }
 
-    return chimp_str_new (gc, buf, len);
+    return chimp_str_new (buf, len);
 }
 
 chimp_bool_t
 chimp_int_class_bootstrap (ChimpGC *gc)
 {
     chimp_int_class =
-        chimp_class_new (gc, CHIMP_STR_NEW (gc, "int"), NULL);
+        chimp_class_new (gc, CHIMP_STR_NEW ("int"), NULL);
     if (chimp_int_class == NULL) {
         return CHIMP_FALSE;
     }

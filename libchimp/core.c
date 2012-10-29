@@ -122,7 +122,7 @@ _chimp_object_str (ChimpGC *gc, ChimpRef *self)
     ChimpRef *str;
     
     snprintf (buf, sizeof(buf), " @ %p>", self);
-    str = chimp_str_new_concat (gc, "<", CHIMP_STR_DATA(name), buf, NULL);
+    str = chimp_str_new_concat ("<", CHIMP_STR_DATA(name), buf, NULL);
     if (str == NULL) {
         return NULL;
     }
@@ -133,10 +133,10 @@ static ChimpRef *
 chimp_bool_str (ChimpGC *gc, ChimpRef *self)
 {
     if (self == chimp_true) {
-        return CHIMP_STR_NEW(gc, "true");
+        return CHIMP_STR_NEW("true");
     }
     else if (self == chimp_false) {
-        return CHIMP_STR_NEW(gc, "false");
+        return CHIMP_STR_NEW("false");
     }
     else {
         return NULL;
@@ -239,7 +239,7 @@ chimp_core_startup (void *stack_start)
         return CHIMP_FALSE;
     }
 
-    chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "nil"), chimp_object_class);
+    chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW("nil"), chimp_object_class);
     if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
@@ -247,7 +247,7 @@ chimp_core_startup (void *stack_start)
     if (chimp_nil == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil);
 
-    chimp_bool_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "bool"), chimp_object_class);
+    chimp_bool_class = chimp_class_new (NULL, CHIMP_STR_NEW("bool"), chimp_object_class);
     if (chimp_bool_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_bool_class);
     CHIMP_CLASS(chimp_bool_class)->str = chimp_bool_str;

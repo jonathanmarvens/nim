@@ -42,7 +42,7 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
 static ChimpRef *
 chimp_module_str (ChimpGC *gc, ChimpRef *self)
 {
-    ChimpRef *name = CHIMP_STR_NEW (NULL, "<module \"");
+    ChimpRef *name = CHIMP_STR_NEW ("<module \"");
     chimp_str_append (name, CHIMP_MODULE(self)->name);
     chimp_str_append_str (name, "\">");
     return name;
@@ -51,7 +51,7 @@ chimp_module_str (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_module_class_bootstrap (void)
 {
-    chimp_module_class = chimp_class_new (NULL, CHIMP_STR_NEW (NULL, "module"), NULL);
+    chimp_module_class = chimp_class_new (NULL, CHIMP_STR_NEW ("module"), NULL);
     if (chimp_module_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -80,7 +80,7 @@ chimp_module_new (ChimpRef *name, ChimpRef *locals)
 ChimpRef *
 chimp_module_new_str (const char *name, ChimpRef *locals)
 {
-    return chimp_module_new (chimp_str_new (NULL, name, strlen(name)), locals);
+    return chimp_module_new (chimp_str_new (name, strlen(name)), locals);
 }
 
 chimp_bool_t

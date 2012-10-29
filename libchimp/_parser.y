@@ -52,7 +52,7 @@ extern ChimpRef *main_mod;
 
 %%
 
-module : opt_uses opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW(NULL, "main"), $1, $2); }
+module : opt_uses opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW("main"), $1, $2); }
        ;
 
 opt_uses : use opt_uses { $$ = $2; chimp_array_unshift ($$, $1); }

@@ -27,7 +27,7 @@ chimp_bool_t
 chimp_method_class_bootstrap (ChimpGC *gc)
 {
     chimp_method_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "method"), NULL);
+        chimp_class_new (gc, CHIMP_STR_NEW("method"), NULL);
     if (chimp_method_class == NULL) {
         return CHIMP_FALSE;
     }

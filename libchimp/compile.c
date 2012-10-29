@@ -786,7 +786,7 @@ chimp_compile_file (ChimpRef *name, const char *filename)
             if (dot == -1) dot = len;
             if (slash == -1) slash = 0;
 
-            name = chimp_str_new (NULL, filename + slash, dot - slash);
+            name = chimp_str_new (filename + slash, dot - slash);
             if (name == NULL) {
                 return NULL;
             }

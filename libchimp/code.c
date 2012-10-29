@@ -10,7 +10,7 @@ chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
     chimp_code_class =
-        chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "code"), NULL);
+        chimp_class_new (NULL, CHIMP_STR_NEW("code"), NULL);
     if (chimp_code_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -381,7 +381,7 @@ chimp_code_dump (ChimpRef *self)
     /* XXX super duper inefficient & sloppy. */
     /*     mostly for diagnostic purposes atm. */
     size_t i;
-    ChimpRef *str = CHIMP_STR_NEW (NULL, "");
+    ChimpRef *str = CHIMP_STR_NEW ("");
     for (i = 0; i < CHIMP_CODE(self)->used; i++) {
         int32_t instr = CHIMP_CODE_INSTR(self, i);
         ChimpOpcode op = ((ChimpOpcode)((instr & 0xff000000) >> 24));
