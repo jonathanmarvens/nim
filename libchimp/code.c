@@ -386,7 +386,7 @@ chimp_code_dump (ChimpRef *self)
         int32_t instr = CHIMP_CODE_INSTR(self, i);
         ChimpOpcode op = ((ChimpOpcode)((instr & 0xff000000) >> 24));
         const char *op_str = chimp_code_opcode_str (op);
-        if (!chimp_str_append (str, chimp_int_new (NULL, i))) {
+        if (!chimp_str_append (str, chimp_int_new (i))) {
             return NULL;
         }
         if (!chimp_str_append_str (str, " ")) {
@@ -415,7 +415,7 @@ chimp_code_dump (ChimpRef *self)
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
-            if (!chimp_str_append (str, chimp_int_new (NULL, CHIMP_INSTR_ARG1(self, i)))) {
+            if (!chimp_str_append (str, chimp_int_new (CHIMP_INSTR_ARG1(self, i)))) {
                 return NULL;
             }
         }
@@ -423,7 +423,7 @@ chimp_code_dump (ChimpRef *self)
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
-            if (!chimp_str_append (str, chimp_int_new (NULL, (instr & 0xffffff)))) {
+            if (!chimp_str_append (str, chimp_int_new ((instr & 0xffffff)))) {
                 return NULL;
             }
         }

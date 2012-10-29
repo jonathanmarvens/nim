@@ -33,22 +33,22 @@ chimp_int_str (ChimpRef *self)
 }
 
 chimp_bool_t
-chimp_int_class_bootstrap (ChimpGC *gc)
+chimp_int_class_bootstrap (void)
 {
     chimp_int_class =
         chimp_class_new (CHIMP_STR_NEW ("int"), NULL);
     if (chimp_int_class == NULL) {
         return CHIMP_FALSE;
     }
-    chimp_gc_make_root (gc, chimp_int_class);
+    chimp_gc_make_root (NULL, chimp_int_class);
     CHIMP_CLASS(chimp_int_class)->str = chimp_int_str;
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_int_new (ChimpGC *gc, int64_t value)
+chimp_int_new (int64_t value)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
