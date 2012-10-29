@@ -68,8 +68,8 @@ chimp_init_assert_module (void)
     ChimpRef *eq_method;
     ChimpRef *neq_method;
 
-    eq_method = chimp_method_new_native (NULL, NULL, _chimp_assert_equal);
-    neq_method = chimp_method_new_native (NULL, NULL, _chimp_assert_not_equal);
+    eq_method = chimp_method_new_native (NULL, _chimp_assert_equal);
+    neq_method = chimp_method_new_native (NULL, _chimp_assert_not_equal);
     exports = chimp_hash_new (NULL);
     chimp_hash_put_str (exports, "eq", eq_method);
     chimp_hash_put_str (exports, "neq", neq_method);

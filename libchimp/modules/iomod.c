@@ -42,8 +42,8 @@ chimp_init_io_module (void)
     ChimpRef *print_method;
     ChimpRef *input_method;
 
-    print_method = chimp_method_new_native (NULL, NULL, _print);
-    input_method = chimp_method_new_native (NULL, NULL, _input);
+    print_method = chimp_method_new_native (NULL, _print);
+    input_method = chimp_method_new_native (NULL, _input);
     exports = chimp_hash_new (NULL);
     chimp_hash_put_str (exports, "print", print_method);
     chimp_hash_put_str (exports, "readline", input_method);

@@ -339,7 +339,7 @@ chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *args, ChimpRef *b
 
     mod = chimp_compile_get_current_module (c);
 
-    method = chimp_method_new_bytecode (NULL, mod, func_code);
+    method = chimp_method_new_bytecode (mod, func_code);
     if (method == NULL) {
         return NULL;
     }

@@ -31,13 +31,13 @@ typedef struct _ChimpMethod {
 } ChimpMethod;
 
 chimp_bool_t
-chimp_method_class_bootstrap (ChimpGC *gc);
+chimp_method_class_bootstrap (void);
 
 ChimpRef *
-chimp_method_new_native (ChimpGC *gc, ChimpRef *module, ChimpNativeMethodFunc func);
+chimp_method_new_native (ChimpRef *module, ChimpNativeMethodFunc func);
 
 ChimpRef *
-chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *module, ChimpRef *code);
+chimp_method_new_bytecode (ChimpRef *module, ChimpRef *code);
 
 ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self);
