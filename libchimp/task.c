@@ -204,7 +204,7 @@ chimp_task_add_module (ChimpTask *task, ChimpRef *module)
     }
 
     if (task->modules == NULL) {
-        task->modules = chimp_hash_new (NULL);
+        task->modules = chimp_hash_new ();
         if (task->modules == NULL) {
             return CHIMP_FALSE;
         }

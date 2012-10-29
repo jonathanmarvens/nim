@@ -216,7 +216,7 @@ chimp_vm_makehash (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
     int32_t i;
 
-    hash = chimp_hash_new (NULL);
+    hash = chimp_hash_new ();
     if (hash == NULL) {
         return CHIMP_FALSE;
     }

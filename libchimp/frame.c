@@ -32,7 +32,7 @@ chimp_frame_new (ChimpRef *method)
         return NULL;
     }
     CHIMP_FRAME_INIT(ref);
-    locals = chimp_hash_new (NULL);
+    locals = chimp_hash_new ();
     if (locals == NULL) {
         return NULL;
     }

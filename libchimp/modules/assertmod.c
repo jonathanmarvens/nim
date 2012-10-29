@@ -70,7 +70,7 @@ chimp_init_assert_module (void)
 
     eq_method = chimp_method_new_native (NULL, _chimp_assert_equal);
     neq_method = chimp_method_new_native (NULL, _chimp_assert_not_equal);
-    exports = chimp_hash_new (NULL);
+    exports = chimp_hash_new ();
     chimp_hash_put_str (exports, "eq", eq_method);
     chimp_hash_put_str (exports, "neq", neq_method);
     

@@ -98,7 +98,7 @@ _chimp_hash_get (ChimpRef *self, ChimpRef *args)
 }
 
 chimp_bool_t
-chimp_hash_class_bootstrap (ChimpGC *gc)
+chimp_hash_class_bootstrap (void)
 {
     chimp_hash_class =
         chimp_class_new (CHIMP_STR_NEW("hash"), chimp_object_class);
@@ -107,16 +107,16 @@ chimp_hash_class_bootstrap (ChimpGC *gc)
     }
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
     CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
-    chimp_gc_make_root (gc, chimp_hash_class);
+    chimp_gc_make_root (NULL, chimp_hash_class);
     chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_hash_new (ChimpGC *gc)
+chimp_hash_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }

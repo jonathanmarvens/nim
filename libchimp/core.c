@@ -190,7 +190,7 @@ static ChimpTask *main_task = NULL;
 static chimp_bool_t
 chimp_core_init_builtins (void)
 {
-    chimp_builtins = chimp_hash_new (NULL);
+    chimp_builtins = chimp_hash_new ();
     if (chimp_builtins == NULL) {
         return CHIMP_FALSE;
     }
@@ -261,7 +261,7 @@ chimp_core_startup (void *stack_start)
 
     if (!chimp_int_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
-    if (!chimp_hash_class_bootstrap (NULL)) goto error;
+    if (!chimp_hash_class_bootstrap ()) goto error;
     if (!chimp_method_class_bootstrap ()) goto error;
     if (!chimp_frame_class_bootstrap ()) goto error;
     if (!chimp_code_class_bootstrap ()) goto error;

@@ -12,7 +12,7 @@ chimp_module_init (ChimpRef *self, ChimpRef *args)
         CHIMP_MODULE(self)->locals = CHIMP_ARRAY_ITEM(args, 1);
     }
     else {
-        ChimpRef *temp = chimp_hash_new (NULL);
+        ChimpRef *temp = chimp_hash_new ();
         if (temp == NULL) {
             return NULL;
         }
@@ -69,7 +69,7 @@ ChimpRef *
 chimp_module_new (ChimpRef *name, ChimpRef *locals)
 {
     if (locals == NULL) {
-        locals = chimp_hash_new (NULL);
+        locals = chimp_hash_new ();
         if (locals == NULL) {
             return NULL;
         }
