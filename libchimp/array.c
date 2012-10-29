@@ -31,14 +31,14 @@ static ChimpRef *
 _chimp_array_map (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
-    ChimpRef *result = chimp_array_new (NULL);
+    ChimpRef *result = chimp_array_new ();
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpRef *fn_args;
         ChimpRef *mapped;
         ChimpRef *value = CHIMP_ARRAY_ITEM(self, i);
 
-        fn_args = chimp_array_new_var (NULL, value, NULL);
+        fn_args = chimp_array_new_var (value, NULL);
         if (fn_args == NULL) {
             return NULL;
         }
@@ -63,7 +63,7 @@ _chimp_array_each (ChimpRef *self, ChimpRef *args)
         ChimpRef *value;
         
         value = CHIMP_ARRAY_ITEM(self, i);
-        fn_args = chimp_array_new_var (NULL, value, NULL);
+        fn_args = chimp_array_new_var (value, NULL);
         if (fn_args == NULL) {
             return NULL;
         }
@@ -101,13 +101,13 @@ _chimp_array_filter (ChimpRef *self, ChimpRef *args)
     ChimpRef *result;
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
 
-    result = chimp_array_new (NULL);
+    result = chimp_array_new ();
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpRef *value = CHIMP_ARRAY_ITEM(self, i);
         ChimpRef *fn_args;
         ChimpRef *r;
         
-        fn_args = chimp_array_new_var (NULL, value, NULL);
+        fn_args = chimp_array_new_var (value, NULL);
         if (fn_args == NULL) {
             return NULL;
         }
@@ -136,7 +136,7 @@ chimp_array_str (ChimpRef *self)
     size_t i, j;
 
 
-    item_strs = chimp_array_new (NULL);
+    item_strs = chimp_array_new ();
     if (item_strs == NULL) {
         return NULL;
     }
@@ -187,7 +187,7 @@ chimp_array_str (ChimpRef *self)
 }
 
 chimp_bool_t
-chimp_array_class_bootstrap (ChimpGC *gc)
+chimp_array_class_bootstrap (void)
 {
     chimp_array_class =
         chimp_class_new (CHIMP_STR_NEW("array"), chimp_object_class);
@@ -196,7 +196,7 @@ chimp_array_class_bootstrap (ChimpGC *gc)
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
-    chimp_gc_make_root (gc, chimp_array_class);
+    chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (chimp_array_class, "map", _chimp_array_map);
@@ -207,9 +207,9 @@ chimp_array_class_bootstrap (ChimpGC *gc)
 }
 
 ChimpRef *
-chimp_array_new (ChimpGC *gc)
+chimp_array_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -220,16 +220,19 @@ chimp_array_new (ChimpGC *gc)
 }
 
 ChimpRef *
-chimp_array_new_var (ChimpGC *gc, ...)
+chimp_array_new_var (ChimpRef *a, ...)
 {
     va_list args;
     ChimpRef *arg;
-    ChimpRef *ref = chimp_array_new (gc);
+    ChimpRef *ref = chimp_array_new ();
     if (ref == NULL) {
         return NULL;
     }
 
-    va_start (args, gc);
+    va_start (args, a);
+    if (!chimp_array_push (ref, a)) {
+        return NULL;
+    }
     while ((arg = va_arg (args, ChimpRef *)) != NULL) {
         chimp_array_push (ref, arg);
     }

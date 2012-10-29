@@ -28,13 +28,13 @@ chimp_code_new (void)
     }
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
-    temp = chimp_array_new (NULL);
+    temp = chimp_array_new ();
     if (temp == NULL) {
         chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;
     }
     CHIMP_CODE(ref)->constants = temp;
-    temp = chimp_array_new (NULL);
+    temp = chimp_array_new ();
     if (temp == NULL) {
         chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;

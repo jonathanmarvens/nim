@@ -49,7 +49,7 @@ parse_args (int argc, char **argv)
 {
     int i;
     ChimpRef *args;
-    ChimpRef *argv_ = chimp_array_new (NULL);
+    ChimpRef *argv_ = chimp_array_new ();
     for (i = 1; i < argc; i++) {
         ChimpRef *arg = chimp_str_new (argv[i], strlen(argv[i]));
         if (arg == NULL) {
@@ -59,7 +59,7 @@ parse_args (int argc, char **argv)
             return NULL;
         }
     }
-    args = chimp_array_new (NULL);
+    args = chimp_array_new ();
     if (args == NULL) {
         return NULL;
     }

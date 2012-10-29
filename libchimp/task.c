@@ -57,7 +57,7 @@ chimp_task_thread_func (void *arg)
         return NULL;
     }
     if (task->impl != NULL) {
-        chimp_object_call (task->impl, chimp_array_new (NULL));
+        chimp_object_call (task->impl, chimp_array_new ());
     }
     return NULL;
 }

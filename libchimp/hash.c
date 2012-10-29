@@ -19,7 +19,7 @@ chimp_hash_str (ChimpRef *self)
     size_t i, k;
 
 
-    strs = chimp_array_new (NULL);
+    strs = chimp_array_new ();
     if (strs == NULL) {
         return NULL;
     }

@@ -56,14 +56,14 @@ module : opt_uses opt_decls { main_mod = chimp_ast_mod_new_root (CHIMP_STR_NEW("
        ;
 
 opt_uses : use opt_uses { $$ = $2; chimp_array_unshift ($$, $1); }
-         | /* empty */ { $$ = chimp_array_new (NULL); }
+         | /* empty */ { $$ = chimp_array_new (); }
          ;
 
 use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use (CHIMP_AST_EXPR($2)->ident.id); }
     ;
 
 opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
-          | /* empty */ { $$ = chimp_array_new (NULL); }
+          | /* empty */ { $$ = chimp_array_new (); }
           ;
 
 func_decl : ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
@@ -72,18 +72,18 @@ func_decl : ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
           ;
 
 opt_params : param opt_params_tail { $$ = $2; chimp_array_unshift ($$, $1); }
-           | /* empty */ { $$ = chimp_array_new (NULL); }
+           | /* empty */ { $$ = chimp_array_new (); }
            ;
 
 opt_params_tail : TOK_COMMA param opt_params_tail { $$ = $3; chimp_array_unshift ($$, $2); }
-                 | /* empty */ { $$ = chimp_array_new (NULL); }
+                 | /* empty */ { $$ = chimp_array_new (); }
                  ;
 
 param : ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($1)->ident.id); }
       ;
 
 opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
-          | /* empty */ { $$ = chimp_array_new (NULL); }
+          | /* empty */ { $$ = chimp_array_new (); }
           ;
 
 stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
@@ -104,8 +104,8 @@ opt_else : TOK_ELSE block { $$ = $2; }
          ;
 
 block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
-      | stmt { $$ = chimp_array_new (NULL); chimp_array_unshift ($$, $1); }
-      | TOK_SEMICOLON { $$ = chimp_array_new (NULL); }
+      | stmt { $$ = chimp_array_new (); chimp_array_unshift ($$, $1); }
+      | TOK_SEMICOLON { $$ = chimp_array_new (); }
       ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
@@ -160,14 +160,14 @@ opt_simple_tail : TOK_LBRACKET opt_args TOK_RBRACKET opt_simple_tail {
                 ;
 
 opt_args : args        { $$ = $1; }
-         | /* empty */ { $$ = chimp_array_new (NULL); }
+         | /* empty */ { $$ = chimp_array_new (); }
          ;
 
 args : expr opt_args_tail { $$ = $2; chimp_array_unshift ($$, $1); }
      ;
 
 opt_args_tail : TOK_COMMA expr opt_args_tail { $$ = $3; chimp_array_unshift ($$, $2); }
-              | /* empty */ { $$ = chimp_array_new (NULL); }
+              | /* empty */ { $$ = chimp_array_new (); }
               ;
 
 ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1); }
@@ -190,28 +190,28 @@ hash : TOK_LBRACE opt_hash_elements TOK_RBRACE { $$ = chimp_ast_expr_new_hash ($
      ;
 
 opt_hash_elements : hash_elements { $$ = $1; }
-                  | /* empty */ { $$ = chimp_array_new (NULL); }
+                  | /* empty */ { $$ = chimp_array_new (); }
                   ;
 
 hash_elements : expr TOK_COLON expr opt_hash_elements_tail { $$ = $4; chimp_array_unshift ($$, $3); chimp_array_unshift ($$, $1); }
               ;
 
 opt_hash_elements_tail : TOK_COMMA expr TOK_COLON expr opt_hash_elements_tail { $$ = $5; chimp_array_unshift ($$, $4); chimp_array_unshift ($$, $2); }
-                       | /* empty */ { $$ = chimp_array_new (NULL); }
+                       | /* empty */ { $$ = chimp_array_new (); }
                        ;
 
 array : TOK_LSQBRACKET opt_array_elements TOK_RSQBRACKET { $$ = chimp_ast_expr_new_array ($2); }
       ;
 
 opt_array_elements : array_elements { $$ = $1; }
-                   | /* empty */ { $$ = chimp_array_new (NULL); }
+                   | /* empty */ { $$ = chimp_array_new (); }
                    ;
 
 array_elements : expr opt_array_elements_tail { $$ = $2; chimp_array_unshift ($$, $1); }
                ;
 
 opt_array_elements_tail : TOK_COMMA expr opt_array_elements_tail { $$ = $3; chimp_array_unshift ($$, $2); }
-                        | /* empty */ { $$ = chimp_array_new (NULL); }
+                        | /* empty */ { $$ = chimp_array_new (); }
                         ;
 
 opt_expr : expr { $$ = $1; }

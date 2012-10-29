@@ -16,12 +16,12 @@ chimp_vm_new (void)
     if (vm == NULL) {
         return NULL;
     }
-    vm->stack = chimp_array_new (NULL);
+    vm->stack = chimp_array_new ();
     if (vm->stack == NULL) {
         CHIMP_FREE (vm);
         return NULL;
     }
-    vm->frames = chimp_array_new (NULL);
+    vm->frames = chimp_array_new ();
     if (vm->frames == NULL) {
         CHIMP_FREE (vm);
         return NULL;
@@ -190,7 +190,7 @@ chimp_vm_makearray (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
     int32_t i;
 
-    array = chimp_array_new (NULL);
+    array = chimp_array_new ();
     if (array == NULL) {
         return CHIMP_FALSE;
     }

@@ -53,7 +53,7 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         size_t i;
         size_t len;
         char *p;
-        ChimpRef *str_values = chimp_array_new (NULL);
+        ChimpRef *str_values = chimp_array_new ();
         if (str_values == NULL) {
             return NULL;
         }
@@ -123,7 +123,7 @@ chimp_class_new_instance (ChimpRef *klass, ...)
 {
     va_list args;
     ChimpRef *arg;
-    ChimpRef *arr = chimp_array_new (NULL);
+    ChimpRef *arr = chimp_array_new ();
     if (arr == NULL) {
         return NULL;
     }

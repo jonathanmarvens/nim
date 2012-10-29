@@ -15,13 +15,13 @@ typedef struct _ChimpArray {
 } ChimpArray;
 
 chimp_bool_t
-chimp_array_class_bootstrap (ChimpGC *gc);
+chimp_array_class_bootstrap (void);
 
 ChimpRef *
-chimp_array_new (ChimpGC *gc);
+chimp_array_new (void);
 
 ChimpRef *
-chimp_array_new_var (ChimpGC *gc, ...);
+chimp_array_new_var (ChimpRef *a, ...);
 
 chimp_bool_t
 chimp_array_unshift (ChimpRef *self, ChimpRef *value);
