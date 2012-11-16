@@ -377,7 +377,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return NULL;
                 }
                 /* TODO test for truthiness */
-                if (value == chimp_true) {
+                if (value == chimp_true || value != chimp_nil) {
                     pc = CHIMP_INSTR_ADDR(code, pc);
                 }
                 else {
