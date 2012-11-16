@@ -11,6 +11,8 @@ AM_YFLAGS = --defines=$(top_srcdir)/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
 libchimp_la_SOURCES = \
+	_parser.y \
+	scanner.l \
 	ast.c \
 	gc.c \
 	core.c \
@@ -27,8 +29,6 @@ libchimp_la_SOURCES = \
 	code.c \
 	compile.c \
 	vm.c \
-	_parser.y \
-	scanner.l \
 	module.c \
 	modules/iomod.c \
 	modules/assertmod.c \
