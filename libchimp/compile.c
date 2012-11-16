@@ -7,6 +7,7 @@
 #include "chimp/method.h"
 #include "chimp/object.h"
 #include "chimp/task.h"
+#include "chimp/_parser.h"
 
 typedef enum _ChimpUnitType {
     CHIMP_UNIT_TYPE_CODE,
