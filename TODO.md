@@ -1,4 +1,5 @@
 * More tests.
+* Rewrite the GC (do away with copying collector for now?)
 * Exceptions & exception handling.
 * File I/O.
 * Custom native types.
