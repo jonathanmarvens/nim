@@ -370,6 +370,8 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "CMP_NEQ";
         case CHIMP_OPCODE_POP:
              return "CMP_POP";
+        case CHIMP_OPCODE_RET:
+             return "RET";
         default:
              return "???OPCODE???";
     };

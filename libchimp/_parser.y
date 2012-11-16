@@ -15,6 +15,9 @@ void yyerror(const char *format, ...);
 
 /* TODO make all this stuff reentrant */
 extern ChimpRef *main_mod;
+extern chimp_bool_t chimp_parsing;
+
+#define CHIMP_USE_REF(name, meta) ChimpRef *name = (meta)
 
 %}
 
@@ -227,6 +230,7 @@ ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2); }
 %%
 
 ChimpRef *main_mod = NULL;
+chimp_bool_t chimp_parsing = CHIMP_FALSE;
 
 void
 yyerror (const char *format, ...)

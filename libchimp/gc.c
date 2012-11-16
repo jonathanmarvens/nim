@@ -9,6 +9,7 @@
 #include "chimp/core.h"
 #include "chimp/lwhash.h"
 #include "chimp/task.h"
+#include "chimp/_parser.h"
 
 #define DEFAULT_SLAB_SIZE ((4 * 1024) / sizeof(ChimpValue))
 
@@ -654,6 +655,8 @@ chimp_gc_sweep (ChimpGC *gc)
     return freed;
 }
 
+extern chimp_bool_t chimp_parsing;
+
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
@@ -674,6 +677,9 @@ chimp_gc_collect (ChimpGC *gc)
     for (i = 0; i < gc->num_roots; i++) {
         chimp_gc_mark_ref (gc, gc->roots[i]);
     }
+
+    /* XXX jesus christ. */
+    if (chimp_parsing) chimp_gc_mark_ref (gc, yylval.ref);
 
     if (gc->stack_start != NULL) {
         void *ref_p = &base;

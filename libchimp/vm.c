@@ -58,6 +58,7 @@ chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
     if (!chimp_vm_push(vm, value)) {
+        chimp_bug (__FILE__, __LINE__, "failed to push value at pc=%d", pc);
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -288,6 +289,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHCONST:
             {
                 if (!chimp_vm_pushconst (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHCONST instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -296,6 +298,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_STORENAME:
             {
                 if (!chimp_vm_storename (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "STORENAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -304,6 +307,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNAME:
             {
                 if (!chimp_vm_pushname (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHNAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -312,6 +316,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNIL:
             {
                 if (!chimp_vm_push (vm, chimp_nil)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHNIL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -320,6 +325,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_GETATTR:
             {
                 if (!chimp_vm_getattr (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "GETATTR instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -328,6 +334,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_CALL:
             {
                 if (!chimp_vm_call (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "CALL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -347,6 +354,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "MAKEARRAY instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -355,6 +363,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEHASH:
             {
                 if (!chimp_vm_makehash (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "MAKEHASH instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -493,7 +502,7 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
 
     if (!CHIMP_IS_BYTECODE_METHOD(method)) {
         chimp_bug (__FILE__, __LINE__,
-            "chimp_vm_eval_invoke called on a non-method (or native method)");
+            "chimp_vm_invoke called on a non-method (or native method)");
         return NULL;
     }
 
@@ -503,12 +512,16 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     }
     frame = chimp_frame_new (method);
     if (frame == NULL) {
+        chimp_bug (__FILE__, __LINE__,
+            "chimp_vm_invoke failed to create a new execution frame");
         return NULL;
     }
 
     /* push args */
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         if (!chimp_vm_push (vm, CHIMP_ARRAY_ITEM(args, i))) {
+            chimp_bug (__FILE__, __LINE__,
+                "chimp_vm_invoke failed to append array item");
             return NULL;
         }
     }

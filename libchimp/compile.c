@@ -751,6 +751,7 @@ extern int yyparse(void);
 extern void yylex_destroy(void);
 extern FILE *yyin;
 extern ChimpRef *main_mod;
+extern chimp_bool_t chimp_parsing;
 
 ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename)
@@ -761,7 +762,10 @@ chimp_compile_file (ChimpRef *name, const char *filename)
     if (yyin == NULL) {
         return NULL;
     }
+    chimp_parsing = CHIMP_TRUE;
+    yylval.ref = NULL;
     rc = yyparse();
+    chimp_parsing = CHIMP_FALSE;
     fclose (yyin);
     yylex_destroy ();
     if (rc == 0) {
