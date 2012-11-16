@@ -4,6 +4,7 @@
 #
 
 use io;
+use os;
 
 main argv {
   x = "hello";
@@ -40,6 +41,11 @@ main argv {
   }
   else {
       io.print (str("Hey there, ", name));
+  }
+
+  home = os.getenv ("HOME");
+  if home {
+    io.print (home);
   }
 
   io.print (true and "test");
