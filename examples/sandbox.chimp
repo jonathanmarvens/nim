@@ -28,10 +28,10 @@ main argv {
 
   some_bool = false;
   if some_bool {
-      io.print (x);
+    io.print (x);
   }
   else {
-      io.print ("omgbye");
+    io.print ("omgbye");
   }
 
   io.print ("Enter your name:");
