@@ -13,6 +13,9 @@ main argv {
 
   io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true, 9223372036854775807);
 
+  some_func = fn { io.print(str("a function! ")); };
+  some_func();
+
   num_array = [1, 2, 3];
   str_array = num_array.map(str);
   if str_array.contains("1") {

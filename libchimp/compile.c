@@ -304,7 +304,15 @@ chimp_compile_get_current_module (ChimpCodeCompiler *c)
         return CHIMP_COMPILER_MODULE(c);
     }
     else {
-        /* XXX I think we want to go hunting for modules up the unit stack */
+        ChimpCodeUnit *unit = c->current_unit;
+        if (unit == NULL) return NULL;
+        unit = unit->next;
+        while (unit != NULL) {
+            if (unit->type == CHIMP_UNIT_TYPE_MODULE) {
+                return unit->module;
+            }
+            unit = unit->next;
+        }
         return NULL;
     }
 }
