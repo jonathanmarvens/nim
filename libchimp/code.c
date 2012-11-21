@@ -330,6 +330,50 @@ chimp_code_neq (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_add (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(ADD);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_sub (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(SUB);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_mul (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(MUL);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_div (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(DIV);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_pop (ChimpRef *self)
 {
     if (!chimp_code_grow (self)) {

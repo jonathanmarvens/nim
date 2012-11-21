@@ -42,6 +42,10 @@
 ":"                         { CHIMP_TOKEN(TOK_COLON) }
 "{"                         { CHIMP_TOKEN(TOK_LBRACE) }
 "}"                         { CHIMP_TOKEN(TOK_RBRACE) }
+"+"                         { CHIMP_TOKEN(TOK_PLUS) }
+"-"                         { CHIMP_TOKEN(TOK_MINUS) }
+"*"                         { CHIMP_TOKEN(TOK_ASTERISK) }
+"/"                         { CHIMP_TOKEN(TOK_SLASH) }
 "if"                        { CHIMP_TOKEN(TOK_IF) }
 "else"                      { CHIMP_TOKEN(TOK_ELSE) }
 ["][^"]*["]                 { CHIMP_REF_TOKEN(TOK_STR, chimp_str_new (yytext + 1, yyleng - 2)) }

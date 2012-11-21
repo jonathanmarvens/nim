@@ -52,5 +52,8 @@ main argv {
 
   m = module("main");
   io.print (str(m));
+
+  two = 2;
+  io.print (str(1 + two * 3));
 }
 

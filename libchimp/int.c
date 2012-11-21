@@ -32,6 +32,58 @@ chimp_int_str (ChimpRef *self)
     return chimp_str_new (buf, len);
 }
 
+static ChimpRef *
+chimp_int_add (ChimpRef *left, ChimpRef *right)
+{
+    int64_t left_value, right_value;
+    
+    left_value = CHIMP_INT(left)->value;
+    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
+        return NULL;
+    }
+    right_value = CHIMP_INT(right)->value;
+    return chimp_int_new (left_value + right_value);
+}
+
+static ChimpRef *
+chimp_int_sub (ChimpRef *left, ChimpRef *right)
+{
+    int64_t left_value, right_value;
+    
+    left_value = CHIMP_INT(left)->value;
+    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
+        return NULL;
+    }
+    right_value = CHIMP_INT(right)->value;
+    return chimp_int_new (left_value - right_value);
+}
+
+static ChimpRef *
+chimp_int_mul (ChimpRef *left, ChimpRef *right)
+{
+    int64_t left_value, right_value;
+    
+    left_value = CHIMP_INT(left)->value;
+    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
+        return NULL;
+    }
+    right_value = CHIMP_INT(right)->value;
+    return chimp_int_new (left_value * right_value);
+}
+
+static ChimpRef *
+chimp_int_div (ChimpRef *left, ChimpRef *right)
+{
+    int64_t left_value, right_value;
+    
+    left_value = CHIMP_INT(left)->value;
+    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
+        return NULL;
+    }
+    right_value = CHIMP_INT(right)->value;
+    return chimp_int_new (left_value / right_value);
+}
+
 chimp_bool_t
 chimp_int_class_bootstrap (void)
 {
@@ -42,6 +94,10 @@ chimp_int_class_bootstrap (void)
     }
     chimp_gc_make_root (NULL, chimp_int_class);
     CHIMP_CLASS(chimp_int_class)->str = chimp_int_str;
+    CHIMP_CLASS(chimp_int_class)->add = chimp_int_add;
+    CHIMP_CLASS(chimp_int_class)->sub = chimp_int_sub;
+    CHIMP_CLASS(chimp_int_class)->mul = chimp_int_mul;
+    CHIMP_CLASS(chimp_int_class)->div = chimp_int_div;
     return CHIMP_TRUE;
 }
 

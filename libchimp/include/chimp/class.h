@@ -24,6 +24,10 @@ typedef struct _ChimpClass {
     ChimpValueType inst_type;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
     ChimpRef *(*str)(ChimpRef *);
+    ChimpRef *(*add)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*sub)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*mul)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*div)(ChimpRef *, ChimpRef *);
     ChimpRef *(*call)(ChimpRef *, ChimpRef *);
     ChimpRef *(*getattr)(ChimpRef *, ChimpRef *);
     struct _ChimpLWHash *methods;

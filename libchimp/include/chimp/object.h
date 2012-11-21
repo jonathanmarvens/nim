@@ -50,6 +50,18 @@ ChimpRef *
 chimp_object_str (ChimpRef *self);
 
 ChimpRef *
+chimp_object_add (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_sub (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_mul (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_div (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
 chimp_object_call (ChimpRef *target, ChimpRef *args);
 
 ChimpRef *

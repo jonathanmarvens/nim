@@ -687,6 +687,55 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
 
                 break;
             }
+        case CHIMP_BINOP_ADD:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+                
+                if (!chimp_code_add (code)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_BINOP_SUB:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_sub (code)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_BINOP_MUL:
+
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_mul (code)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_BINOP_DIV:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_div (code)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
         default:
             chimp_bug (__FILE__, __LINE__, "unknown binop type: %d", CHIMP_AST_EXPR(expr)->binop.op);
             return CHIMP_FALSE;

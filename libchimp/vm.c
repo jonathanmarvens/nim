@@ -452,6 +452,98 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_ADD:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_add (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_SUB:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_sub (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_MUL:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_mul (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_DIV:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_div (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
             default:
             {
                 chimp_bug (__FILE__, __LINE__, "unknown opcode: %d", CHIMP_INSTR_OP(code, pc));
