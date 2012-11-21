@@ -400,6 +400,10 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "STORENAME";
         case CHIMP_OPCODE_PUSHNAME:
              return "PUSHNAME";
+        case CHIMP_OPCODE_PUSHNIL:
+             return "PUSHNIL";
+        case CHIMP_OPCODE_PANIC:
+             return "PANIC";
         case CHIMP_OPCODE_GETATTR:
              return "GETATTR";
         case CHIMP_OPCODE_CALL:
@@ -416,6 +420,14 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "CMP_POP";
         case CHIMP_OPCODE_RET:
              return "RET";
+        case CHIMP_OPCODE_ADD:
+             return "ADD";
+        case CHIMP_OPCODE_SUB:
+             return "SUB";
+        case CHIMP_OPCODE_MUL:
+             return "MUL";
+        case CHIMP_OPCODE_DIV:
+             return "DIV";
         default:
              return "???OPCODE???";
     };
