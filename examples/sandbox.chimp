@@ -55,5 +55,6 @@ main argv {
 
   two = 2;
   io.print (str(1 + two * 3));
+  io.print (str(1 + 2 and 2 + 3));
 }
 

@@ -30,10 +30,10 @@ extern chimp_bool_t chimp_parsing;
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN
 
-%left TOK_PLUS TOK_MINUS
-%left TOK_ASTERISK TOK_SLASH
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
+%left TOK_PLUS TOK_MINUS
+%left TOK_ASTERISK TOK_SLASH
 
 %token <ref> TOK_IDENT TOK_STR TOK_INT
 
