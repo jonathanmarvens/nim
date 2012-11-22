@@ -23,6 +23,8 @@ extern chimp_bool_t chimp_parsing;
     ChimpRef *ref;
 }
 
+%expect 1
+
 %token TOK_TRUE TOK_FALSE TOK_NIL
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_FULLSTOP
