@@ -4,7 +4,7 @@ SUBDIRS = libchimp .
 
 bin_PROGRAMS = chimp
 chimp_SOURCES = main.c
-chimp_CFLAGS = -Wall -Ilibchimp/include @valgrind_CFLAGS@
+chimp_CFLAGS = -Wall -I$(srcdir)/libchimp/include @valgrind_CFLAGS@
 chimp_LDADD = libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
@@ -16,7 +16,10 @@ EXTRA_DIST = \
 	script/astgen \
 	script/testgen \
 	script/gdb \
-	script/valgrind
+	script/valgrind \
+	test/test_class.c \
+	test/test_str.c \
+	test/test_core.c
 
 test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
@@ -25,7 +28,7 @@ test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 
 TESTS = test/all-native
 
-common_check_cflags = -Wall -I$(builddir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
+common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 common_check_ldflags = -pthread
 
