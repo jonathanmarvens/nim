@@ -53,8 +53,8 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = chimp$(EXEEXT)
-TESTS = test/all-native$(EXEEXT)
-check_PROGRAMS = test/all-native$(EXEEXT)
+@HAVE_CHECK_TRUE@TESTS = test/all-native$(EXEEXT)
+@HAVE_CHECK_TRUE@check_PROGRAMS = test/all-native$(EXEEXT)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure config.guess \
@@ -79,10 +79,13 @@ chimp_DEPENDENCIES = libchimp/libchimp.la
 chimp_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(chimp_CFLAGS) $(CFLAGS) $(chimp_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_test_all_native_OBJECTS = test_all_native-_test_main.$(OBJEXT)
+am__test_all_native_SOURCES_DIST = test/_test_main.c
+@HAVE_CHECK_TRUE@am_test_all_native_OBJECTS =  \
+@HAVE_CHECK_TRUE@	test_all_native-_test_main.$(OBJEXT)
 test_all_native_OBJECTS = $(am_test_all_native_OBJECTS)
-am__DEPENDENCIES_1 = $(builddir)/libchimp/libchimp.la
-test_all_native_DEPENDENCIES = $(am__DEPENDENCIES_1)
+@HAVE_CHECK_TRUE@am__DEPENDENCIES_1 =  \
+@HAVE_CHECK_TRUE@	$(builddir)/libchimp/libchimp.la
+@HAVE_CHECK_TRUE@test_all_native_DEPENDENCIES = $(am__DEPENDENCIES_1)
 test_all_native_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_all_native_CFLAGS) \
 	$(CFLAGS) $(test_all_native_LDFLAGS) $(LDFLAGS) -o $@
@@ -101,7 +104,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(chimp_SOURCES) $(test_all_native_SOURCES)
-DIST_SOURCES = $(chimp_SOURCES) $(test_all_native_SOURCES)
+DIST_SOURCES = $(chimp_SOURCES) $(am__test_all_native_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -307,20 +310,21 @@ EXTRA_DIST = \
 	script/testgen \
 	script/gdb \
 	script/valgrind \
+	test/_test_main.c \
 	test/test_class.c \
 	test/test_str.c \
 	test/test_core.c
 
-common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
-common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
-common_check_ldflags = -pthread
-test_all_native_SOURCES = test/_test_main.c
-test_all_native_CFLAGS = $(common_check_cflags)
-test_all_native_LDADD = $(common_check_ldadd)
-test_all_native_LDFLAGS = $(common_check_ldflags)
+@HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
+@HAVE_CHECK_TRUE@common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
+@HAVE_CHECK_TRUE@common_check_ldflags = -pthread
+@HAVE_CHECK_TRUE@test_all_native_SOURCES = test/_test_main.c
+@HAVE_CHECK_TRUE@test_all_native_CFLAGS = $(common_check_cflags)
+@HAVE_CHECK_TRUE@test_all_native_LDADD = $(common_check_ldadd)
+@HAVE_CHECK_TRUE@test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
-test_sources = $(wildcard $(srcdir)/test/test_*.c)
+@HAVE_CHECK_TRUE@test_sources = $(wildcard $(srcdir)/test/test_*.c)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1051,10 +1055,10 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
-	$(srcdir)/script/testgen \
-	$(test_sources)
-	script/testgen test/test_*.c >$@
+@HAVE_CHECK_TRUE@test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
+@HAVE_CHECK_TRUE@	$(srcdir)/script/testgen \
+@HAVE_CHECK_TRUE@	$(test_sources)
+@HAVE_CHECK_TRUE@	script/testgen test/test_*.c >$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

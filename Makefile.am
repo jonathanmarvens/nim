@@ -17,9 +17,12 @@ EXTRA_DIST = \
 	script/testgen \
 	script/gdb \
 	script/valgrind \
+	test/_test_main.c \
 	test/test_class.c \
 	test/test_str.c \
 	test/test_core.c
+
+if HAVE_CHECK
 
 test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
@@ -41,4 +44,6 @@ test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
 test_sources = $(wildcard $(srcdir)/test/test_*.c)
+
+endif
 
