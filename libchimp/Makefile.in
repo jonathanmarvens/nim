@@ -844,7 +844,7 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 	uninstall-libLTLIBRARIES
 
 
-ast.h: ast.c
+$(builddir)/include/chimp/ast.h: ast.c
 
 ast.c: $(top_srcdir)/script/astgen
 	$(top_srcdir)/script/astgen $(srcdir)/include/chimp/ast.h $(srcdir)/ast.c

@@ -21,7 +21,7 @@ common_check_ldflags = -pthread
 
 check_PROGRAMS = test/all-native
 
-test_all_native_SOURCES = $(builddir)/test/_test_main.c
+test_all_native_SOURCES = $(top_builddir)/test/_test_main.c
 test_all_native_CFLAGS = $(common_check_cflags)
 test_all_native_LDADD = $(common_check_ldadd)
 test_all_native_LDFLAGS = $(common_check_ldflags)
@@ -31,7 +31,7 @@ test_sources = $(wildcard $(srcdir)/test/test_*.c)
 
 EXTRA_DIST = $(test_sources)
 
-$(builddir)/test/_test_main.c: \
+$(top_builddir)/test/_test_main.c: \
 	$(top_srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@

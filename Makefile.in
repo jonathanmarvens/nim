@@ -79,7 +79,7 @@ chimp_DEPENDENCIES = $(top_builddir)/libchimp/libchimp.la
 chimp_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(chimp_CFLAGS) $(CFLAGS) $(chimp_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__test_all_native_SOURCES_DIST = $(builddir)/test/_test_main.c
+am__test_all_native_SOURCES_DIST = $(top_builddir)/test/_test_main.c
 @HAVE_CHECK_TRUE@am_test_all_native_OBJECTS =  \
 @HAVE_CHECK_TRUE@	test_all_native-_test_main.$(OBJEXT)
 test_all_native_OBJECTS = $(am_test_all_native_OBJECTS)
@@ -307,7 +307,7 @@ chimp_LDFLAGS = -pthread
 @HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(top_srcdir)/test -I$(top_srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 @HAVE_CHECK_TRUE@common_check_ldadd = $(top_builddir)/libchimp/libchimp.la @check_LIBS@
 @HAVE_CHECK_TRUE@common_check_ldflags = -pthread
-@HAVE_CHECK_TRUE@test_all_native_SOURCES = $(builddir)/test/_test_main.c
+@HAVE_CHECK_TRUE@test_all_native_SOURCES = $(top_builddir)/test/_test_main.c
 @HAVE_CHECK_TRUE@test_all_native_CFLAGS = $(common_check_cflags)
 @HAVE_CHECK_TRUE@test_all_native_LDADD = $(common_check_ldadd)
 @HAVE_CHECK_TRUE@test_all_native_LDFLAGS = $(common_check_ldflags)
@@ -462,19 +462,19 @@ chimp-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(chimp_CFLAGS) $(CFLAGS) -c -o chimp-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-test_all_native-_test_main.o: $(builddir)/test/_test_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.o -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.o `test -f '$(builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(builddir)/test/_test_main.c
+test_all_native-_test_main.o: $(top_builddir)/test/_test_main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.o -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.o `test -f '$(top_builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(top_builddir)/test/_test_main.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_all_native-_test_main.Tpo $(DEPDIR)/test_all_native-_test_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(builddir)/test/_test_main.c' object='test_all_native-_test_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_builddir)/test/_test_main.c' object='test_all_native-_test_main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.o `test -f '$(builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(builddir)/test/_test_main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.o `test -f '$(top_builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(top_builddir)/test/_test_main.c
 
-test_all_native-_test_main.obj: $(builddir)/test/_test_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.obj -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.obj `if test -f '$(builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(builddir)/test/_test_main.c'; fi`
+test_all_native-_test_main.obj: $(top_builddir)/test/_test_main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.obj -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.obj `if test -f '$(top_builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(top_builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/test/_test_main.c'; fi`
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_all_native-_test_main.Tpo $(DEPDIR)/test_all_native-_test_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(builddir)/test/_test_main.c' object='test_all_native-_test_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_builddir)/test/_test_main.c' object='test_all_native-_test_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.obj `if test -f '$(builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(builddir)/test/_test_main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.obj `if test -f '$(top_builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(top_builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/test/_test_main.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1040,7 +1040,7 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-@HAVE_CHECK_TRUE@$(builddir)/test/_test_main.c: \
+@HAVE_CHECK_TRUE@$(top_builddir)/test/_test_main.c: \
 @HAVE_CHECK_TRUE@	$(top_srcdir)/script/testgen \
 @HAVE_CHECK_TRUE@	$(test_sources)
 @HAVE_CHECK_TRUE@	script/testgen test/test_*.c >$@
