@@ -54,7 +54,6 @@ host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = chimp$(EXEEXT)
 @HAVE_CHECK_TRUE@TESTS = test/all-native$(EXEEXT)
-@HAVE_CHECK_TRUE@am__append_1 = $(builddir)/test/_test_main.c
 @HAVE_CHECK_TRUE@check_PROGRAMS = test/all-native$(EXEEXT)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
@@ -304,7 +303,7 @@ chimp_CFLAGS = -Wall -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include
 chimp_LDADD = $(builddir)/libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
-MOSTLYCLEANFILES = $(am__append_1)
+MOSTLYCLEANFILES = $(builddir)/test/_test_main.c
 EXTRA_DIST = \
 	$(srcdir)/script/astgen \
 	$(srcdir)/script/testgen \
@@ -1049,10 +1048,10 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-@HAVE_CHECK_TRUE@$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
-@HAVE_CHECK_TRUE@	$(srcdir)/script/testgen \
-@HAVE_CHECK_TRUE@	$(test_sources)
-@HAVE_CHECK_TRUE@	script/testgen test/test_*.c >$@
+$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
+	$(srcdir)/script/testgen \
+	$(test_sources)
+	script/testgen test/test_*.c >$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
