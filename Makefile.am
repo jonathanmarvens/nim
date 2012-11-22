@@ -27,7 +27,9 @@ test_all_native_LDADD = $(common_check_ldadd)
 test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
-test_sources = $(wildcard $(top_srcdir)/test/test_*.c)
+test_sources = $(wildcard $(srcdir)/test/test_*.c)
+
+EXTRA_DIST = $(test_sources)
 
 $(builddir)/test/_test_main.c: \
 	$(top_srcdir)/script/testgen \

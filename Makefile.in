@@ -313,7 +313,8 @@ chimp_LDFLAGS = -pthread
 @HAVE_CHECK_TRUE@test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
-@HAVE_CHECK_TRUE@test_sources = $(wildcard $(top_srcdir)/test/test_*.c)
+@HAVE_CHECK_TRUE@test_sources = $(wildcard $(srcdir)/test/test_*.c)
+@HAVE_CHECK_TRUE@EXTRA_DIST = $(test_sources)
 all: all-recursive
 
 .SUFFIXES:
