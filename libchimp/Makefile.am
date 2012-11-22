@@ -63,6 +63,8 @@ include_HEADERS = \
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =
 
+include/chimp/_parser.h: _parser.c
+
 scanner.c: include/chimp/_parser.h
 
 include/chimp/ast.h: $(top_srcdir)/script/astgen
