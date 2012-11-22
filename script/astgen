@@ -71,7 +71,8 @@ AST_DESCRIPTOR = [
             ['args', 'array'],
             ['body', 'array']],
         ['var',
-            ['name', 'str']],
+            ['name', 'str'],
+            ['value', 'expr']],
         ['use',
             ['name', 'str']]]
 ]

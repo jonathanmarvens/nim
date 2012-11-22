@@ -12,7 +12,7 @@ ohai name {
 }
 
 main argv {
-  name = readname ();
+  var name = readname ();
   ohai (name);
   io.print (argv);
 }

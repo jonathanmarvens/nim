@@ -30,7 +30,7 @@ extern chimp_bool_t chimp_parsing;
 %token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN
+%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ
@@ -41,7 +41,7 @@ extern chimp_bool_t chimp_parsing;
 
 %type <ref> module
 %type <ref> stmt simple_stmt compound_stmt
-%type <ref> assign
+%type <ref> var_decl assign
 %type <ref> stmts opt_stmts block else
 %type <ref> opt_expr expr simple
 %type <ref> opt_simple_tail
@@ -84,7 +84,7 @@ opt_params_tail : TOK_COMMA param opt_params_tail { $$ = $3; chimp_array_unshift
                  | /* empty */ { $$ = chimp_array_new (); }
                  ;
 
-param : ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($1)->ident.id); }
+param : ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($1)->ident.id, NULL); }
       ;
 
 stmts: stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
@@ -99,6 +99,7 @@ stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
      ;
 
 simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
+            | var_decl { $$ = $1; }
             | assign { $$ = $1; }
             | ret { $$ = $1; }
             | panic { $$ = $1; }
@@ -115,6 +116,10 @@ block : TOK_LBRACE stmts TOK_RBRACE { $$ = $2; }
       | stmt { $$ = chimp_array_new (); chimp_array_unshift ($$, $1); }
       | TOK_SEMICOLON { $$ = chimp_array_new (); }
       ;
+
+var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var ($2, NULL); }
+         | TOK_VAR ident TOK_ASSIGN expr { $$ = chimp_ast_decl_new_var ($2, $4); }
+         ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
        ;

@@ -7,17 +7,17 @@ use io;
 use os;
 
 main argv {
-  x = "hello";
-  y = ["foo"];
-  z = x;
+  var x = "hello";
+  var y = ["foo"];
+  var z = x;
 
   io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true, 9223372036854775807);
 
-  some_func = fn x { io.print(str("a function! ", x)); };
+  var some_func = fn x { io.print(str("a function! ", x)); };
   some_func("testing");
 
-  num_array = [1, 2, 3];
-  str_array = num_array.map(str);
+  var num_array = [1, 2, 3];
+  var str_array = num_array.map(str);
   if str_array.contains("1") {
     io.print("str_array contains '1'!");
   }
@@ -29,7 +29,7 @@ main argv {
     panic "array should not contain 'b'";
   }
 
-  some_bool = false;
+  var some_bool = false;
   if some_bool {
     io.print (x);
   }
@@ -38,7 +38,7 @@ main argv {
   }
 
   io.print ("Enter your name:");
-  name = io.readline();
+  var name = io.readline();
   if name == "dude" {
       io.print ("Dude!");
   }
@@ -46,17 +46,17 @@ main argv {
       io.print (str("Hey there, ", name));
   }
 
-  home = os.getenv ("HOME");
+  var home = os.getenv ("HOME");
   if home {
     io.print (home);
   }
 
   io.print (true and "test");
 
-  m = module("main");
+  var m = module("main");
   io.print (str(m));
 
-  two = 2;
+  var two = 2;
   io.print (str(1 + two * 3));
   io.print (str(1 + 2 and 2 + 3));
 }

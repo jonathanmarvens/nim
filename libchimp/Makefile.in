@@ -850,6 +850,8 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 	uninstall-libLTLIBRARIES
 
 
+include/chimp/_parser.h: _parser.c
+
 scanner.c: include/chimp/_parser.h
 
 include/chimp/ast.h: $(top_srcdir)/script/astgen

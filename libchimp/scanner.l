@@ -28,6 +28,7 @@
 "ret"                       { CHIMP_TOKEN(TOK_RET) }
 "panic"                     { CHIMP_TOKEN(TOK_PANIC) }
 "fn"                        { CHIMP_TOKEN(TOK_FN) }
+"var"                       { CHIMP_TOKEN(TOK_VAR) }
 [ \t\r\n]                   { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }

@@ -30,6 +30,7 @@ typedef struct _ChimpCodeCompiler {
 
 #define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
 #define CHIMP_COMPILER_MODULE(c) ((c)->current_unit)->module
+#define CHIMP_COMPILER_SCOPE(c) ((c)->current_unit)->value;
 
 #define CHIMP_COMPILER_IN_MODULE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_MODULE)
 #define CHIMP_COMPILER_IN_CODE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_CODE)
@@ -155,9 +156,16 @@ chimp_compile_ast_stmts (ChimpCodeCompiler *c, ChimpRef *stmts)
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(stmts); i++) {
-        if (!chimp_compile_ast_stmt (c, CHIMP_ARRAY_ITEM(stmts, i))) {
-            /* TODO error message? */
-            return CHIMP_FALSE;
+        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(stmts, i)) == CHIMP_VALUE_TYPE_AST_STMT) {
+            if (!chimp_compile_ast_stmt (c, CHIMP_ARRAY_ITEM(stmts, i))) {
+                /* TODO error message? */
+                return CHIMP_FALSE;
+            }
+        }
+        else if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(stmts, i)) == CHIMP_VALUE_TYPE_AST_DECL) {
+            if (!chimp_compile_ast_decl (c, CHIMP_ARRAY_ITEM(stmts, i))) {
+                return CHIMP_FALSE;
+            }
         }
     }
     return CHIMP_TRUE;
@@ -414,6 +422,33 @@ chimp_compile_ast_decl_use (ChimpCodeCompiler *c, ChimpRef *decl)
 }
 
 static chimp_bool_t
+chimp_compile_ast_decl_var (ChimpCodeCompiler *c, ChimpRef *decl)
+{
+    ChimpRef *scope = CHIMP_COMPILER_SCOPE(c);
+    ChimpRef *name = CHIMP_AST_DECL(decl)->var.name;
+    ChimpRef *value = CHIMP_AST_DECL(decl)->var.value;
+
+    if (CHIMP_ANY_TYPE(scope) == CHIMP_VALUE_TYPE_MODULE) {
+        return chimp_module_add_local (scope, name, value == NULL ? chimp_nil : value);
+    }
+    else {
+        /* TODO it's really about time we get ourselves a symbol table */
+        if (value != NULL) {
+            ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+            if (!chimp_compile_ast_expr (c, value)) {
+                return CHIMP_FALSE;
+            }
+
+            if (!chimp_code_storename (code, CHIMP_AST_EXPR(name)->ident.id)) {
+                return CHIMP_FALSE;
+            }
+        }
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl)
 {
     switch (CHIMP_AST_DECL_TYPE(decl)) {
@@ -421,6 +456,8 @@ chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl)
             return chimp_compile_ast_decl_func (c, decl);
         case CHIMP_AST_DECL_USE:
             return chimp_compile_ast_decl_use (c, decl);
+        case CHIMP_AST_DECL_VAR:
+            return chimp_compile_ast_decl_var (c, decl);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_DECL_TYPE(decl));
             return CHIMP_FALSE;
