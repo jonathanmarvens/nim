@@ -40,7 +40,7 @@ extern chimp_bool_t chimp_parsing;
 %type <ref> module
 %type <ref> stmt simple_stmt compound_stmt
 %type <ref> assign
-%type <ref> opt_stmts block opt_else
+%type <ref> stmts opt_stmts block else
 %type <ref> opt_expr expr simple
 %type <ref> opt_simple_tail
 %type <ref> opt_decls opt_uses
@@ -49,7 +49,7 @@ extern chimp_bool_t chimp_parsing;
 %type <ref> opt_params opt_params_tail param
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
-%type <ref> opt_hash_elements hash_elements opt_hash_elements_tail
+%type <ref> hash_elements opt_hash_elements_tail
 %type <ref> ident str array hash bool nil int
 %type <ref> ret panic
 
@@ -85,6 +85,9 @@ opt_params_tail : TOK_COMMA param opt_params_tail { $$ = $3; chimp_array_unshift
 param : ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($1)->ident.id); }
       ;
 
+stmts: stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
+     ;
+
 opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (); }
           ;
@@ -99,14 +102,14 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1); }
             | panic { $$ = $1; }
             ;
 
-compound_stmt : TOK_IF expr block opt_else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
+compound_stmt : TOK_IF expr block else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4); }
+              | TOK_IF expr block { $$ = chimp_ast_stmt_new_if_ ($2, $3, NULL); }
               ;
 
-opt_else : TOK_ELSE block { $$ = $2; }
-         | /* empty */ { $$ = NULL; }
-         ;
+else : TOK_ELSE block { $$ = $2; }
 
-block : TOK_LBRACE opt_stmts TOK_RBRACE { $$ = $2; }
+block : TOK_LBRACE stmts TOK_RBRACE { $$ = $2; }
+      | TOK_LBRACE TOK_RBRACE { $$ = chimp_array_new (); }
       | stmt { $$ = chimp_array_new (); chimp_array_unshift ($$, $1); }
       | TOK_SEMICOLON { $$ = chimp_array_new (); }
       ;
@@ -193,12 +196,9 @@ bool : TOK_TRUE { $$ = chimp_ast_expr_new_bool (chimp_true); }
      | TOK_FALSE { $$ = chimp_ast_expr_new_bool (chimp_false); }
      ;
 
-hash : TOK_LBRACE opt_hash_elements TOK_RBRACE { $$ = chimp_ast_expr_new_hash ($2); }
+hash : TOK_LBRACE hash_elements TOK_RBRACE { $$ = chimp_ast_expr_new_hash ($2); }
+     | TOK_LBRACE TOK_RBRACE { $$ = chimp_array_new (); }
      ;
-
-opt_hash_elements : hash_elements { $$ = $1; }
-                  | /* empty */ { $$ = chimp_array_new (); }
-                  ;
 
 hash_elements : expr TOK_COLON expr opt_hash_elements_tail { $$ = $4; chimp_array_unshift ($$, $3); chimp_array_unshift ($$, $1); }
               ;
