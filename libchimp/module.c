@@ -1,6 +1,7 @@
 #include "chimp/module.h"
 #include "chimp/array.h"
 #include "chimp/object.h"
+#include "chimp/str.h"
 
 ChimpRef *chimp_module_class = NULL;
 
@@ -87,5 +88,28 @@ chimp_bool_t
 chimp_module_add_local (ChimpRef *self, ChimpRef *name, ChimpRef *value)
 {
     return chimp_hash_put (CHIMP_MODULE(self)->locals, name, value);
+}
+
+chimp_bool_t
+chimp_module_add_method_str (
+    ChimpRef *self,
+    const char *name,
+    ChimpNativeMethodFunc impl
+)
+{
+    ChimpRef *nameref;
+    ChimpRef *method;
+    
+    nameref = chimp_str_new (name, strlen(name));
+    if (nameref == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    method = chimp_method_new_native (self, impl);
+    if (method == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    return chimp_hash_put (CHIMP_MODULE(self)->locals, nameref, method);
 }
 

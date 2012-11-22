@@ -5,7 +5,7 @@
 #include "chimp/str.h"
 
 static ChimpRef *
-_getenv (ChimpRef *self, ChimpRef *args)
+_chimp_os_getenv (ChimpRef *self, ChimpRef *args)
 {
     const char *value = getenv(CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, 0)));
     if (value == NULL) {
@@ -20,20 +20,15 @@ ChimpRef *
 chimp_init_os_module (void)
 {
     ChimpRef *os;
-    ChimpRef *exports;
-    ChimpRef *getenv_method;
 
-    getenv_method = chimp_method_new_native (NULL, _getenv);
-    exports = chimp_hash_new ();
-    chimp_hash_put_str (exports, "getenv", getenv_method);
-    
-    os = chimp_module_new_str ("os", exports);
+    os = chimp_module_new_str ("os", NULL);
     if (os == NULL) {
         return NULL;
     }
 
-    /* XXX stupid hack because I can't think far enough ahead of myself */
-    CHIMP_METHOD(getenv_method)->module = os;
+    if (!chimp_module_add_method_str (os, "getenv", _chimp_os_getenv)) {
+        return NULL;
+    }
 
     return os;
 }

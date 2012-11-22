@@ -64,24 +64,19 @@ ChimpRef *
 chimp_init_assert_module (void)
 {
     ChimpRef *mod;
-    ChimpRef *exports;
-    ChimpRef *eq_method;
-    ChimpRef *neq_method;
 
-    eq_method = chimp_method_new_native (NULL, _chimp_assert_equal);
-    neq_method = chimp_method_new_native (NULL, _chimp_assert_not_equal);
-    exports = chimp_hash_new ();
-    chimp_hash_put_str (exports, "eq", eq_method);
-    chimp_hash_put_str (exports, "neq", neq_method);
-    
-    mod = chimp_module_new_str ("assert", exports);
+    mod = chimp_module_new_str ("assert", NULL);
     if (mod == NULL) {
         return NULL;
     }
 
-    /* XXX stupid hack because I can't think far enough ahead of myself */
-    CHIMP_METHOD(eq_method)->module = mod;
-    CHIMP_METHOD(neq_method)->module = mod;
+    if (!chimp_module_add_method_str (mod, "eq", _chimp_assert_equal)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (mod, "neq", _chimp_assert_not_equal)) {
+        return NULL;
+    }
 
     return mod;
 }

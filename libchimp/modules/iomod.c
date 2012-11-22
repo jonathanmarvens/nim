@@ -5,7 +5,7 @@
 #include "chimp/str.h"
 
 static ChimpRef *
-_print (ChimpRef *self, ChimpRef *args)
+_chimp_io_print (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
 
@@ -18,7 +18,7 @@ _print (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
-_input (ChimpRef *self, ChimpRef *args)
+_chimp_io_readline (ChimpRef *self, ChimpRef *args)
 {
     char buf[1024];
     size_t len;
@@ -38,24 +38,19 @@ ChimpRef *
 chimp_init_io_module (void)
 {
     ChimpRef *io;
-    ChimpRef *exports;
-    ChimpRef *print_method;
-    ChimpRef *input_method;
 
-    print_method = chimp_method_new_native (NULL, _print);
-    input_method = chimp_method_new_native (NULL, _input);
-    exports = chimp_hash_new ();
-    chimp_hash_put_str (exports, "print", print_method);
-    chimp_hash_put_str (exports, "readline", input_method);
-    
-    io = chimp_module_new_str ("io", exports);
+    io = chimp_module_new_str ("io", NULL);
     if (io == NULL) {
         return NULL;
     }
 
-    /* XXX stupid hack because I can't think far enough ahead of myself */
-    CHIMP_METHOD(print_method)->module = io;
-    CHIMP_METHOD(input_method)->module = io;
+    if (!chimp_module_add_method_str (io, "print", _chimp_io_print)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (io, "readline", _chimp_io_readline)) {
+        return NULL;
+    }
 
     return io;
 }
