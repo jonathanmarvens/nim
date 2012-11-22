@@ -13,6 +13,8 @@ BUILT_SOURCES = test/_test_main.c
 
 MOSTLYCLEANFILES = test/_test_main.c
 EXTRA_DIST = \
+	autogen \
+	vim/syntax/chimp.vim \
 	script/astgen \
 	script/testgen \
 	script/gdb \
