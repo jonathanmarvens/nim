@@ -79,7 +79,7 @@ chimp_DEPENDENCIES = $(builddir)/libchimp/libchimp.la
 chimp_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(chimp_CFLAGS) $(CFLAGS) $(chimp_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am__test_all_native_SOURCES_DIST = $(builddir)/test/_test_main.c
+am__test_all_native_SOURCES_DIST = test/_test_main.c
 @HAVE_CHECK_TRUE@am_test_all_native_OBJECTS =  \
 @HAVE_CHECK_TRUE@	test_all_native-_test_main.$(OBJEXT)
 test_all_native_OBJECTS = $(am_test_all_native_OBJECTS)
@@ -303,7 +303,8 @@ chimp_CFLAGS = -Wall -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include
 chimp_LDADD = $(builddir)/libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
-MOSTLYCLEANFILES = $(builddir)/test/_test_main.c
+BUILT_SOURCES = test/_test_main.c
+MOSTLYCLEANFILES = test/_test_main.c
 EXTRA_DIST = \
 	$(srcdir)/script/astgen \
 	$(srcdir)/script/testgen \
@@ -316,14 +317,15 @@ EXTRA_DIST = \
 @HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(builddir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 @HAVE_CHECK_TRUE@common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 @HAVE_CHECK_TRUE@common_check_ldflags = -pthread
-@HAVE_CHECK_TRUE@test_all_native_SOURCES = $(builddir)/test/_test_main.c
+@HAVE_CHECK_TRUE@test_all_native_SOURCES = test/_test_main.c
 @HAVE_CHECK_TRUE@test_all_native_CFLAGS = $(common_check_cflags)
 @HAVE_CHECK_TRUE@test_all_native_LDADD = $(common_check_ldadd)
 @HAVE_CHECK_TRUE@test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
 @HAVE_CHECK_TRUE@test_sources = $(wildcard $(srcdir)/test/test_*.c)
-all: all-recursive
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -470,19 +472,19 @@ chimp-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(chimp_CFLAGS) $(CFLAGS) -c -o chimp-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-test_all_native-_test_main.o: $(builddir)/test/_test_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.o -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.o `test -f '$(builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(builddir)/test/_test_main.c
+test_all_native-_test_main.o: test/_test_main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.o -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.o `test -f 'test/_test_main.c' || echo '$(srcdir)/'`test/_test_main.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_all_native-_test_main.Tpo $(DEPDIR)/test_all_native-_test_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(builddir)/test/_test_main.c' object='test_all_native-_test_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test/_test_main.c' object='test_all_native-_test_main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.o `test -f '$(builddir)/test/_test_main.c' || echo '$(srcdir)/'`$(builddir)/test/_test_main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.o `test -f 'test/_test_main.c' || echo '$(srcdir)/'`test/_test_main.c
 
-test_all_native-_test_main.obj: $(builddir)/test/_test_main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.obj -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.obj `if test -f '$(builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(builddir)/test/_test_main.c'; fi`
+test_all_native-_test_main.obj: test/_test_main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -MT test_all_native-_test_main.obj -MD -MP -MF $(DEPDIR)/test_all_native-_test_main.Tpo -c -o test_all_native-_test_main.obj `if test -f 'test/_test_main.c'; then $(CYGPATH_W) 'test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/test/_test_main.c'; fi`
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/test_all_native-_test_main.Tpo $(DEPDIR)/test_all_native-_test_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(builddir)/test/_test_main.c' object='test_all_native-_test_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test/_test_main.c' object='test_all_native-_test_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.obj `if test -f '$(builddir)/test/_test_main.c'; then $(CYGPATH_W) '$(builddir)/test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/$(builddir)/test/_test_main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_all_native_CFLAGS) $(CFLAGS) -c -o test_all_native-_test_main.obj `if test -f 'test/_test_main.c'; then $(CYGPATH_W) 'test/_test_main.c'; else $(CYGPATH_W) '$(srcdir)/test/_test_main.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -912,14 +914,16 @@ distcleancheck: distclean
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(PROGRAMS)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -951,6 +955,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
@@ -1025,8 +1030,9 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS
 
-.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) check-am \
-	ctags-recursive install-am install-strip tags-recursive
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all check \
+	check-am ctags-recursive install install-am install-strip \
+	tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-TESTS check-am clean \
@@ -1048,7 +1054,7 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
+test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@

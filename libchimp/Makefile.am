@@ -1,17 +1,18 @@
-GENERATED_FILES = \
+BUILT_SOURCES = \
 	$(builddir)/ast.c \
 	$(builddir)/include/chimp/ast.h \
 	$(srcdir)/_parser.c \
 	$(srcdir)/include/chimp/_parser.h \
 	$(srcdir)/scanner.c
 
-MOSTLYCLEANFILES = $(GENERATED_FILES)
+CLEANFILES = $(BUILT_SOURCES)
 
 AM_YFLAGS = --defines=$(srcdir)/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
+
 libchimp_la_SOURCES = \
-	$(builddir)/ast.c \
+	ast.c \
 	_parser.y \
 	scanner.l \
 	gc.c \
@@ -60,11 +61,11 @@ include_HEADERS = \
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include -I$(builddir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =
 
-$(builddir)/scanner.c: $(srcdir)/include/chimp/_parser.h
+scanner.c: include/chimp/_parser.h
 
-$(builddir)/include/chimp/ast.h: $(top_srcdir)/script/astgen
-	mkdir -p $(builddir)/include/chimp
-	$(top_srcdir)/script/astgen $(builddir)/include/chimp/ast.h $(builddir)/ast.c
+include/chimp/ast.h: $(top_srcdir)/script/astgen
+	mkdir -p include/chimp
+	$(top_srcdir)/script/astgen include/chimp/ast.h ast.c
 
-$(builddir)/ast.c: $(top_srcdir)/script/astgen $(builddir)/include/chimp/ast.h
+ast.c: $(top_srcdir)/script/astgen include/chimp/ast.h
 

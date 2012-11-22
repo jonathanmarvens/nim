@@ -9,7 +9,9 @@ chimp_LDADD = $(builddir)/libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
 
-MOSTLYCLEANFILES = $(builddir)/test/_test_main.c
+BUILT_SOURCES = test/_test_main.c
+
+MOSTLYCLEANFILES = test/_test_main.c
 EXTRA_DIST = \
 	$(srcdir)/script/astgen \
 	$(srcdir)/script/testgen \
@@ -19,7 +21,7 @@ EXTRA_DIST = \
 	$(srcdir)/test/test_str.c \
 	$(srcdir)/test/test_core.c
 
-$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
+test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@
@@ -34,7 +36,7 @@ common_check_ldflags = -pthread
 
 check_PROGRAMS = test/all-native
 
-test_all_native_SOURCES = $(builddir)/test/_test_main.c
+test_all_native_SOURCES = test/_test_main.c
 test_all_native_CFLAGS = $(common_check_cflags)
 test_all_native_LDADD = $(common_check_ldadd)
 test_all_native_LDFLAGS = $(common_check_ldflags)
