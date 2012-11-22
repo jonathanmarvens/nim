@@ -1,13 +1,15 @@
 BUILT_SOURCES = \
-	$(builddir)/ast.c \
-	$(builddir)/include/chimp/ast.h \
-	$(srcdir)/_parser.c \
-	$(srcdir)/include/chimp/_parser.h \
-	$(srcdir)/scanner.c
+	ast.c \
+	include/chimp/ast.h \
+	_parser.c \
+	include/chimp/_parser.h \
+	scanner.c
+
+EXTRA_DIST = include/chimp/ast.h
 
 CLEANFILES = $(BUILT_SOURCES)
 
-AM_YFLAGS = --defines=$(srcdir)/include/chimp/_parser.h
+AM_YFLAGS = --defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
 
@@ -36,32 +38,32 @@ libchimp_la_SOURCES = \
 	modules/osmod.c
 
 include_HEADERS = \
-	$(srcdir)/include/chimp.h \
-	$(srcdir)/include/chimp/lwhash.h \
-	$(srcdir)/include/chimp/task.h \
-	$(srcdir)/include/chimp/class.h \
-	$(srcdir)/include/chimp/str.h \
-	$(srcdir)/include/chimp/frame.h \
-	$(srcdir)/include/chimp/module.h \
-	$(srcdir)/include/chimp/ast.h \
-	$(srcdir)/include/chimp/_parser.h \
-	$(srcdir)/include/chimp/method.h \
-	$(srcdir)/include/chimp/code.h \
-	$(srcdir)/include/chimp/int.h \
-	$(srcdir)/include/chimp/vm.h \
-	$(srcdir)/include/chimp/array.h \
-	$(srcdir)/include/chimp/core.h \
-	$(srcdir)/include/chimp/compile.h \
-	$(srcdir)/include/chimp/object.h \
-	$(srcdir)/include/chimp/hash.h \
-	$(srcdir)/include/chimp/modules.h \
-	$(srcdir)/include/chimp/any.h \
-	$(srcdir)/include/chimp/gc.h
+	include/chimp.h \
+	include/chimp/lwhash.h \
+	include/chimp/task.h \
+	include/chimp/class.h \
+	include/chimp/str.h \
+	include/chimp/frame.h \
+	include/chimp/module.h \
+	include/chimp/ast.h \
+	include/chimp/_parser.h \
+	include/chimp/method.h \
+	include/chimp/code.h \
+	include/chimp/int.h \
+	include/chimp/vm.h \
+	include/chimp/array.h \
+	include/chimp/core.h \
+	include/chimp/compile.h \
+	include/chimp/object.h \
+	include/chimp/hash.h \
+	include/chimp/modules.h \
+	include/chimp/any.h \
+	include/chimp/gc.h
 
-libchimp_la_CFLAGS = -Wall -I$(srcdir)/include -I$(builddir)/include @valgrind_CFLAGS@
+libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =
 
-scanner.c: $(srcdir)/include/chimp/_parser.h
+scanner.c: include/chimp/_parser.h
 
 include/chimp/ast.h: $(top_srcdir)/script/astgen
 	mkdir -p include/chimp

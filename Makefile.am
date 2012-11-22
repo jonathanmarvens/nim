@@ -4,8 +4,8 @@ SUBDIRS = libchimp .
 
 bin_PROGRAMS = chimp
 chimp_SOURCES = main.c
-chimp_CFLAGS = -Wall -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@
-chimp_LDADD = $(builddir)/libchimp/libchimp.la
+chimp_CFLAGS = -Wall -Ilibchimp/include @valgrind_CFLAGS@
+chimp_LDADD = libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
 
@@ -13,20 +13,15 @@ BUILT_SOURCES = test/_test_main.c
 
 MOSTLYCLEANFILES = test/_test_main.c
 EXTRA_DIST = \
-	$(srcdir)/script/astgen \
-	$(srcdir)/script/testgen \
-	$(srcdir)/script/gdb \
-	$(srcdir)/script/valgrind \
-	$(srcdir)/test/test_class.c \
-	$(srcdir)/test/test_str.c \
-	$(srcdir)/test/test_core.c
+	script/astgen \
+	script/testgen \
+	script/gdb \
+	script/valgrind
 
 test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@
-
-if HAVE_CHECK
 
 TESTS = test/all-native
 
@@ -43,6 +38,4 @@ test_all_native_LDFLAGS = $(common_check_ldflags)
 
 # XXX not portable. hard code me when things settle down.
 test_sources = $(wildcard $(srcdir)/test/test_*.c)
-
-endif
 
