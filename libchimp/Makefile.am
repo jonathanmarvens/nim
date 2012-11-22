@@ -1,11 +1,11 @@
 BUILT_SOURCES = \
 	ast.c \
-	include/chimp/ast.h \
 	_parser.c \
-	include/chimp/_parser.h \
 	scanner.c
 
-EXTRA_DIST = include/chimp/ast.h
+EXTRA_DIST = \
+	include/chimp/_parser.h \
+	include/chimp/ast.h
 
 CLEANFILES = $(BUILT_SOURCES)
 

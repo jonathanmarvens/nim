@@ -270,12 +270,13 @@ valgrind_CFLAGS = @valgrind_CFLAGS@
 valgrind_LIBS = @valgrind_LIBS@
 BUILT_SOURCES = \
 	ast.c \
-	include/chimp/ast.h \
 	_parser.c \
-	include/chimp/_parser.h \
 	scanner.c
 
-EXTRA_DIST = include/chimp/ast.h
+EXTRA_DIST = \
+	include/chimp/_parser.h \
+	include/chimp/ast.h
+
 CLEANFILES = $(BUILT_SOURCES)
 AM_YFLAGS = --defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
 lib_LTLIBRARIES = libchimp.la
