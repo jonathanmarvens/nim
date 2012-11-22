@@ -54,9 +54,8 @@ host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = chimp$(EXEEXT)
 @HAVE_CHECK_TRUE@TESTS = test/all-native$(EXEEXT)
-@HAVE_CHECK_TRUE@am__append_1 = test/_test_main.c
+@HAVE_CHECK_TRUE@am__append_1 = $(builddir)/test/_test_main.c
 @HAVE_CHECK_TRUE@check_PROGRAMS = test/all-native$(EXEEXT)
-@HAVE_CHECK_TRUE@am__append_2 = $(test_sources)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure config.guess \
@@ -306,9 +305,16 @@ chimp_LDADD = $(builddir)/libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
 MOSTLYCLEANFILES = $(am__append_1)
-EXTRA_DIST = $(srcdir)/script/astgen $(srcdir)/script/testgen \
-	$(srcdir)/script/gdb $(srcdir)/script/valgrind $(am__append_2)
-@HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
+EXTRA_DIST = \
+	$(srcdir)/script/astgen \
+	$(srcdir)/script/testgen \
+	$(srcdir)/script/gdb \
+	$(srcdir)/script/valgrind \
+	$(srcdir)/test/test_class.c \
+	$(srcdir)/test/test_str.c \
+	$(srcdir)/test/test_core.c
+
+@HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(builddir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 @HAVE_CHECK_TRUE@common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 @HAVE_CHECK_TRUE@common_check_ldflags = -pthread
 @HAVE_CHECK_TRUE@test_all_native_SOURCES = $(builddir)/test/_test_main.c
@@ -1043,7 +1049,7 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-@HAVE_CHECK_TRUE@$(builddir)/test/_test_main.c: \
+@HAVE_CHECK_TRUE@$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 @HAVE_CHECK_TRUE@	$(srcdir)/script/testgen \
 @HAVE_CHECK_TRUE@	$(test_sources)
 @HAVE_CHECK_TRUE@	script/testgen test/test_*.c >$@

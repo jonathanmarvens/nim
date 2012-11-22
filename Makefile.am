@@ -14,15 +14,18 @@ EXTRA_DIST = \
 	$(srcdir)/script/astgen \
 	$(srcdir)/script/testgen \
 	$(srcdir)/script/gdb \
-	$(srcdir)/script/valgrind
+	$(srcdir)/script/valgrind \
+	$(srcdir)/test/test_class.c \
+	$(srcdir)/test/test_str.c \
+	$(srcdir)/test/test_core.c
 
 if HAVE_CHECK
 
 TESTS = test/all-native
 
-MOSTLYCLEANFILES += test/_test_main.c
+MOSTLYCLEANFILES += $(builddir)/test/_test_main.c
 
-common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
+common_check_cflags = -Wall -I$(builddir)/test -I$(srcdir)/libchimp/include -I$(builddir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 common_check_ldflags = -pthread
 
@@ -36,9 +39,7 @@ test_all_native_LDFLAGS = $(common_check_ldflags)
 # XXX not portable. hard code me when things settle down.
 test_sources = $(wildcard $(srcdir)/test/test_*.c)
 
-EXTRA_DIST += $(test_sources)
-
-$(builddir)/test/_test_main.c: \
+$(builddir)/test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@
