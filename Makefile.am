@@ -21,7 +21,9 @@ EXTRA_DIST = \
 	script/valgrind \
 	test/test_class.c \
 	test/test_str.c \
-	test/test_core.c
+	test/test_core.c \
+	examples/sandbox.chimp \
+	examples/helloworld.chimp
 
 if HAVE_CHECK
 
