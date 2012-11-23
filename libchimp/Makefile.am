@@ -7,7 +7,7 @@ EXTRA_DIST = \
 	include/chimp/_parser.h \
 	include/chimp/ast.h
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) include/chimp/ast.h include/chimp/_parser.h
 
 AM_YFLAGS = --defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
 

@@ -19,12 +19,13 @@ EXTRA_DIST = \
 	script/testgen \
 	script/gdb \
 	script/valgrind \
-	test/_test_main.c \
 	test/test_class.c \
 	test/test_str.c \
 	test/test_core.c
 
 if HAVE_CHECK
+
+EXTRA_DIST += test/_test_main.c
 
 test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \

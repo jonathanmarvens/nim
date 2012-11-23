@@ -53,6 +53,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = chimp$(EXEEXT)
+@HAVE_CHECK_TRUE@am__append_1 = test/_test_main.c
 @HAVE_CHECK_TRUE@TESTS = test/all-native$(EXEEXT)
 @HAVE_CHECK_TRUE@check_PROGRAMS = test/all-native$(EXEEXT)
 subdir = .
@@ -305,18 +306,9 @@ chimp_LDADD = libchimp/libchimp.la
 chimp_LDFLAGS = -pthread
 BUILT_SOURCES = test/_test_main.c
 MOSTLYCLEANFILES = test/_test_main.c
-EXTRA_DIST = \
-	autogen \
-	vim/syntax/chimp.vim \
-	script/astgen \
-	script/testgen \
-	script/gdb \
-	script/valgrind \
-	test/_test_main.c \
-	test/test_class.c \
-	test/test_str.c \
-	test/test_core.c
-
+EXTRA_DIST = autogen vim/syntax/chimp.vim script/astgen script/testgen \
+	script/gdb script/valgrind test/test_class.c test/test_str.c \
+	test/test_core.c $(am__append_1)
 @HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 @HAVE_CHECK_TRUE@common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 @HAVE_CHECK_TRUE@common_check_ldflags = -pthread
