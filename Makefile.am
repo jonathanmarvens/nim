@@ -9,9 +9,9 @@ chimp_LDADD = libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
 
-BUILT_SOURCES = test/_test_main.c
+BUILT_SOURCES =
+MOSTLYCLEANFILES =
 
-MOSTLYCLEANFILES = test/_test_main.c
 EXTRA_DIST = \
 	autogen \
 	vim/syntax/chimp.vim \
@@ -25,14 +25,16 @@ EXTRA_DIST = \
 	examples/sandbox.chimp \
 	examples/helloworld.chimp
 
-if HAVE_CHECK
-
-EXTRA_DIST += test/_test_main.c
-
 test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
 	$(srcdir)/script/testgen \
 	$(test_sources)
 	script/testgen test/test_*.c >$@
+
+if HAVE_CHECK
+
+BUILT_SOURCES += test/_test_main.c
+MOSTLYCLEANFILES += test/_test_main.c
+EXTRA_DIST += test/_test_main.c
 
 TESTS = test/all-native
 

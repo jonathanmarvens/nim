@@ -54,6 +54,8 @@ host_triplet = @host@
 target_triplet = @target@
 bin_PROGRAMS = chimp$(EXEEXT)
 @HAVE_CHECK_TRUE@am__append_1 = test/_test_main.c
+@HAVE_CHECK_TRUE@am__append_2 = test/_test_main.c
+@HAVE_CHECK_TRUE@am__append_3 = test/_test_main.c
 @HAVE_CHECK_TRUE@TESTS = test/all-native$(EXEEXT)
 @HAVE_CHECK_TRUE@check_PROGRAMS = test/all-native$(EXEEXT)
 subdir = .
@@ -304,12 +306,12 @@ chimp_CFLAGS = -Wall -I$(srcdir)/libchimp/include @valgrind_CFLAGS@
 chimp_LDADD = libchimp/libchimp.la
 # TODO sniff out the appropriate pthread flags ...
 chimp_LDFLAGS = -pthread
-BUILT_SOURCES = test/_test_main.c
-MOSTLYCLEANFILES = test/_test_main.c
+BUILT_SOURCES = $(am__append_1)
+MOSTLYCLEANFILES = $(am__append_2)
 EXTRA_DIST = autogen vim/syntax/chimp.vim script/astgen script/testgen \
 	script/gdb script/valgrind test/test_class.c test/test_str.c \
 	test/test_core.c examples/sandbox.chimp \
-	examples/helloworld.chimp $(am__append_1)
+	examples/helloworld.chimp $(am__append_3)
 @HAVE_CHECK_TRUE@common_check_cflags = -Wall -I$(srcdir)/test -I$(srcdir)/libchimp/include @valgrind_CFLAGS@ @check_CFLAGS@
 @HAVE_CHECK_TRUE@common_check_ldadd = $(builddir)/libchimp/libchimp.la @check_LIBS@
 @HAVE_CHECK_TRUE@common_check_ldflags = -pthread
@@ -1050,10 +1052,10 @@ uninstall-am: uninstall-binPROGRAMS
 	uninstall-binPROGRAMS
 
 
-@HAVE_CHECK_TRUE@test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
-@HAVE_CHECK_TRUE@	$(srcdir)/script/testgen \
-@HAVE_CHECK_TRUE@	$(test_sources)
-@HAVE_CHECK_TRUE@	script/testgen test/test_*.c >$@
+test/_test_main.c: $(srcdir)/script/testgen $(test_sources) \
+	$(srcdir)/script/testgen \
+	$(test_sources)
+	script/testgen test/test_*.c >$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
