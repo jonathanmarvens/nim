@@ -28,6 +28,8 @@ struct _ChimpRef {
 #define CHIMP_FAST_METHOD(ref) (&((ref)->value.method))
 #define CHIMP_FAST_CODE(ref) (&((ref)->value.code))
 #define CHIMP_FAST_FRAME(ref) (&((ref)->value.frame))
+#define CHIMP_FAST_SYMTABLE(ref) (&((ref)->value.symtable))
+#define CHIMP_FAST_SYMTABLE_ENTRY(ref) (&((ref)->value.symtable_entry))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value.any.type)
 
@@ -114,6 +116,14 @@ type_name (ChimpValueType type)
         case CHIMP_VALUE_TYPE_AST_DECL:
             {
                 return "ast.decl";
+            }
+        case CHIMP_VALUE_TYPE_SYMTABLE:
+            {
+                return "symtable";
+            }
+        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
+            {
+                return "symtable.entry";
             }
         default:
             {
@@ -288,6 +298,8 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_AST_STMT:
         case CHIMP_VALUE_TYPE_AST_DECL:
         case CHIMP_VALUE_TYPE_AST_EXPR:
+        case CHIMP_VALUE_TYPE_SYMTABLE:
+        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown ref type: %s", type_name (ref->value.any.type));
@@ -481,6 +493,24 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->method);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->locals);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_SYMTABLE:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->filename);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->lookup);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->stack);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->current);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
+            {
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symtable);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->scope);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symbols);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->varnames);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->parent);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
                 break;
             }
         case CHIMP_VALUE_TYPE_OBJECT:

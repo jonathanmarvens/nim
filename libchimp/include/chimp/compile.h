@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 ChimpRef *
-chimp_compile_ast (ChimpRef *name, ChimpRef *ast);
+chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast);
 
 ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename);

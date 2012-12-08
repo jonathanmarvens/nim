@@ -13,6 +13,7 @@
 #include <chimp/hash.h>
 #include <chimp/ast.h>
 #include <chimp/module.h>
+#include <chimp/symtable.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,21 +24,23 @@ typedef struct _ChimpObject {
 } ChimpObject;
 
 typedef union _ChimpValue {
-    ChimpAny        any;
-    ChimpClass      klass;
-    ChimpObject     object;
-    ChimpModule     module;
-    ChimpStr        str;
-    ChimpInt        integer;
-    ChimpArray      array;
-    ChimpHash       hash;
-    ChimpCode       code;
-    ChimpMethod     method;
-    ChimpFrame      frame;
-    ChimpAstMod     ast_mod;
-    ChimpAstDecl    ast_decl;
-    ChimpAstStmt    ast_stmt;
-    ChimpAstExpr    ast_expr;
+    ChimpAny            any;
+    ChimpClass          klass;
+    ChimpObject         object;
+    ChimpModule         module;
+    ChimpStr            str;
+    ChimpInt            integer;
+    ChimpArray          array;
+    ChimpHash           hash;
+    ChimpCode           code;
+    ChimpMethod         method;
+    ChimpFrame          frame;
+    ChimpAstMod         ast_mod;
+    ChimpAstDecl        ast_decl;
+    ChimpAstStmt        ast_stmt;
+    ChimpAstExpr        ast_expr;
+    ChimpSymtable       symtable;
+    ChimpSymtableEntry  symtable_entry;
 } ChimpValue;
 
 ChimpRef *

@@ -8,6 +8,7 @@
 #include "chimp/object.h"
 #include "chimp/task.h"
 #include "chimp/_parser.h"
+#include "chimp/symtable.h"
 
 typedef enum _ChimpUnitType {
     CHIMP_UNIT_TYPE_CODE,
@@ -26,6 +27,7 @@ typedef struct _ChimpCodeUnit {
 
 typedef struct _ChimpCodeCompiler {
     ChimpCodeUnit *current_unit;
+    ChimpRef      *symtable;
 } ChimpCodeCompiler;
 
 #define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
@@ -805,12 +807,23 @@ chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
 }
 
 ChimpRef *
-chimp_compile_ast (ChimpRef *name, ChimpRef *ast)
+chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
 {
     ChimpCodeUnit *unit;
     ChimpRef *module;
     ChimpCodeCompiler c;
+    ChimpRef *filename_obj;
     memset (&c, 0, sizeof(c));
+
+    filename_obj = chimp_str_new (filename, strlen (filename));
+    if (filename_obj == NULL) {
+        return NULL;
+    }
+
+    c.symtable = chimp_symtable_new_from_ast (filename_obj, ast);
+    if (c.symtable == NULL) {
+        return NULL;
+    }
 
     module = chimp_code_compiler_push_module_unit (&c);
     if (module == NULL) {
@@ -890,7 +903,7 @@ chimp_compile_file (ChimpRef *name, const char *filename)
                 return NULL;
             }
         }
-        return chimp_compile_ast (name, mod);
+        return chimp_compile_ast (name, filename, mod);
     }
     else {
         return NULL;
