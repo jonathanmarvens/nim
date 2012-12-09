@@ -284,6 +284,13 @@ chimp_code_jump (ChimpRef *self, ChimpLabel *label)
 }
 
 chimp_bool_t
+chimp_code_set_jump_location (ChimpRef *self, ChimpLabel label, size_t pos)
+{
+    CHIMP_CODE(self)->bytecode[label] |= (pos & 0x00ffffff);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label)
 {
     /* XXX limited to this by my current stupid choice of instr repr */

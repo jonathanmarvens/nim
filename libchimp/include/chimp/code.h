@@ -91,6 +91,9 @@ chimp_bool_t
 chimp_code_jump (ChimpRef *self, ChimpLabel *label);
 
 chimp_bool_t
+chimp_code_set_jump_location (ChimpRef *self, ChimpLabel label, size_t pos);
+
+chimp_bool_t
 chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label);
 
 chimp_bool_t

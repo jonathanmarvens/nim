@@ -211,6 +211,8 @@ chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpLabel end_body;
+    ChimpLabel start_body;
+    ChimpLabel p = CHIMP_CODE(code)->used;
 
     if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->while_.expr)) {
         return CHIMP_FALSE;
@@ -221,6 +223,14 @@ chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
     }
 
     if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->while_.body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jump (code, &start_body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_set_jump_location (code, start_body, p)) {
         return CHIMP_FALSE;
     }
 
