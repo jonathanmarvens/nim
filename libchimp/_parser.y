@@ -26,6 +26,7 @@ extern ChimpRef *chimp_source_file;
 %locations
 
 /* necessary to support %locations properly afaict */
+/* Bison 2.4 adds api.pure & deprecates %pure-parser but OSX has 2.3 ... */
 /*%define api.pure*/
 %pure-parser
 
