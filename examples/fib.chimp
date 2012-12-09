@@ -1,0 +1,13 @@
+use io;
+
+fib n {
+  if n > 1 {
+    ret fib(n - 1) + fib(n - 2);
+  }
+  ret n;
+}
+
+main argv {
+  io.print(fib(20));
+}
+
