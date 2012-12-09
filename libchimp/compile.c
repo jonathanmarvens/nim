@@ -696,6 +696,50 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
                 }
                 break;
             }
+        case CHIMP_BINOP_GT:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_gt (code)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_BINOP_GTE:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_gte (code)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_BINOP_LT:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_lt (code)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_BINOP_LTE:
+            {
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_lte (code)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
         case CHIMP_BINOP_OR:
             {
                 /* short-circuited logical OR */

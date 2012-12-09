@@ -71,7 +71,7 @@ chimp_object_add (ChimpRef *left, ChimpRef *right)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "type does not support the '+' operator");
+    chimp_bug (__FILE__, __LINE__, "`%s` type does not support the '+' operator", CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(left))->name));
     return NULL;
 }
 

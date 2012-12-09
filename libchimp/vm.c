@@ -444,6 +444,82 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_CMPGT:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_GT) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPGTE:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_GT || r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPLT:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_LT) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPLTE:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_LT || r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
             case CHIMP_OPCODE_POP:
             {
                 if (!chimp_vm_pop (vm)) {

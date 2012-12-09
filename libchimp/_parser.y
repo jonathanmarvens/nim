@@ -59,7 +59,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef **mod);
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR
 
 %left TOK_OR TOK_AND
-%left TOK_NEQ TOK_EQ
+%left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
 %left TOK_PLUS TOK_MINUS
 %left TOK_ASTERISK TOK_SLASH
 
@@ -152,6 +152,10 @@ assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3, &@$); }
 
 expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3, &@$); }
      | expr TOK_AND expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3, &@$); }
+     | expr TOK_GT expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GT, $1, $3, &@$); }
+     | expr TOK_GTE expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GTE, $1, $3, &@$); }
+     | expr TOK_LT expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LT, $1, $3, &@$); }
+     | expr TOK_LTE expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LTE, $1, $3, &@$); }
      | expr TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3, &@$); }
      | expr TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3, &@$); }
      | expr TOK_PLUS expr     { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_ADD, $1, $3, &@$); }

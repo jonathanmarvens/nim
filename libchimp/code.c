@@ -330,6 +330,50 @@ chimp_code_neq (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_gt (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPGT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_gte (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPGTE);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_lt (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPLT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_lte (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPLTE);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_add (ChimpRef *self)
 {
     if (!chimp_code_grow (self)) {
@@ -416,6 +460,14 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "CMP_EQ";
         case CHIMP_OPCODE_CMPNEQ:
              return "CMP_NEQ";
+        case CHIMP_OPCODE_CMPGT:
+             return "CMP_GT";
+        case CHIMP_OPCODE_CMPGTE:
+             return "CMP_GTE";
+        case CHIMP_OPCODE_CMPLT:
+             return "CMP_LT";
+        case CHIMP_OPCODE_CMPLTE:
+             return "CMP_LTE";
         case CHIMP_OPCODE_POP:
              return "CMP_POP";
         case CHIMP_OPCODE_RET:
