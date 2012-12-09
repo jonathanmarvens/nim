@@ -418,6 +418,23 @@ chimp_symtable_visit_stmt_if_ (ChimpRef *self, ChimpRef *stmt)
 }
 
 static chimp_bool_t
+chimp_symtable_visit_stmt_while_ (ChimpRef *self, ChimpRef *stmt)
+{
+    ChimpRef *expr = CHIMP_AST_STMT(stmt)->while_.expr;
+    ChimpRef *body = CHIMP_AST_STMT(stmt)->while_.body;
+
+    if (!chimp_symtable_visit_expr (self, expr)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_visit_stmts_or_decls (self, body)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_symtable_visit_stmt_ret (ChimpRef *self, ChimpRef *stmt)
 {
     ChimpRef *expr = CHIMP_AST_STMT(stmt)->ret.expr;
@@ -451,6 +468,8 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt)
             return chimp_symtable_visit_stmt_assign (self, stmt);
         case CHIMP_AST_STMT_IF_:
             return chimp_symtable_visit_stmt_if_ (self, stmt);
+        case CHIMP_AST_STMT_WHILE_:
+            return chimp_symtable_visit_stmt_while_ (self, stmt);
         case CHIMP_AST_STMT_RET:
             return chimp_symtable_visit_stmt_ret (self, stmt);
         case CHIMP_AST_STMT_PANIC:
