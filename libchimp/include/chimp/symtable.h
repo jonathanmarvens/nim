@@ -34,6 +34,15 @@ chimp_symtable_entry_class_bootstrap (void);
 ChimpRef *
 chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast);
 
+ChimpRef *
+chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope);
+
+chimp_bool_t
+chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags);
+
+chimp_bool_t
+chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name);
+
 #define CHIMP_SYMTABLE(ref) \
     CHIMP_CHECK_CAST(ChimpSymtable, (ref), CHIMP_VALUE_TYPE_SYMTABLE)
 

@@ -519,3 +519,28 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
     return ref;
 }
 
+ChimpRef *
+chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope)
+{
+    return chimp_hash_get (CHIMP_SYMTABLE(self)->lookup, scope);
+}
+
+chimp_bool_t
+chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
+{
+    ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(self)->symbols;
+    ChimpRef *ref = chimp_hash_get (symbols, name);
+    if (ref == NULL) {
+        return CHIMP_FALSE;
+    }
+    *flags = CHIMP_INT(ref)->value;
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name)
+{
+    ChimpRef *varnames = CHIMP_SYMTABLE_ENTRY(self)->varnames;
+    return chimp_array_find (varnames, name) != -1;
+}
+
