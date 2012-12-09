@@ -333,3 +333,25 @@ chimp_array_find (ChimpRef *self, ChimpRef *value)
     return -1;
 }
 
+ChimpRef *
+chimp_array_first (ChimpRef *self)
+{
+    if (CHIMP_ARRAY_SIZE(self) > 0) {
+        return CHIMP_ARRAY_ITEM(self, 0);
+    }
+    else {
+        return chimp_nil;
+    }
+}
+
+ChimpRef *
+chimp_array_last (ChimpRef *self)
+{
+    if (CHIMP_ARRAY_SIZE(self) > 0) {
+        return CHIMP_ARRAY_ITEM(self, CHIMP_ARRAY_SIZE(self)-1);
+    }
+    else {
+        return chimp_nil;
+    }
+}
+
