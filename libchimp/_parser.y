@@ -26,7 +26,8 @@ extern ChimpRef *chimp_source_file;
 %locations
 
 /* necessary to support %locations properly afaict */
-%define api.pure
+/*%define api.pure*/
+%pure-parser
 
 /* better error messages for free */
 %error-verbose
