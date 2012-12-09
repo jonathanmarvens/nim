@@ -440,7 +440,7 @@ chimp_compile_ast_decl_var (ChimpCodeCompiler *c, ChimpRef *decl)
                 return CHIMP_FALSE;
             }
 
-            if (!chimp_code_storename (code, CHIMP_AST_EXPR(name)->ident.id)) {
+            if (!chimp_code_storename (code, name)) {
                 return CHIMP_FALSE;
             }
         }

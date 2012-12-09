@@ -117,8 +117,8 @@ block : TOK_LBRACE stmts TOK_RBRACE { $$ = $2; }
       | TOK_SEMICOLON { $$ = chimp_array_new (); }
       ;
 
-var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var ($2, NULL); }
-         | TOK_VAR ident TOK_ASSIGN expr { $$ = chimp_ast_decl_new_var ($2, $4); }
+var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, NULL); }
+         | TOK_VAR ident TOK_ASSIGN expr { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, $4); }
          ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3); }
