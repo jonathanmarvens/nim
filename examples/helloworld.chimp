@@ -7,12 +7,12 @@ readname {
   ret io.readline();
 }
 
-ohai(name) {
+ohai name {
   io.print (str("hello, ", name));
 }
 
-main(argv) {
-  name = readname ();
+main argv {
+  var name = readname ();
   ohai (name);
   io.print (argv);
 }

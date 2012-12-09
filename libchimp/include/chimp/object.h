@@ -13,6 +13,7 @@
 #include <chimp/hash.h>
 #include <chimp/ast.h>
 #include <chimp/module.h>
+#include <chimp/symtable.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,31 +24,45 @@ typedef struct _ChimpObject {
 } ChimpObject;
 
 typedef union _ChimpValue {
-    ChimpAny        any;
-    ChimpClass      klass;
-    ChimpObject     object;
-    ChimpModule     module;
-    ChimpStr        str;
-    ChimpInt        integer;
-    ChimpArray      array;
-    ChimpHash       hash;
-    ChimpCode       code;
-    ChimpMethod     method;
-    ChimpFrame      frame;
-    ChimpAstMod     ast_mod;
-    ChimpAstDecl    ast_decl;
-    ChimpAstStmt    ast_stmt;
-    ChimpAstExpr    ast_expr;
+    ChimpAny            any;
+    ChimpClass          klass;
+    ChimpObject         object;
+    ChimpModule         module;
+    ChimpStr            str;
+    ChimpInt            integer;
+    ChimpArray          array;
+    ChimpHash           hash;
+    ChimpCode           code;
+    ChimpMethod         method;
+    ChimpFrame          frame;
+    ChimpAstMod         ast_mod;
+    ChimpAstDecl        ast_decl;
+    ChimpAstStmt        ast_stmt;
+    ChimpAstExpr        ast_expr;
+    ChimpSymtable       symtable;
+    ChimpSymtableEntry  symtable_entry;
 } ChimpValue;
 
 ChimpRef *
-chimp_object_new (ChimpGC *gc, ChimpRef *klass);
+chimp_object_new (ChimpRef *klass);
 
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
 
 ChimpRef *
-chimp_object_str (ChimpGC *gc, ChimpRef *self);
+chimp_object_str (ChimpRef *self);
+
+ChimpRef *
+chimp_object_add (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_sub (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_mul (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_object_div (ChimpRef *left, ChimpRef *right);
 
 ChimpRef *
 chimp_object_call (ChimpRef *target, ChimpRef *args);

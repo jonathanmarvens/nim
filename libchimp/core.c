@@ -14,6 +14,7 @@
 #include "chimp/code.h"
 #include "chimp/module.h"
 #include "chimp/modules.h"
+#include "chimp/symtable.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -67,6 +68,7 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     ChimpStr *as;
     ChimpStr *bs;
     ChimpValueType at, bt;
+    int r;
 
     if (a == b) {
         return CHIMP_CMP_EQ;
@@ -89,7 +91,7 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     bs = CHIMP_STR(b);
 
     if (as->size != bs->size) {
-        int r = strcmp (as->data, bs->data);
+        r = strcmp (as->data, bs->data);
         if (r < 0) {
             return CHIMP_CMP_LT;
         }
@@ -101,18 +103,27 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
         }
     }
 
-    return memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
+    r = memcmp (CHIMP_STR(a)->data, CHIMP_STR(b)->data, as->size);
+    if (r < 0) {
+        return CHIMP_CMP_LT;
+    }
+    else if (r > 0) {
+        return CHIMP_CMP_GT;
+    }
+    else {
+        return CHIMP_CMP_EQ;
+    }
 }
 
 static ChimpRef *
-_chimp_object_str (ChimpGC *gc, ChimpRef *self)
+_chimp_object_str (ChimpRef *self)
 {
     char buf[32];
     ChimpRef *name = CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
     ChimpRef *str;
     
     snprintf (buf, sizeof(buf), " @ %p>", self);
-    str = chimp_str_new_concat (gc, "<", CHIMP_STR_DATA(name), buf, NULL);
+    str = chimp_str_new_concat ("<", CHIMP_STR_DATA(name), buf, NULL);
     if (str == NULL) {
         return NULL;
     }
@@ -120,13 +131,13 @@ _chimp_object_str (ChimpGC *gc, ChimpRef *self)
 }
 
 static ChimpRef *
-chimp_bool_str (ChimpGC *gc, ChimpRef *self)
+chimp_bool_str (ChimpRef *self)
 {
     if (self == chimp_true) {
-        return CHIMP_STR_NEW(gc, "true");
+        return CHIMP_STR_NEW("true");
     }
     else if (self == chimp_false) {
-        return CHIMP_STR_NEW(gc, "false");
+        return CHIMP_STR_NEW("false");
     }
     else {
         return NULL;
@@ -134,7 +145,7 @@ chimp_bool_str (ChimpGC *gc, ChimpRef *self)
 }
 
 static ChimpRef *
-chimp_str_str (ChimpGC *gc, ChimpRef *self)
+chimp_str_str (ChimpRef *self)
 {
     return self;
 }
@@ -170,7 +181,7 @@ chimp_class_getattr (ChimpRef *self, ChimpRef *name)
 }
 
 static ChimpRef *
-chimp_nil_str (ChimpGC *gc, ChimpRef *self)
+chimp_nil_str (ChimpRef *self)
 {
     return CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
 }
@@ -180,7 +191,7 @@ static ChimpTask *main_task = NULL;
 static chimp_bool_t
 chimp_core_init_builtins (void)
 {
-    chimp_builtins = chimp_hash_new (NULL);
+    chimp_builtins = chimp_hash_new ();
     if (chimp_builtins == NULL) {
         return CHIMP_FALSE;
     }
@@ -229,33 +240,35 @@ chimp_core_startup (void *stack_start)
         return CHIMP_FALSE;
     }
 
-    chimp_nil_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "nil"), chimp_object_class);
+    chimp_nil_class = chimp_class_new (CHIMP_STR_NEW("nil"), chimp_object_class);
     if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
-    chimp_nil = chimp_object_new (NULL, chimp_nil_class);
+    chimp_nil = chimp_object_new (chimp_nil_class);
     if (chimp_nil == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil);
 
-    chimp_bool_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "bool"), chimp_object_class);
+    chimp_bool_class = chimp_class_new (CHIMP_STR_NEW("bool"), chimp_object_class);
     if (chimp_bool_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_bool_class);
     CHIMP_CLASS(chimp_bool_class)->str = chimp_bool_str;
 
-    chimp_true = chimp_object_new (NULL, chimp_bool_class);
+    chimp_true = chimp_object_new (chimp_bool_class);
     if (chimp_true == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_true);
-    chimp_false = chimp_object_new (NULL, chimp_bool_class);
+    chimp_false = chimp_object_new (chimp_bool_class);
     if (chimp_false == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_false);
 
-    if (!chimp_int_class_bootstrap (NULL)) goto error;
-    if (!chimp_array_class_bootstrap (NULL)) goto error;
-    if (!chimp_hash_class_bootstrap (NULL)) goto error;
-    if (!chimp_method_class_bootstrap (NULL)) goto error;
+    if (!chimp_int_class_bootstrap ()) goto error;
+    if (!chimp_array_class_bootstrap ()) goto error;
+    if (!chimp_hash_class_bootstrap ()) goto error;
+    if (!chimp_method_class_bootstrap ()) goto error;
     if (!chimp_frame_class_bootstrap ()) goto error;
     if (!chimp_code_class_bootstrap ()) goto error;
     if (!chimp_module_class_bootstrap ()) goto error;
+    if (!chimp_symtable_class_bootstrap ()) goto error;
+    if (!chimp_symtable_entry_class_bootstrap ()) goto error;
 
     /*
     if (!chimp_task_push_frame (main_task)) goto error;
@@ -264,6 +277,7 @@ chimp_core_startup (void *stack_start)
 
     chimp_task_add_module (NULL, chimp_init_io_module ());
     chimp_task_add_module (NULL, chimp_init_assert_module ());
+    chimp_task_add_module (NULL, chimp_init_os_module ());
 
     return chimp_core_init_builtins ();
 
@@ -300,5 +314,23 @@ chimp_bug (const char *filename, int lineno, const char *format, ...)
     fprintf (stderr, ". aborting ...\n");
 
     abort ();
+}
+
+chimp_bool_t
+chimp_is_builtin (ChimpRef *name)
+{
+    ChimpRef *value = chimp_hash_get (chimp_builtins, name);
+    if (value == NULL) {
+        chimp_bug (__FILE__, __LINE__,
+                    "could not determine if %s is a builtin",
+                    CHIMP_STR_DATA(name));
+        return CHIMP_FALSE;
+    }
+    else if (value == chimp_nil) {
+        return CHIMP_FALSE;
+    }
+    else {
+        return CHIMP_TRUE;
+    }
 }
 

@@ -28,7 +28,104 @@ _chimp_array_pop (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
-chimp_array_str (ChimpGC *gc, ChimpRef *self)
+_chimp_array_map (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *result = chimp_array_new ();
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *fn_args;
+        ChimpRef *mapped;
+        ChimpRef *value = CHIMP_ARRAY_ITEM(self, i);
+
+        fn_args = chimp_array_new_var (value, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+        mapped = chimp_object_call (fn, fn_args);
+        if (mapped == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (result, mapped)) {
+            return NULL;
+        }
+    }
+    return result;
+}
+
+static ChimpRef *
+_chimp_array_each (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *fn_args;
+        ChimpRef *value;
+        
+        value = CHIMP_ARRAY_ITEM(self, i);
+        fn_args = chimp_array_new_var (value, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+        if (chimp_object_call (fn, fn_args) == NULL) {
+            return NULL;
+        }
+    }
+    return chimp_nil;
+}
+
+static ChimpRef *
+_chimp_array_contains (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 0);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpCmpResult r;
+        ChimpRef *left = CHIMP_ARRAY_ITEM(self, i);
+        
+        r = chimp_object_cmp (left, right);
+        if (r == CHIMP_CMP_ERROR) {
+            return NULL;
+        }
+        else if (r == CHIMP_CMP_EQ) {
+            return chimp_true;
+        }
+    }
+    return chimp_false;
+}
+
+static ChimpRef *
+_chimp_array_filter (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *result;
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+
+    result = chimp_array_new ();
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *value = CHIMP_ARRAY_ITEM(self, i);
+        ChimpRef *fn_args;
+        ChimpRef *r;
+        
+        fn_args = chimp_array_new_var (value, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+        r = chimp_object_call (fn, fn_args);
+        if (r == NULL) {
+            return NULL;
+        }
+        if (r == chimp_true) {
+            if (!chimp_array_push (result, value)) {
+                return NULL;
+            }
+        }
+    }
+    return result;
+}
+
+static ChimpRef *
+chimp_array_str (ChimpRef *self)
 {
     size_t size = CHIMP_ARRAY_SIZE(self);
     /* '[' + ']' + (', ' x (size-1)) + '\0' */
@@ -39,7 +136,7 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
     size_t i, j;
 
 
-    item_strs = chimp_array_new (gc);
+    item_strs = chimp_array_new ();
     if (item_strs == NULL) {
         return NULL;
     }
@@ -51,7 +148,7 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
             /* for surrounding quotes */
             total_len += 2;
         }
-        ref = chimp_object_str (gc, ref);
+        ref = chimp_object_str (ref);
         if (ref == NULL) {
             return NULL;
         }
@@ -86,29 +183,33 @@ chimp_array_str (ChimpGC *gc, ChimpRef *self)
     data[j++] = ']';
     data[j] = '\0';
 
-    return chimp_str_new_take (gc, data, total_len-1);
+    return chimp_str_new_take (data, total_len-1);
 }
 
 chimp_bool_t
-chimp_array_class_bootstrap (ChimpGC *gc)
+chimp_array_class_bootstrap (void)
 {
     chimp_array_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "array"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("array"), chimp_object_class);
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
-    chimp_gc_make_root (gc, chimp_array_class);
-    chimp_class_add_native_method (gc, chimp_array_class, "push", _chimp_array_push);
-    chimp_class_add_native_method (gc, chimp_array_class, "pop", _chimp_array_pop);
+    chimp_gc_make_root (NULL, chimp_array_class);
+    chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
+    chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
+    chimp_class_add_native_method (chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
+    chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
+    chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_array_new (ChimpGC *gc)
+chimp_array_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -119,16 +220,19 @@ chimp_array_new (ChimpGC *gc)
 }
 
 ChimpRef *
-chimp_array_new_var (ChimpGC *gc, ...)
+chimp_array_new_var (ChimpRef *a, ...)
 {
     va_list args;
     ChimpRef *arg;
-    ChimpRef *ref = chimp_array_new (gc);
+    ChimpRef *ref = chimp_array_new ();
     if (ref == NULL) {
         return NULL;
     }
 
-    va_start (args, gc);
+    va_start (args, a);
+    if (!chimp_array_push (ref, a)) {
+        return NULL;
+    }
     while ((arg = va_arg (args, ChimpRef *)) != NULL) {
         chimp_array_push (ref, arg);
     }
@@ -227,5 +331,27 @@ chimp_array_find (ChimpRef *self, ChimpRef *value)
         }
     }
     return -1;
+}
+
+ChimpRef *
+chimp_array_first (ChimpRef *self)
+{
+    if (CHIMP_ARRAY_SIZE(self) > 0) {
+        return CHIMP_ARRAY_ITEM(self, 0);
+    }
+    else {
+        return chimp_nil;
+    }
+}
+
+ChimpRef *
+chimp_array_last (ChimpRef *self)
+{
+    if (CHIMP_ARRAY_SIZE(self) > 0) {
+        return CHIMP_ARRAY_ITEM(self, CHIMP_ARRAY_SIZE(self)-1);
+    }
+    else {
+        return chimp_nil;
+    }
 }
 

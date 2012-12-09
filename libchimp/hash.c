@@ -8,7 +8,7 @@
 ChimpRef *chimp_hash_class = NULL;
 
 static ChimpRef *
-chimp_hash_str (ChimpGC *gc, ChimpRef *self)
+chimp_hash_str (ChimpRef *self)
 {
     size_t size = CHIMP_HASH_SIZE(self);
     /* '{' + '}' + (': ' x size) + (', ' x (size-1)) + '\0' */
@@ -19,7 +19,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
     size_t i, k;
 
 
-    strs = chimp_array_new (gc);
+    strs = chimp_array_new ();
     if (strs == NULL) {
         return NULL;
     }
@@ -36,7 +36,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
                 /* for surrounding quotes */
                 total_len += 2;
             }
-            ref = chimp_object_str (gc, ref);
+            ref = chimp_object_str (ref);
             if (ref == NULL) {
                 return NULL;
             }
@@ -82,7 +82,7 @@ chimp_hash_str (ChimpGC *gc, ChimpRef *self)
     data[k++] = '}';
     data[k] = '\0';
 
-    return chimp_str_new_take (gc, data, total_len-1);
+    return chimp_str_new_take (data, total_len-1);
 }
 
 static ChimpRef *
@@ -98,25 +98,25 @@ _chimp_hash_get (ChimpRef *self, ChimpRef *args)
 }
 
 chimp_bool_t
-chimp_hash_class_bootstrap (ChimpGC *gc)
+chimp_hash_class_bootstrap (void)
 {
     chimp_hash_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "hash"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("hash"), chimp_object_class);
     if (chimp_hash_class == NULL) {
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
     CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
-    chimp_gc_make_root (gc, chimp_hash_class);
-    chimp_class_add_native_method (gc, chimp_hash_class, "put", _chimp_hash_put);
-    chimp_class_add_native_method (gc, chimp_hash_class, "get", _chimp_hash_get);
+    chimp_gc_make_root (NULL, chimp_hash_class);
+    chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
+    chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_hash_new (ChimpGC *gc)
+chimp_hash_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -164,7 +164,7 @@ chimp_hash_put (ChimpRef *self, ChimpRef *key, ChimpRef *value)
 chimp_bool_t
 chimp_hash_put_str (ChimpRef *self, const char *key, ChimpRef *value)
 {
-    return chimp_hash_put (self, chimp_str_new (NULL, key, strlen(key)), value);
+    return chimp_hash_put (self, chimp_str_new (key, strlen(key)), value);
 }
 
 ChimpRef *

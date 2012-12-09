@@ -4,7 +4,7 @@ set -ex
 
 aclocal --install -I m4
 autoconf
-if [ "$(uname -r)" = "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
     glibtoolize
 else
     libtoolize --copy

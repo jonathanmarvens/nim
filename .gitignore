@@ -19,7 +19,9 @@ autom4te.cache
 /libchimp/include/chimp/_parser.h
 /libchimp/scanner.c
 /tags
+TAGS
 /test/_test_main.c
 /test/all-native
 .dirstamp
-
+/chimp-*
+/libchimp/_parser.out

@@ -46,6 +46,9 @@ AST_DESCRIPTOR = [
         ['ident',
             ['id', 'str']],
         ['nil'],
+        ['fn',
+            ['args', 'array'],
+            ['body', 'array']],
         ['bool', 
             ['value', 'bool']]],
     ['stmt',
@@ -62,14 +65,17 @@ AST_DESCRIPTOR = [
             ['expr', 'expr']],
         ['assign',
             ['target', 'expr'],
-            ['value', 'expr']]],
+            ['value', 'expr']],
+        ['panic',
+            ['expr', 'expr']]],
     ['decl',
         ['func',
             ['name', 'str'],
             ['args', 'array'],
             ['body', 'array']],
         ['var',
-            ['name', 'str']],
+            ['name', 'str'],
+            ['value', 'expr']],
         ['use',
             ['name', 'str']]]
 ]
@@ -141,6 +147,7 @@ def kind_ctor_args_params(k):
     for a in node_kind_attrs(k):
         ap = attr_params(a)
         params.append("%(attr_ctype)s %(attr)s" % ap)
+    params.append("const ChimpAstNodeLocation *location")
     return {"args": ", ".join(params)}
 
 def set_output_stream(stream):
@@ -159,6 +166,8 @@ def header():
         _("#ifndef _%(APP_NAME)s_AST_H_INCLUDED_")
         _("#define _%(APP_NAME)s_AST_H_INCLUDED_")
         _()
+        _("#include <stdint.h>")
+        _()
         _("#include <chimp/gc.h>")
         _("#include <chimp/any.h>")
         _("#include <chimp/code.h>")
@@ -166,6 +175,14 @@ def header():
         _("#ifdef __cplusplus")
         _("extern \"C\" {")
         _("#endif")
+        _()
+        _("typedef struct _%(AppName)sAstNodeLocation {", PARAMS)
+        _("    ChimpRef *filename;")
+        _("    int64_t   first_line;")
+        _("    int64_t   last_line;")
+        _("    int64_t   first_column;")
+        _("    int64_t   last_column;")
+        _("} %(AppName)sAstNodeLocation;", PARAMS)
         _()
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
@@ -191,6 +208,7 @@ def header():
                 _("            ChimpRef *target;")
                 _("        } targetable;")
             _("    };")
+            _("    %(AppName)sAstNodeLocation location;", np)
             _("} %(AppName)sAst%(NodeType)s;", np)
             _()
 
@@ -237,6 +255,8 @@ def source():
         _("#include \"%(app_name)s/str.h\"")
         _("#include \"%(app_name)s/class.h\"")
         _()
+        _("extern ChimpRef *chimp_source_file;")
+        _()
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
             # XXX class_ctype ?
@@ -247,7 +267,7 @@ def source():
         _("{")
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
-            _("    %(app_name)s_ast_%(node_type)s_class = chimp_class_new (NULL, CHIMP_STR_NEW(NULL, \"%(node_type)s\"), NULL);", np)
+            _("    %(app_name)s_ast_%(node_type)s_class = chimp_class_new (CHIMP_STR_NEW(\"%(node_type)s\"), NULL);", np)
             _("    if (%(app_name)s_ast_%(node_type)s_class == NULL) {", np)
             _("        return %(APP_NAME)s_FALSE;")
             _("    }")
@@ -290,6 +310,8 @@ def source():
                 _()
                 _("    %(APP_NAME)s_ANY(ref)->type = %(APP_NAME)s_VALUE_TYPE_AST_%(NODE_TYPE)s;", np)
                 _("    %(APP_NAME)s_ANY(ref)->klass = %(app_name)s_ast_%(node_type)s_class;", np)
+                _("    memcpy (&%(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->location, location, sizeof(*location));", np)
+                _("    %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->location.filename = chimp_source_file;", np)
                 _()
                 _("    %(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type = %(APP_NAME)s_AST_%(NODE_TYPE)s_%(KIND)s;", merge(np, kp))
                 _()

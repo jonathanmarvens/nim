@@ -15,13 +15,13 @@ typedef struct _ChimpArray {
 } ChimpArray;
 
 chimp_bool_t
-chimp_array_class_bootstrap (ChimpGC *gc);
+chimp_array_class_bootstrap (void);
 
 ChimpRef *
-chimp_array_new (ChimpGC *gc);
+chimp_array_new (void);
 
 ChimpRef *
-chimp_array_new_var (ChimpGC *gc, ...);
+chimp_array_new_var (ChimpRef *a, ...);
 
 chimp_bool_t
 chimp_array_unshift (ChimpRef *self, ChimpRef *value);
@@ -40,6 +40,9 @@ chimp_array_find (ChimpRef *self, ChimpRef *value);
 
 ChimpRef *
 chimp_array_first (ChimpRef *self);
+
+ChimpRef *
+chimp_array_last (ChimpRef *self);
 
 #define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), CHIMP_VALUE_TYPE_ARRAY)
 

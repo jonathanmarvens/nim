@@ -23,17 +23,35 @@ typedef enum _ChimpOpcode {
 
     CHIMP_OPCODE_CMPEQ,
     CHIMP_OPCODE_CMPNEQ,
+    CHIMP_OPCODE_CMPGT,
+    CHIMP_OPCODE_CMPGTE,
+    CHIMP_OPCODE_CMPLT,
+    CHIMP_OPCODE_CMPLTE,
 
     CHIMP_OPCODE_POP,
 
     CHIMP_OPCODE_RET,
+    CHIMP_OPCODE_PANIC,
+
+    CHIMP_OPCODE_ADD,
+    CHIMP_OPCODE_SUB,
+    CHIMP_OPCODE_MUL,
+    CHIMP_OPCODE_DIV
 } ChimpOpcode;
 
 typedef enum _ChimpBinopType {
     CHIMP_BINOP_EQ,
     CHIMP_BINOP_NEQ,
     CHIMP_BINOP_OR,
-    CHIMP_BINOP_AND
+    CHIMP_BINOP_GT,
+    CHIMP_BINOP_GTE,
+    CHIMP_BINOP_LT,
+    CHIMP_BINOP_LTE,
+    CHIMP_BINOP_AND,
+    CHIMP_BINOP_ADD,
+    CHIMP_BINOP_SUB,
+    CHIMP_BINOP_MUL,
+    CHIMP_BINOP_DIV
 } ChimpBinopType;
 
 typedef struct _ChimpCode {
@@ -76,6 +94,9 @@ chimp_bool_t
 chimp_code_ret (ChimpRef *self);
 
 chimp_bool_t
+chimp_code_panic (ChimpRef *self);
+
+chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 
 chimp_bool_t
@@ -101,6 +122,30 @@ chimp_code_eq (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_neq (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_gt (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_gte (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_lt (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_lte (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_add (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_sub (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_mul (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_div (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_pop (ChimpRef *self);

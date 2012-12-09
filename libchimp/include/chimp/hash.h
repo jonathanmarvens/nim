@@ -17,10 +17,10 @@ typedef struct _ChimpHash {
 } ChimpHash;
 
 chimp_bool_t
-chimp_hash_class_bootstrap (ChimpGC *gc);
+chimp_hash_class_bootstrap (void);
 
 ChimpRef *
-chimp_hash_new (ChimpGC *gc);
+chimp_hash_new (void);
 
 chimp_bool_t
 chimp_hash_put (ChimpRef *self, ChimpRef *key, ChimpRef *value);

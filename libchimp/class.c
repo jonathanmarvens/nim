@@ -17,7 +17,7 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
     
     /* XXX having two code paths here is probably wrong/begging for trouble */
     if (self == chimp_class_class) {
-        ref = chimp_class_new (NULL, CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
+        ref = chimp_class_new (CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
     }
     else {
         ref = chimp_gc_new_object (NULL);
@@ -27,7 +27,7 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
         CHIMP_ANY(ref)->klass = self;
         CHIMP_ANY(ref)->type = CHIMP_CLASS(self)->inst_type;
         ctor = chimp_object_getattr_str (ref, "init");
-        if (ctor != NULL) {
+        if (ctor != NULL && ctor != chimp_nil) {
             chimp_object_call (ctor, args);
         }
     }
@@ -45,7 +45,7 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         CHIMP_STR(self)->size = 0;
     }
     else if (CHIMP_ARRAY_SIZE(args) == 1) {
-        ChimpRef *temp = chimp_object_str (NULL, CHIMP_ARRAY_FIRST(args));
+        ChimpRef *temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
         CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(temp));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
     }
@@ -53,14 +53,14 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         size_t i;
         size_t len;
         char *p;
-        ChimpRef *str_values = chimp_array_new (NULL);
+        ChimpRef *str_values = chimp_array_new ();
         if (str_values == NULL) {
             return NULL;
         }
 
         /* 1. convert all constructor args to strings */
         for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-            ChimpRef *str = chimp_object_str (NULL, CHIMP_ARRAY_ITEM(args, i));
+            ChimpRef *str = chimp_object_str (CHIMP_ARRAY_ITEM(args, i));
             if (str == NULL) {
                 return NULL;
             }
@@ -100,9 +100,9 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
 }
 
 ChimpRef *
-chimp_class_new (ChimpGC *gc, ChimpRef *name, ChimpRef *super)
+chimp_class_new (ChimpRef *name, ChimpRef *super)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -123,7 +123,7 @@ chimp_class_new_instance (ChimpRef *klass, ...)
 {
     va_list args;
     ChimpRef *arg;
-    ChimpRef *arr = chimp_array_new (NULL);
+    ChimpRef *arr = chimp_array_new ();
     if (arr == NULL) {
         return NULL;
     }
@@ -141,25 +141,25 @@ chimp_class_new_instance (ChimpRef *klass, ...)
 }
 
 chimp_bool_t
-chimp_class_add_method (ChimpGC *gc, ChimpRef *self, ChimpRef *name, ChimpRef *method)
+chimp_class_add_method (ChimpRef *self, ChimpRef *name, ChimpRef *method)
 {
     return chimp_lwhash_put (CHIMP_CLASS(self)->methods, name, method);
 }
 
 chimp_bool_t
-chimp_class_add_native_method (ChimpGC *gc, ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
+chimp_class_add_native_method (ChimpRef *self, const char *name, ChimpNativeMethodFunc func)
 {
     ChimpRef *method_ref;
-    ChimpRef *name_ref = chimp_str_new (gc, name, strlen (name));
+    ChimpRef *name_ref = chimp_str_new (name, strlen (name));
     if (name_ref == NULL) {
         return CHIMP_FALSE;
     }
     /* XXX the module should strictly be the module in which this class is declared */
-    method_ref = chimp_method_new_native (gc, NULL, func);
+    method_ref = chimp_method_new_native (NULL, func);
     if (method_ref == NULL) {
         return CHIMP_FALSE;
     }
-    return chimp_class_add_method (gc, self, name_ref, method_ref);
+    return chimp_class_add_method (self, name_ref, method_ref);
 }
 
 chimp_bool_t
@@ -176,7 +176,7 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_str_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
-    chimp_class_add_native_method (NULL, chimp_str_class, "init", chimp_str_init);
+    chimp_class_add_native_method (chimp_str_class, "init", chimp_str_init);
 
     return CHIMP_TRUE;
 }

@@ -49,9 +49,9 @@ parse_args (int argc, char **argv)
 {
     int i;
     ChimpRef *args;
-    ChimpRef *argv_ = chimp_array_new (NULL);
+    ChimpRef *argv_ = chimp_array_new ();
     for (i = 1; i < argc; i++) {
-        ChimpRef *arg = chimp_str_new (NULL, argv[i], strlen(argv[i]));
+        ChimpRef *arg = chimp_str_new (argv[i], strlen(argv[i]));
         if (arg == NULL) {
             return NULL;
         }
@@ -59,7 +59,7 @@ parse_args (int argc, char **argv)
             return NULL;
         }
     }
-    args = chimp_array_new (NULL);
+    args = chimp_array_new ();
     if (args == NULL) {
         return NULL;
     }
@@ -96,7 +96,7 @@ real_main (int argc, char **argv)
     args = parse_args (argc, argv);
     result = chimp_vm_invoke (NULL, main_method, args);
     if (result == NULL) {
-        fprintf (stderr, "error: chimp_vm_eval () returned NULL\n");
+        fprintf (stderr, "error: chimp_vm_invoke () returned NULL\n");
         return 1;
     }
 

@@ -57,7 +57,7 @@ chimp_task_thread_func (void *arg)
         return NULL;
     }
     if (task->impl != NULL) {
-        chimp_object_call (task->impl, chimp_array_new (NULL));
+        chimp_object_call (task->impl, chimp_array_new ());
     }
     return NULL;
 }
@@ -204,7 +204,7 @@ chimp_task_add_module (ChimpTask *task, ChimpRef *module)
     }
 
     if (task->modules == NULL) {
-        task->modules = chimp_hash_new (NULL);
+        task->modules = chimp_hash_new ();
         if (task->modules == NULL) {
             return CHIMP_FALSE;
         }

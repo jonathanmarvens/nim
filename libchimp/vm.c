@@ -16,12 +16,12 @@ chimp_vm_new (void)
     if (vm == NULL) {
         return NULL;
     }
-    vm->stack = chimp_array_new (NULL);
+    vm->stack = chimp_array_new ();
     if (vm->stack == NULL) {
         CHIMP_FREE (vm);
         return NULL;
     }
-    vm->frames = chimp_array_new (NULL);
+    vm->frames = chimp_array_new ();
     if (vm->frames == NULL) {
         CHIMP_FREE (vm);
         return NULL;
@@ -58,6 +58,7 @@ chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
     if (!chimp_vm_push(vm, value)) {
+        chimp_bug (__FILE__, __LINE__, "failed to push value at pc=%d", pc);
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -190,7 +191,7 @@ chimp_vm_makearray (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
     int32_t i;
 
-    array = chimp_array_new (NULL);
+    array = chimp_array_new ();
     if (array == NULL) {
         return CHIMP_FALSE;
     }
@@ -216,7 +217,7 @@ chimp_vm_makehash (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
     int32_t i;
 
-    hash = chimp_hash_new (NULL);
+    hash = chimp_hash_new ();
     if (hash == NULL) {
         return CHIMP_FALSE;
     }
@@ -288,6 +289,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHCONST:
             {
                 if (!chimp_vm_pushconst (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHCONST instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -296,6 +298,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_STORENAME:
             {
                 if (!chimp_vm_storename (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "STORENAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -304,6 +307,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNAME:
             {
                 if (!chimp_vm_pushname (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHNAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -312,6 +316,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNIL:
             {
                 if (!chimp_vm_push (vm, chimp_nil)) {
+                    chimp_bug (__FILE__, __LINE__, "PUSHNIL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -320,6 +325,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_GETATTR:
             {
                 if (!chimp_vm_getattr (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "GETATTR instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -328,6 +334,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_CALL:
             {
                 if (!chimp_vm_call (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "CALL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -337,9 +344,17 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 goto done;
             }
+            case CHIMP_OPCODE_PANIC:
+            {
+                ChimpRef *value;
+                value = chimp_vm_pop (vm);
+                chimp_vm_panic (vm, value);
+                break;
+            }
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "MAKEARRAY instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -348,6 +363,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEHASH:
             {
                 if (!chimp_vm_makehash (vm, code, locals, pc)) {
+                    chimp_bug (__FILE__, __LINE__, "MAKEHASH instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -361,7 +377,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return NULL;
                 }
                 /* TODO test for truthiness */
-                if (value == chimp_true) {
+                if (value == chimp_true || value != chimp_nil) {
                     pc = CHIMP_INSTR_ADDR(code, pc);
                 }
                 else {
@@ -428,9 +444,177 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_CMPGT:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_GT) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPGTE:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_GT || r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPLT:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_LT) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_CMPLTE:
+            {
+                ChimpCmpResult r = chimp_vm_cmp (vm);
+                if (r == CHIMP_CMP_ERROR) {
+                    return NULL;
+                }
+                else if (r == CHIMP_CMP_LT || r == CHIMP_CMP_EQ) {
+                    if (!chimp_vm_pushtrue (vm)) {
+                        return NULL;
+                    }
+                }
+                else {
+                    if (!chimp_vm_pushfalse (vm)) {
+                        return NULL;
+                    }
+                }
+                pc++;
+                break;
+            }
             case CHIMP_OPCODE_POP:
             {
                 if (!chimp_vm_pop (vm)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_ADD:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_add (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_SUB:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_sub (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_MUL:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_mul (left, right);
+                if (!chimp_vm_push (vm, result)) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_DIV:
+            {
+                ChimpRef *left;
+                ChimpRef *right;
+                ChimpRef *result;
+
+                right = chimp_vm_pop (vm);
+                if (right == NULL) {
+                    return NULL;
+                }
+
+                left = chimp_vm_pop (vm);
+                if (left == NULL) {
+                    return NULL;
+                }
+
+                result = chimp_object_div (left, right);
+                if (!chimp_vm_push (vm, result)) {
                     return NULL;
                 }
                 pc++;
@@ -477,16 +661,21 @@ ChimpRef *
 chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
 {
     size_t i;
+    size_t stack_size;
     ChimpRef *frame;
     ChimpRef *code;
+    ChimpRef *ret;
 
     if (vm == NULL) {
         vm = CHIMP_CURRENT_VM;
     }
 
+    /* save the stack */
+    stack_size = CHIMP_ARRAY_SIZE(vm->stack);
+
     if (!CHIMP_IS_BYTECODE_METHOD(method)) {
         chimp_bug (__FILE__, __LINE__,
-            "chimp_vm_eval_invoke called on a non-method (or native method)");
+            "chimp_vm_invoke called on a non-method (or native method)");
         return NULL;
     }
 
@@ -496,16 +685,44 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     }
     frame = chimp_frame_new (method);
     if (frame == NULL) {
+        chimp_bug (__FILE__, __LINE__,
+            "chimp_vm_invoke failed to create a new execution frame");
         return NULL;
     }
 
     /* push args */
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         if (!chimp_vm_push (vm, CHIMP_ARRAY_ITEM(args, i))) {
+            chimp_bug (__FILE__, __LINE__,
+                "chimp_vm_invoke failed to append array item");
             return NULL;
         }
     }
 
-    return chimp_vm_eval_frame (vm, frame);
+    ret = chimp_vm_eval_frame (vm, frame);
+
+    /* restore the stack */
+    CHIMP_ARRAY(vm->stack)->size = stack_size;
+
+    return ret;
+}
+
+void
+chimp_vm_panic (ChimpVM *vm, ChimpRef *value)
+{
+    /* TODO make panics rescuable */
+    if (value == NULL || value == chimp_nil) {
+        fprintf (stderr, "panic: no message provided\n");
+    }
+    else {
+        value = chimp_object_str (value);
+        if (value == NULL) {
+            fprintf (stderr, "panic: no message available\n");
+        }
+        else {
+            fprintf (stderr, "panic: %s\n", CHIMP_STR_DATA(value));
+        }
+    }
+    exit(1);
 }
 

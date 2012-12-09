@@ -24,23 +24,23 @@ chimp_method_call (ChimpRef *self, ChimpRef *args)
 }
 
 chimp_bool_t
-chimp_method_class_bootstrap (ChimpGC *gc)
+chimp_method_class_bootstrap (void)
 {
     chimp_method_class =
-        chimp_class_new (gc, CHIMP_STR_NEW(gc, "method"), NULL);
+        chimp_class_new (CHIMP_STR_NEW("method"), NULL);
     if (chimp_method_class == NULL) {
         return CHIMP_FALSE;
     }
-    chimp_gc_make_root (gc, chimp_method_class);
+    chimp_gc_make_root (NULL, chimp_method_class);
     CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
     CHIMP_CLASS(chimp_method_class)->inst_type = CHIMP_VALUE_TYPE_METHOD;
     return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_method_new_native (ChimpGC *gc, ChimpRef *module, ChimpNativeMethodFunc func)
+chimp_method_new_native (ChimpRef *module, ChimpNativeMethodFunc func)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -52,9 +52,9 @@ chimp_method_new_native (ChimpGC *gc, ChimpRef *module, ChimpNativeMethodFunc fu
 }
 
 ChimpRef *
-chimp_method_new_bytecode (ChimpGC *gc, ChimpRef *module, ChimpRef *code)
+chimp_method_new_bytecode (ChimpRef *module, ChimpRef *code)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -69,7 +69,7 @@ ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
 {
     /* TODO ensure unbound is actually ... er ... unbound */
-    ChimpRef *ref = chimp_gc_new_object (CHIMP_CURRENT_GC);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }

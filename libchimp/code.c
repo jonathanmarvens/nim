@@ -10,7 +10,7 @@ chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
     chimp_code_class =
-        chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "code"), NULL);
+        chimp_class_new (CHIMP_STR_NEW("code"), NULL);
     if (chimp_code_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -28,13 +28,13 @@ chimp_code_new (void)
     }
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
-    temp = chimp_array_new (NULL);
+    temp = chimp_array_new ();
     if (temp == NULL) {
         chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;
     }
     CHIMP_CODE(ref)->constants = temp;
-    temp = chimp_array_new (NULL);
+    temp = chimp_array_new ();
     if (temp == NULL) {
         chimp_bug (__FILE__, __LINE__, "wtf");
         return NULL;
@@ -200,6 +200,16 @@ chimp_code_ret (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_panic (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(PANIC);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {
@@ -327,6 +337,94 @@ chimp_code_neq (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_gt (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPGT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_gte (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPGTE);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_lt (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPLT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_lte (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CMPLTE);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_add (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(ADD);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_sub (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(SUB);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_mul (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(MUL);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_div (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(DIV);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_pop (ChimpRef *self)
 {
     if (!chimp_code_grow (self)) {
@@ -353,6 +451,10 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "STORENAME";
         case CHIMP_OPCODE_PUSHNAME:
              return "PUSHNAME";
+        case CHIMP_OPCODE_PUSHNIL:
+             return "PUSHNIL";
+        case CHIMP_OPCODE_PANIC:
+             return "PANIC";
         case CHIMP_OPCODE_GETATTR:
              return "GETATTR";
         case CHIMP_OPCODE_CALL:
@@ -365,8 +467,26 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "CMP_EQ";
         case CHIMP_OPCODE_CMPNEQ:
              return "CMP_NEQ";
+        case CHIMP_OPCODE_CMPGT:
+             return "CMP_GT";
+        case CHIMP_OPCODE_CMPGTE:
+             return "CMP_GTE";
+        case CHIMP_OPCODE_CMPLT:
+             return "CMP_LT";
+        case CHIMP_OPCODE_CMPLTE:
+             return "CMP_LTE";
         case CHIMP_OPCODE_POP:
              return "CMP_POP";
+        case CHIMP_OPCODE_RET:
+             return "RET";
+        case CHIMP_OPCODE_ADD:
+             return "ADD";
+        case CHIMP_OPCODE_SUB:
+             return "SUB";
+        case CHIMP_OPCODE_MUL:
+             return "MUL";
+        case CHIMP_OPCODE_DIV:
+             return "DIV";
         default:
              return "???OPCODE???";
     };
@@ -378,12 +498,12 @@ chimp_code_dump (ChimpRef *self)
     /* XXX super duper inefficient & sloppy. */
     /*     mostly for diagnostic purposes atm. */
     size_t i;
-    ChimpRef *str = CHIMP_STR_NEW (NULL, "");
+    ChimpRef *str = CHIMP_STR_NEW ("");
     for (i = 0; i < CHIMP_CODE(self)->used; i++) {
         int32_t instr = CHIMP_CODE_INSTR(self, i);
         ChimpOpcode op = ((ChimpOpcode)((instr & 0xff000000) >> 24));
         const char *op_str = chimp_code_opcode_str (op);
-        if (!chimp_str_append (str, chimp_int_new (NULL, i))) {
+        if (!chimp_str_append (str, chimp_int_new (i))) {
             return NULL;
         }
         if (!chimp_str_append_str (str, " ")) {
@@ -412,7 +532,7 @@ chimp_code_dump (ChimpRef *self)
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
-            if (!chimp_str_append (str, chimp_int_new (NULL, CHIMP_INSTR_ARG1(self, i)))) {
+            if (!chimp_str_append (str, chimp_int_new (CHIMP_INSTR_ARG1(self, i)))) {
                 return NULL;
             }
         }
@@ -420,7 +540,7 @@ chimp_code_dump (ChimpRef *self)
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
-            if (!chimp_str_append (str, chimp_int_new (NULL, (instr & 0xffffff)))) {
+            if (!chimp_str_append (str, chimp_int_new ((instr & 0xffffff)))) {
                 return NULL;
             }
         }

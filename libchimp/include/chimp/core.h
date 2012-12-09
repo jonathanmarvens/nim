@@ -14,6 +14,8 @@ extern "C" {
 
 typedef int chimp_bool_t;
 
+struct _ChimpRef;
+
 #define CHIMP_TRUE ((chimp_bool_t) 1)
 #define CHIMP_FALSE ((chimp_bool_t) 0)
 
@@ -25,6 +27,9 @@ chimp_core_shutdown (void);
 
 void
 chimp_bug (const char *filename, int lineno, const char *format, ...);
+
+chimp_bool_t
+chimp_is_builtin (struct _ChimpRef *name);
 
 #define CHIMP_MALLOC(type, size) ((type *) malloc (size))
 #define CHIMP_REALLOC(type, ptr, size) ((type *) realloc ((ptr), (size)))

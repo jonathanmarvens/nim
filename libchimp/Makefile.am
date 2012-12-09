@@ -1,17 +1,22 @@
-GENERATED_FILES = \
-	$(srcdir)/ast.c \
-	$(srcdir)/include/chimp/ast.h \
-	$(srcdir)/_parser.c \
-	$(srcdir)/include/chimp/_parser.h \
-	$(srcdir)/scanner.c
+BUILT_SOURCES = \
+	ast.c \
+	_parser.c \
+	scanner.c
 
-MOSTLYCLEANFILES = $(GENERATED_FILES)
+EXTRA_DIST = \
+	include/chimp/_parser.h \
+	include/chimp/ast.h
 
-AM_YFLAGS = --defines=$(top_srcdir)/include/chimp/_parser.h
+CLEANFILES = $(BUILT_SOURCES) include/chimp/ast.h include/chimp/_parser.h
+
+AM_YFLAGS = --defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
+
 libchimp_la_SOURCES = \
 	ast.c \
+	_parser.y \
+	scanner.l \
 	gc.c \
 	core.c \
 	str.c \
@@ -27,17 +32,45 @@ libchimp_la_SOURCES = \
 	code.c \
 	compile.c \
 	vm.c \
-	_parser.y \
-	scanner.l \
+	symtable.c \
 	module.c \
 	modules/iomod.c \
-	modules/assertmod.c
+	modules/assertmod.c \
+	modules/osmod.c
+
+include_HEADERS = \
+	include/chimp.h \
+	include/chimp/lwhash.h \
+	include/chimp/task.h \
+	include/chimp/class.h \
+	include/chimp/str.h \
+	include/chimp/frame.h \
+	include/chimp/module.h \
+	include/chimp/ast.h \
+	include/chimp/_parser.h \
+	include/chimp/method.h \
+	include/chimp/code.h \
+	include/chimp/int.h \
+	include/chimp/vm.h \
+	include/chimp/array.h \
+	include/chimp/core.h \
+	include/chimp/compile.h \
+	include/chimp/object.h \
+	include/chimp/hash.h \
+	include/chimp/modules.h \
+	include/chimp/any.h \
+	include/chimp/gc.h
 
 libchimp_la_CFLAGS = -Wall -I$(srcdir)/include @valgrind_CFLAGS@
 libchimp_la_LIBADD =
 
-ast.h: ast.c
+include/chimp/_parser.h: _parser.c
 
-ast.c: $(top_srcdir)/script/astgen
-	$(top_srcdir)/script/astgen $(srcdir)/include/chimp/ast.h $(srcdir)/ast.c
+scanner.c: include/chimp/_parser.h
+
+include/chimp/ast.h: $(top_srcdir)/script/astgen
+	mkdir -p include/chimp
+	$(top_srcdir)/script/astgen include/chimp/ast.h ast.c
+
+ast.c: $(top_srcdir)/script/astgen include/chimp/ast.h
 

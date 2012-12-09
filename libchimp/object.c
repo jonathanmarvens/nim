@@ -9,9 +9,9 @@
     } while (0)
 
 ChimpRef *
-chimp_object_new (ChimpGC *gc, ChimpRef *klass)
+chimp_object_new (ChimpRef *klass)
 {
-    ChimpRef *ref = chimp_gc_new_object (gc);
+    ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -44,18 +44,82 @@ chimp_object_cmp (ChimpRef *a, ChimpRef *b)
 }
 
 ChimpRef *
-chimp_object_str (ChimpGC *gc, ChimpRef *self)
+chimp_object_str (ChimpRef *self)
 {
     ChimpRef *klass = CHIMP_ANY_CLASS(self);
 
     while (klass != NULL) {
         if (CHIMP_CLASS(klass)->str != NULL) {
-            return CHIMP_CLASS(klass)->str (gc, self);
+            return CHIMP_CLASS(klass)->str (self);
         }
         klass = CHIMP_CLASS(klass)->super;
     }
 
     chimp_bug (__FILE__, __LINE__, "cannot convert type to string. probably a bug.");
+    return NULL;
+}
+
+ChimpRef *
+chimp_object_add (ChimpRef *left, ChimpRef *right)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(left);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->add != NULL) {
+            return CHIMP_CLASS(klass)->add (left, right);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+
+    chimp_bug (__FILE__, __LINE__, "`%s` type does not support the '+' operator", CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(left))->name));
+    return NULL;
+}
+
+ChimpRef *
+chimp_object_sub (ChimpRef *left, ChimpRef *right)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(left);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->sub != NULL) {
+            return CHIMP_CLASS(klass)->sub (left, right);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+
+    chimp_bug (__FILE__, __LINE__, "type does not support the '-' operator");
+    return NULL;
+}
+
+ChimpRef *
+chimp_object_mul (ChimpRef *left, ChimpRef *right)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(left);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->mul != NULL) {
+            return CHIMP_CLASS(klass)->mul (left, right);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+
+    chimp_bug (__FILE__, __LINE__, "type does not support the '*' operator");
+    return NULL;
+}
+
+ChimpRef *
+chimp_object_div (ChimpRef *left, ChimpRef *right)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(left);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->mul != NULL) {
+            return CHIMP_CLASS(klass)->div (left, right);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+
+    chimp_bug (__FILE__, __LINE__, "type does not support the '/' operator");
     return NULL;
 }
 
@@ -90,7 +154,7 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name)
 ChimpRef *
 chimp_object_getattr_str (ChimpRef *self, const char *name)
 {
-    return chimp_object_getattr (self, chimp_str_new (NULL, name, strlen (name)));
+    return chimp_object_getattr (self, chimp_str_new (name, strlen (name)));
 }
 
 chimp_bool_t

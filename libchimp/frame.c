@@ -15,7 +15,7 @@ chimp_bool_t
 chimp_frame_class_bootstrap (void)
 {
     chimp_frame_class =
-        chimp_class_new (NULL, CHIMP_STR_NEW(NULL, "frame"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("frame"), chimp_object_class);
     if (chimp_frame_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -32,7 +32,7 @@ chimp_frame_new (ChimpRef *method)
         return NULL;
     }
     CHIMP_FRAME_INIT(ref);
-    locals = chimp_hash_new (NULL);
+    locals = chimp_hash_new ();
     if (locals == NULL) {
         return NULL;
     }

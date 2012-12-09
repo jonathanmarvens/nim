@@ -1,9 +1,9 @@
 * More tests.
+* chimp_hash_get returning NULL and chimp\_nil completely sucks.
+  Find a better way.
 * Exceptions & exception handling.
 * File I/O.
 * Custom native types.
-* A macro for safe assignment to object attributes with simultaneous
-  allocation.
 * Class definitions.
 * Expose methods on more classes.
 * Rubyish keyword args:
@@ -17,7 +17,6 @@
 * Module definitions.
 * Revisit my half-baked crappy memory management ideas: tasks, threads & GC.
   (i.e. do we care right now? probably not ...)
-* Do away with explicit GC pointers. Implicit per-thread GC is always available.
 * VM stacks are made roots on VM creation, but are not removed from the root
   set at destruction. Either figure out a way to let VMs mark themselves, or
   provide a means of clearing elements from the root set.

@@ -19,7 +19,7 @@ START_TEST(calling_object_class_should_create_an_object_instance)
 {
     ChimpRef *instance;
 
-    instance = chimp_object_call (chimp_object_class, chimp_array_new (NULL));
+    instance = chimp_object_call (chimp_object_class, chimp_array_new ());
     CHIMP_TEST_INSTANCE_CHECK(instance, chimp_object_class, CHIMP_VALUE_TYPE_OBJECT);
 }
 END_TEST
@@ -27,8 +27,8 @@ END_TEST
 START_TEST(calling_class_class_should_create_a_new_class)
 {
     ChimpRef *instance;
-    ChimpRef *args = chimp_array_new (NULL);
-    chimp_array_push (args, CHIMP_STR_NEW (NULL, "foo"));
+    ChimpRef *args = chimp_array_new ();
+    chimp_array_push (args, CHIMP_STR_NEW ("foo"));
     chimp_array_push (args, chimp_nil);
 
     instance = chimp_object_call (chimp_class_class, args);
@@ -40,7 +40,7 @@ START_TEST(calling_str_class_should_create_a_str_instance)
 {
     ChimpRef *instance;
 
-    instance = chimp_object_call (chimp_str_class, chimp_array_new (NULL));
+    instance = chimp_object_call (chimp_str_class, chimp_array_new ());
     CHIMP_TEST_INSTANCE_CHECK(instance, chimp_str_class, CHIMP_VALUE_TYPE_STR);
 }
 END_TEST
@@ -49,7 +49,7 @@ START_TEST(calling_hash_class_should_create_a_hash_instance)
 {
     ChimpRef *instance;
     
-    instance = chimp_object_call (chimp_hash_class, chimp_array_new (NULL));
+    instance = chimp_object_call (chimp_hash_class, chimp_array_new ());
     CHIMP_TEST_INSTANCE_CHECK(instance, chimp_hash_class, CHIMP_VALUE_TYPE_HASH);
 }
 END_TEST
@@ -57,8 +57,8 @@ END_TEST
 START_TEST(instances_of_new_classes_should_use_super_class)
 {
     const char *instance_class_name;
-    ChimpRef *klass = chimp_class_new (NULL, CHIMP_STR_NEW (NULL, "testing"), NULL);
-    ChimpRef *instance = chimp_object_call (klass, chimp_array_new (NULL));
+    ChimpRef *klass = chimp_class_new (CHIMP_STR_NEW ("testing"), NULL);
+    ChimpRef *instance = chimp_object_call (klass, chimp_array_new ());
     CHIMP_TEST_INSTANCE_CHECK(instance, klass, CHIMP_VALUE_TYPE_OBJECT);
     instance_class_name =
         CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(instance)));

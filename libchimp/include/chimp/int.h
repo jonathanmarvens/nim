@@ -14,10 +14,10 @@ typedef struct _ChimpInt {
 } ChimpInt;
 
 chimp_bool_t
-chimp_int_class_bootstrap (ChimpGC *gc);
+chimp_int_class_bootstrap (void);
 
 ChimpRef *
-chimp_int_new (ChimpGC *gc, int64_t value);
+chimp_int_new (int64_t value);
 
 #define CHIMP_INT(ref) CHIMP_CHECK_CAST(ChimpInt, (ref), CHIMP_VALUE_TYPE_INT)
 
