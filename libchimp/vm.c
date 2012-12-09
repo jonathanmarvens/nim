@@ -661,12 +661,17 @@ ChimpRef *
 chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
 {
     size_t i;
+    size_t stack_size;
     ChimpRef *frame;
     ChimpRef *code;
+    ChimpRef *ret;
 
     if (vm == NULL) {
         vm = CHIMP_CURRENT_VM;
     }
+
+    /* save the stack */
+    stack_size = CHIMP_ARRAY_SIZE(vm->stack);
 
     if (!CHIMP_IS_BYTECODE_METHOD(method)) {
         chimp_bug (__FILE__, __LINE__,
@@ -694,7 +699,12 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
         }
     }
 
-    return chimp_vm_eval_frame (vm, frame);
+    ret = chimp_vm_eval_frame (vm, frame);
+
+    /* restore the stack */
+    CHIMP_ARRAY(vm->stack)->size = stack_size;
+
+    return ret;
 }
 
 void
