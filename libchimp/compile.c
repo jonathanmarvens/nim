@@ -23,6 +23,7 @@ typedef struct _ChimpCodeUnit {
         ChimpRef *value;
     };
     struct _ChimpCodeUnit *next;
+    ChimpRef              *ste;
 } ChimpCodeUnit;
 
 typedef struct _ChimpCodeCompiler {
@@ -32,10 +33,11 @@ typedef struct _ChimpCodeCompiler {
 
 #define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
 #define CHIMP_COMPILER_MODULE(c) ((c)->current_unit)->module
-#define CHIMP_COMPILER_SCOPE(c) ((c)->current_unit)->value;
+#define CHIMP_COMPILER_SCOPE(c) ((c)->current_unit)->value
 
 #define CHIMP_COMPILER_IN_MODULE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_MODULE)
 #define CHIMP_COMPILER_IN_CODE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_CODE)
+#define CHIMP_COMPILER_SYMTABLE_ENTRY(c) (((c)->current_unit))->ste
 
 static chimp_bool_t
 chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl);
@@ -77,7 +79,7 @@ static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *binop);
 
 static ChimpRef *
-chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type)
+chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRef *scope)
 {
     ChimpCodeUnit *unit = CHIMP_MALLOC(ChimpCodeUnit, sizeof(*unit));
     if (unit == NULL) {
@@ -94,28 +96,39 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type)
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown unit type: %d", type);
+            CHIMP_FREE (unit);
             return NULL;
     };
     if (unit->value == NULL) {
-        CHIMP_FREE(unit);
+        CHIMP_FREE (unit);
         return NULL;
     }
     unit->type = type;
     unit->next = c->current_unit;
+    unit->ste = chimp_symtable_lookup (c->symtable, scope);
+    if (unit->ste == NULL) {
+        CHIMP_FREE (unit);
+        return NULL;
+    }
+    if (unit->ste == chimp_nil) {
+        CHIMP_FREE (unit);
+        chimp_bug (__FILE__, __LINE__, "symtable lookup failed for scope %p", scope);
+        return NULL;
+    }
     c->current_unit = unit;
     return unit->value;
 }
 
 inline static ChimpRef *
-chimp_code_compiler_push_code_unit (ChimpCodeCompiler *c)
+chimp_code_compiler_push_code_unit (ChimpCodeCompiler *c, ChimpRef *scope)
 {
-    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CODE);
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CODE, scope);
 }
 
 inline static ChimpRef *
-chimp_code_compiler_push_module_unit (ChimpCodeCompiler *c)
+chimp_code_compiler_push_module_unit (ChimpCodeCompiler *c, ChimpRef *scope)
 {
-    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_MODULE);
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_MODULE, scope);
 }
 
 static ChimpRef *
@@ -208,13 +221,15 @@ chimp_compile_ast_mod (ChimpCodeCompiler *c, ChimpRef *mod)
 static chimp_bool_t
 chimp_compile_ast_stmt_assign (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
+    ChimpRef *name =
+        CHIMP_AST_EXPR(CHIMP_AST_STMT(stmt)->assign.target)->ident.id;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->assign.value)) {
         return CHIMP_FALSE;
     }
 
-    if (!chimp_code_storename (code, CHIMP_AST_EXPR(CHIMP_AST_STMT(stmt)->assign.target)->ident.id)) {
+    if (!chimp_code_storename (code, name)) {
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -328,14 +343,14 @@ chimp_compile_get_current_module (ChimpCodeCompiler *c)
 }
 
 static ChimpRef *
-chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *args, ChimpRef *body)
+chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *fn, ChimpRef *args, ChimpRef *body)
 {
     ChimpRef *mod;
     ChimpRef *func_code;
     ChimpRef *method;
     size_t i;
 
-    func_code = chimp_code_compiler_push_code_unit (c);
+    func_code = chimp_code_compiler_push_code_unit (c, fn);
     if (func_code == NULL) {
         return NULL;
     }
@@ -374,6 +389,7 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
 
     method = chimp_compile_bytecode_method (
         c,
+        decl,
         CHIMP_AST_DECL(decl)->func.args,
         CHIMP_AST_DECL(decl)->func.body
     );
@@ -798,7 +814,10 @@ chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     method = chimp_compile_bytecode_method (
-        c, CHIMP_AST_EXPR(expr)->fn.args, CHIMP_AST_EXPR(expr)->fn.body);
+        c, expr,
+        CHIMP_AST_EXPR(expr)->fn.args,
+        CHIMP_AST_EXPR(expr)->fn.body
+    );
     if (method == NULL) {
         return CHIMP_FALSE;
     }
@@ -825,7 +844,7 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
         return NULL;
     }
 
-    module = chimp_code_compiler_push_module_unit (&c);
+    module = chimp_code_compiler_push_module_unit (&c, ast);
     if (module == NULL) {
         return NULL;
     }

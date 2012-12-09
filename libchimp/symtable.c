@@ -157,7 +157,7 @@ chimp_symtable_visit_decl_func (ChimpRef *self, ChimpRef *decl)
     ChimpRef *args = CHIMP_AST_DECL(decl)->func.args;
     ChimpRef *body = CHIMP_AST_DECL(decl)->func.body;
 
-    if (!chimp_symtable_add (self, name, 0)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
         return CHIMP_FALSE;
     }
 
@@ -185,7 +185,7 @@ chimp_symtable_visit_decl_use (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->use.name;
 
-    if (!chimp_symtable_add (self, name, 0)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
         return CHIMP_FALSE;
     }
 
@@ -197,7 +197,7 @@ chimp_symtable_visit_decl_var (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->var.name;
 
-    if (!chimp_symtable_add (self, name, 0)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
         return CHIMP_FALSE;
     }
 
@@ -245,13 +245,8 @@ static chimp_bool_t
 chimp_symtable_visit_expr_getattr (ChimpRef *self, ChimpRef *expr)
 {
     ChimpRef *target = CHIMP_AST_EXPR(expr)->getattr.target;
-    ChimpRef *name   = CHIMP_AST_EXPR(expr)->getattr.attr;
 
     if (!chimp_symtable_visit_expr (self, target)) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_symtable_add (self, name, 0)) {
         return CHIMP_FALSE;
     }
 
@@ -288,9 +283,13 @@ static chimp_bool_t
 chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
 {
     ChimpRef *name = CHIMP_AST_EXPR(expr)->ident.id;
-    if (!chimp_symtable_add (self, name, 0)) {
+    int64_t fl;
+
+    if (!chimp_symtable_entry_sym_flags (CHIMP_SYMTABLE(self)->current, name, &fl)) {
+        chimp_bug (__FILE__, __LINE__, "unknown identifier `%s`", CHIMP_STR_DATA(name));
         return CHIMP_FALSE;
     }
+
     return CHIMP_TRUE;
 }
 
@@ -528,19 +527,30 @@ chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope)
 chimp_bool_t
 chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
 {
-    ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(self)->symbols;
-    ChimpRef *ref = chimp_hash_get (symbols, name);
-    if (ref == NULL) {
-        return CHIMP_FALSE;
+    ChimpRef *ste = self;
+    while (ste != NULL) {
+        ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
+        ChimpRef *ref = chimp_hash_get (symbols, name);
+        if (ref != chimp_nil) {
+            *flags = CHIMP_INT(ref)->value;
+            return CHIMP_TRUE;
+        }
+        ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
     }
-    *flags = CHIMP_INT(ref)->value;
-    return CHIMP_TRUE;
+    return CHIMP_FALSE;
 }
 
 chimp_bool_t
 chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name)
 {
-    ChimpRef *varnames = CHIMP_SYMTABLE_ENTRY(self)->varnames;
-    return chimp_array_find (varnames, name) != -1;
+    ChimpRef *ste = self;
+    while (ste != NULL) {
+        ChimpRef *varnames = CHIMP_SYMTABLE_ENTRY(ste)->varnames;
+        if (chimp_array_find (varnames, name) != -1) {
+            return CHIMP_TRUE;
+        }
+        ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
+    }
+    return CHIMP_FALSE;
 }
 

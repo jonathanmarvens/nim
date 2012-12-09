@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+enum {
+    CHIMP_SYM_DECL = 0x0001 /* symbol introduced via a decl */
+};
+
 typedef struct _ChimpSymtable {
     ChimpAny base;
     ChimpRef *filename;
