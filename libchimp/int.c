@@ -84,6 +84,38 @@ chimp_int_div (ChimpRef *left, ChimpRef *right)
     return chimp_int_new (left_value / right_value);
 }
 
+static ChimpCmpResult
+chimp_int_cmp (ChimpRef *left, ChimpRef *right)
+{
+    ChimpInt *a;
+    ChimpInt *b;
+    ChimpValueType at, bt;
+
+    at = CHIMP_ANY_TYPE(left);
+    bt = CHIMP_ANY_TYPE(right);
+
+    if (at != CHIMP_VALUE_TYPE_INT) {
+        return CHIMP_CMP_ERROR;
+    }
+
+    if (at != bt) {
+        return CHIMP_CMP_NOT_IMPL;
+    }
+
+    a = CHIMP_INT(left);
+    b = CHIMP_INT(right);
+
+    if (a->value > b->value) {
+        return CHIMP_CMP_GT;
+    }
+    else if (a->value < b->value) {
+        return CHIMP_CMP_LT;
+    }
+    else {
+        return CHIMP_CMP_EQ;
+    }
+}
+
 chimp_bool_t
 chimp_int_class_bootstrap (void)
 {
@@ -98,6 +130,7 @@ chimp_int_class_bootstrap (void)
     CHIMP_CLASS(chimp_int_class)->sub = chimp_int_sub;
     CHIMP_CLASS(chimp_int_class)->mul = chimp_int_mul;
     CHIMP_CLASS(chimp_int_class)->div = chimp_int_div;
+    CHIMP_CLASS(chimp_int_class)->cmp = chimp_int_cmp;
     return CHIMP_TRUE;
 }
 
