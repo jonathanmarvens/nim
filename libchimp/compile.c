@@ -408,6 +408,9 @@ chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *fn, ChimpRef *arg
 
     mod = chimp_compile_get_current_module (c);
 
+    if (getenv ("CHIMP_DEBUG_MODE")) {
+        fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (func_code)));
+    }
     method = chimp_method_new_bytecode (mod, func_code);
     if (method == NULL) {
         return NULL;

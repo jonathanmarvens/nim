@@ -12,6 +12,7 @@ typedef struct _ChimpArray {
     ChimpAny   base;
     ChimpRef **items;
     size_t     size;
+    size_t     capacity;
 } ChimpArray;
 
 chimp_bool_t

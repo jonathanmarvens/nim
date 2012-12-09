@@ -11,7 +11,7 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define DEFAULT_SLAB_SIZE ((4 * 1024) / sizeof(ChimpRef))
+#define DEFAULT_SLAB_SIZE (1024 * sizeof(ChimpRef)) /* ((4 * 1024) / sizeof(ChimpRef)) */
 
 struct _ChimpRef {
     chimp_bool_t marked;

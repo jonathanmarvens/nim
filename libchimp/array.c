@@ -216,6 +216,7 @@ chimp_array_new (void)
     CHIMP_ARRAY_INIT(ref);
     CHIMP_ARRAY(ref)->items = NULL;
     CHIMP_ARRAY(ref)->size = 0;
+    CHIMP_ARRAY(ref)->capacity = 0;
     return ref;
 }
 
@@ -246,11 +247,15 @@ chimp_array_grow (ChimpRef *self)
 {
     ChimpRef **items;
     ChimpArray *arr = CHIMP_ARRAY(self);
-    items = CHIMP_REALLOC(ChimpRef *, arr->items, sizeof(*arr->items) * (arr->size + 1));
-    if (items == NULL) {
-        return CHIMP_FALSE;
+    if (arr->size >= arr->capacity) {
+        size_t new_capacity = (arr->capacity == 0 ? 10 : (size_t)(arr->capacity * 1.8));
+        items = CHIMP_REALLOC(ChimpRef *, arr->items, sizeof(*arr->items) * new_capacity);
+        if (items == NULL) {
+            return CHIMP_FALSE;
+        }
+        arr->items = items;
+        arr->capacity = new_capacity;
     }
-    arr->items = items;
     return CHIMP_TRUE;
 }
 

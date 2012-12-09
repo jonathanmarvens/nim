@@ -663,7 +663,6 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     size_t i;
     size_t stack_size;
     ChimpRef *frame;
-    ChimpRef *code;
     ChimpRef *ret;
 
     if (vm == NULL) {
@@ -679,10 +678,6 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
         return NULL;
     }
 
-    code = CHIMP_METHOD(method)->bytecode.code;
-    if (getenv ("CHIMP_DEBUG_MODE")) {
-        fprintf (stderr, "%s\n", CHIMP_STR_DATA(chimp_code_dump (code)));
-    }
     frame = chimp_frame_new (method);
     if (frame == NULL) {
         chimp_bug (__FILE__, __LINE__,
