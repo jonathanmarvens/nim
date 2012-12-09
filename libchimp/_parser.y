@@ -57,7 +57,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef **mod);
 %token TOK_FULLSTOP
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR
+%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
@@ -134,6 +134,7 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1, &@$); }
 
 compound_stmt : TOK_IF expr block else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4, &@$); }
               | TOK_IF expr block { $$ = chimp_ast_stmt_new_if_ ($2, $3, NULL, &@$); }
+              | TOK_WHILE expr block { $$ = chimp_ast_stmt_new_while_ ($2, $3, &@$); }
               ;
 
 else : TOK_ELSE block { $$ = $2; }
