@@ -1,23 +1,40 @@
 %{
 
+#include <inttypes.h>
+
 #include "chimp/str.h"
+#include "chimp/_parser_ext.h"
 #include "chimp/_parser.h"
 #include "chimp/int.h"
 
-
-#define CHIMP_REF_TOKEN(token, r) yylval.ref = (r); return (token);
+#define CHIMP_REF_TOKEN(token, r) yylval->ref = (r); return (token);
 #define CHIMP_TOKEN(token) return (token);
 
 #define YY_NO_INPUT /* silence 'warning: ‘input’ defined but not used' */
 
 %}
 
+/* silence warnings / errors */
 %option nounput
 %option noyywrap
+
+%option 8bit
+
+/* enable bison location info */
+%option bison-locations
+
+/* prefer a fast scanner to a small one */
+%option full
 
 %%
 
 [#][^\n]*                   { /* do nothing (comment) */ }
+[\n]                        {
+                                yylloc->first_line++;
+                                yylloc->last_line = yylloc->first_line;
+                                yylloc->first_column = 0;
+                                yylloc->last_column = 0;
+                            }
 
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
@@ -29,7 +46,7 @@
 "panic"                     { CHIMP_TOKEN(TOK_PANIC) }
 "fn"                        { CHIMP_TOKEN(TOK_FN) }
 "var"                       { CHIMP_TOKEN(TOK_VAR) }
-[ \t\r\n]                   { /* do nothing */ }
+[ \t\r]                     { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }

@@ -874,11 +874,10 @@ error:
     return NULL;
 }
 
-extern int yyparse(void);
+extern int yyparse(ChimpRef **mod);
 extern void yylex_destroy(void);
 extern FILE *yyin;
-extern ChimpRef *main_mod;
-extern chimp_bool_t chimp_parsing;
+extern ChimpRef *chimp_source_file;
 
 ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename)
@@ -889,15 +888,17 @@ chimp_compile_file (ChimpRef *name, const char *filename)
     if (yyin == NULL) {
         return NULL;
     }
-    chimp_parsing = CHIMP_TRUE;
-    yylval.ref = NULL;
-    rc = yyparse();
-    chimp_parsing = CHIMP_FALSE;
+    chimp_source_file = chimp_str_new (filename, strlen (filename));
+    if (chimp_source_file == NULL) {
+        fclose (yyin);
+        return NULL;
+    }
+    rc = yyparse(&mod);
     fclose (yyin);
     yylex_destroy ();
+    chimp_source_file = NULL;
     if (rc == 0) {
         /* keep a ptr to main_mod on the stack so it doesn't get collected */
-        mod = main_mod;
         if (name == NULL) {
             ssize_t slash = -1;
             ssize_t dot = -1;
