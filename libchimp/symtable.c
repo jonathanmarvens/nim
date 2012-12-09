@@ -196,9 +196,16 @@ static chimp_bool_t
 chimp_symtable_visit_decl_var (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->var.name;
+    ChimpRef *value = CHIMP_AST_DECL(decl)->var.value;
 
     if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
         return CHIMP_FALSE;
+    }
+
+    if (value != NULL) {
+        if (!chimp_symtable_visit_expr (self, value)) {
+            return CHIMP_FALSE;
+        }
     }
 
     return CHIMP_TRUE;
@@ -286,8 +293,14 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
     int64_t fl;
 
     if (!chimp_symtable_entry_sym_flags (CHIMP_SYMTABLE(self)->current, name, &fl)) {
-        chimp_bug (__FILE__, __LINE__, "unknown identifier `%s`", CHIMP_STR_DATA(name));
-        return CHIMP_FALSE;
+        if (chimp_is_builtin (name)) {
+            return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
+        }
+        else {
+            chimp_bug (__FILE__, __LINE__,
+                        "unknown symbol: %s", CHIMP_STR_DATA(name));
+            return CHIMP_FALSE;
+        }
     }
 
     return CHIMP_TRUE;

@@ -108,6 +108,7 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRe
     unit->ste = chimp_symtable_lookup (c->symtable, scope);
     if (unit->ste == NULL) {
         CHIMP_FREE (unit);
+        chimp_bug (__FILE__, __LINE__, "symtable lookup error for scope %p", scope);
         return NULL;
     }
     if (unit->ste == chimp_nil) {
@@ -814,7 +815,8 @@ chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     method = chimp_compile_bytecode_method (
-        c, expr,
+        c,
+        expr,
         CHIMP_AST_EXPR(expr)->fn.args,
         CHIMP_AST_EXPR(expr)->fn.body
     );

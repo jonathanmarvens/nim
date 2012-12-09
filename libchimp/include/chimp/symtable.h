@@ -8,7 +8,8 @@ extern "C" {
 #endif
 
 enum {
-    CHIMP_SYM_DECL = 0x0001 /* symbol introduced via a decl */
+    CHIMP_SYM_DECL    = 0x0001, /* symbol explicitly introduced via a decl */
+    CHIMP_SYM_BUILTIN = 0x0002, /* builtin */
 };
 
 typedef struct _ChimpSymtable {
