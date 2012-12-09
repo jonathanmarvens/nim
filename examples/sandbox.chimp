@@ -37,8 +37,10 @@ main argv {
     io.print ("omgbye");
   }
 
-  while true {
+  some_bool = true;
+  while some_bool {
     io.print ("while you wait");
+    some_bool = false;
   }
 
   io.print ("Enter your name:");
