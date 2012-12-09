@@ -30,6 +30,14 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
     if (CHIMP_MODULE(self)->locals != NULL) {
         ChimpRef *result = chimp_hash_get (CHIMP_MODULE(self)->locals, name);
         if (result != NULL) {
+            if (result == chimp_nil) {
+                chimp_bug (__FILE__, __LINE__,
+                        "unknown attribute `%s` on module `%s`",
+                        CHIMP_STR_DATA(name),
+                        CHIMP_STR_DATA(CHIMP_MODULE(self)->name)
+                );
+                return NULL;
+            }
             return result;
         }
     }

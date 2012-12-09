@@ -27,7 +27,7 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
         CHIMP_ANY(ref)->klass = self;
         CHIMP_ANY(ref)->type = CHIMP_CLASS(self)->inst_type;
         ctor = chimp_object_getattr_str (ref, "init");
-        if (ctor != NULL) {
+        if (ctor != NULL && ctor != chimp_nil) {
             chimp_object_call (ctor, args);
         }
     }
