@@ -11,7 +11,7 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define DEFAULT_SLAB_SIZE (4096 * sizeof(ChimpRef)) /* ((4 * 1024) / sizeof(ChimpRef)) */
+#define DEFAULT_SLAB_SIZE 5000
 
 struct _ChimpRef {
     chimp_bool_t marked;
@@ -134,10 +134,10 @@ type_name (ChimpValueType type)
 }
 
 #define CHIMP_HEAP_CURRENT_SLAB(heap) \
-    (heap)->slabs[(heap)->used / (heap)->slab_size]
+    (heap)->slabs[(heap)->used / ((heap)->slab_size * sizeof(ChimpRef))]
 
 #define CHIMP_HEAP_ALLOCATED(heap) \
-    ((heap)->slab_count * (heap)->slab_size)
+    ((heap)->slab_count * ((heap)->slab_size * sizeof(ChimpRef)))
 
 static ChimpSlab *
 chimp_slab_new (size_t size)
