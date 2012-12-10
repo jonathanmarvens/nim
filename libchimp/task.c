@@ -11,13 +11,15 @@
  *     task ?
  */
 
+ChimpRef *chimp_task_class = NULL;
+
 static pthread_key_t current_task_key;
 static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 
-struct _ChimpTask {
+struct _ChimpTaskInternal {
     ChimpGC  *gc;
     ChimpVM  *vm;
-    struct _ChimpTask *parent;
+    struct _ChimpTaskInternal *parent;
     chimp_bool_t is_main;
     pthread_t thread;
     pthread_mutex_t lock;
@@ -36,7 +38,7 @@ chimp_task_init_per_thread_key (void)
 }
 
 static void
-chimp_task_init_per_thread_key_once (ChimpTask *task)
+chimp_task_init_per_thread_key_once (ChimpTaskInternal *task)
 {
     pthread_once (&current_task_key_once, chimp_task_init_per_thread_key);
     pthread_setspecific (current_task_key, task);
@@ -45,14 +47,13 @@ chimp_task_init_per_thread_key_once (ChimpTask *task)
 static void *
 chimp_task_thread_func (void *arg)
 {
-    ChimpTask *task = (ChimpTask *) arg;
+    ChimpTaskInternal *task = (ChimpTaskInternal *) arg;
     task->gc = chimp_gc_new ((void *)&task);
     if (task->gc == NULL) {
         CHIMP_FREE (task);
         return NULL;
     }
 
-    printf ("%s\n", "testing");
     chimp_task_init_per_thread_key_once (task);
 
     task->vm = chimp_vm_new ();
@@ -67,10 +68,47 @@ chimp_task_thread_func (void *arg)
     return NULL;
 }
 
-ChimpTask *
+static ChimpRef *
+_chimp_task_send (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
+    return chimp_task_send (
+            CHIMP_TASK(self)->impl, msg) ? chimp_true : chimp_false;
+}
+
+static ChimpRef *
+_chimp_task_recv (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_task_recv (CHIMP_TASK(self)->impl);
+}
+
+static ChimpRef *
+_chimp_task_wait (ChimpRef *self, ChimpRef *args)
+{
+    chimp_task_wait (CHIMP_TASK(self)->impl);
+    return chimp_nil;
+}
+
+chimp_bool_t
+chimp_task_class_bootstrap (void)
+{
+    chimp_task_class =
+        chimp_class_new (CHIMP_STR_NEW("task"), NULL);
+    if (chimp_task_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    chimp_gc_make_root (NULL, chimp_task_class);
+    CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
+    chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
+    chimp_class_add_native_method (chimp_task_class, "recv", _chimp_task_recv);
+    chimp_class_add_native_method (chimp_task_class, "wait", _chimp_task_wait);
+    return CHIMP_TRUE;
+}
+
+ChimpTaskInternal *
 chimp_task_new (ChimpRef *callable)
 {
-    ChimpTask *task = CHIMP_MALLOC(ChimpTask, sizeof(*task));
+    ChimpTaskInternal *task = CHIMP_MALLOC(ChimpTaskInternal, sizeof(*task));
     if (task == NULL) {
         return NULL;
     }
@@ -88,10 +126,10 @@ chimp_task_new (ChimpRef *callable)
     return task;
 }
 
-ChimpTask *
+ChimpTaskInternal *
 chimp_task_new_main (void *stack_start)
 {
-    ChimpTask *task = CHIMP_MALLOC(ChimpTask, sizeof(*task));
+    ChimpTaskInternal *task = CHIMP_MALLOC(ChimpTaskInternal, sizeof(*task));
     if (task == NULL) {
         return NULL;
     }
@@ -120,7 +158,7 @@ chimp_task_new_main (void *stack_start)
 }
 
 void
-chimp_task_delete (ChimpTask *task)
+chimp_task_delete (ChimpTaskInternal *task)
 {
     if (task != NULL) {
         if (!task->done) {
@@ -133,7 +171,7 @@ chimp_task_delete (ChimpTask *task)
 }
 
 chimp_bool_t
-chimp_task_send (ChimpTask *task, ChimpRef *msg)
+chimp_task_send (ChimpTaskInternal *task, ChimpRef *msg)
 {
     ChimpMsgInternal *temp;
     size_t i;
@@ -163,7 +201,7 @@ chimp_task_send (ChimpTask *task, ChimpRef *msg)
 }
 
 ChimpRef *
-chimp_task_recv (ChimpTask *task)
+chimp_task_recv (ChimpTaskInternal *task)
 {
     ChimpMsgInternal *temp;
     ChimpRef *ref;
@@ -185,7 +223,7 @@ chimp_task_recv (ChimpTask *task)
 }
 
 void
-chimp_task_wait (ChimpTask *task)
+chimp_task_wait (ChimpTaskInternal *task)
 {
     if (!task->is_main && !task->done) {
         pthread_join (task->thread, NULL);
@@ -198,7 +236,7 @@ chimp_task_wait (ChimpTask *task)
 
 /*
 ChimpRef *
-chimp_task_push_frame (ChimpTask *task)
+chimp_task_push_frame (ChimpTaskInternal *task)
 {
     ChimpRef *frame;
     if (task->stack == NULL) {
@@ -218,7 +256,7 @@ chimp_task_push_frame (ChimpTask *task)
 }
 
 ChimpRef *
-chimp_task_pop_frame (ChimpTask *task)
+chimp_task_pop_frame (ChimpTaskInternal *task)
 {
     if (task->stack != NULL) {
         return chimp_array_pop (task->stack);
@@ -229,7 +267,7 @@ chimp_task_pop_frame (ChimpTask *task)
 }
 
 ChimpRef *
-chimp_task_get_frame (ChimpTask *task)
+chimp_task_get_frame (ChimpTaskInternal *task)
 {
     if (task->stack != NULL) {
         return CHIMP_ARRAY_LAST (task->stack);
@@ -240,14 +278,14 @@ chimp_task_get_frame (ChimpTask *task)
 }
 */
 
-ChimpTask *
+ChimpTaskInternal *
 chimp_task_current (void)
 {
-    return (ChimpTask *) pthread_getspecific (current_task_key);
+    return (ChimpTaskInternal *) pthread_getspecific (current_task_key);
 }
 
 ChimpGC *
-chimp_task_get_gc (ChimpTask *task)
+chimp_task_get_gc (ChimpTaskInternal *task)
 {
     CHIMP_ASSERT(task != NULL);
 
@@ -255,7 +293,7 @@ chimp_task_get_gc (ChimpTask *task)
 }
 
 ChimpVM *
-chimp_task_get_vm (ChimpTask *task)
+chimp_task_get_vm (ChimpTaskInternal *task)
 {
     CHIMP_ASSERT(task != NULL);
 
@@ -263,7 +301,7 @@ chimp_task_get_vm (ChimpTask *task)
 }
 
 chimp_bool_t
-chimp_task_add_module (ChimpTask *task, ChimpRef *module)
+chimp_task_add_module (ChimpTaskInternal *task, ChimpRef *module)
 {
     if (task == NULL) {
         task = chimp_task_current ();
@@ -281,7 +319,7 @@ chimp_task_add_module (ChimpTask *task, ChimpRef *module)
 }
 
 ChimpRef *
-chimp_task_find_module (ChimpTask *task, ChimpRef *name)
+chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name)
 {
     if (task == NULL) {
         task = chimp_task_current ();

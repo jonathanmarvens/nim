@@ -15,6 +15,7 @@
 #include <chimp/module.h>
 #include <chimp/symtable.h>
 #include <chimp/msg.h>
+#include <chimp/task.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,6 +40,7 @@ typedef union _ChimpValue {
     ChimpSymtable       symtable;
     ChimpSymtableEntry  symtable_entry;
     ChimpMsg            msg;
+    ChimpTask           task;
     ChimpAstMod         ast_mod;
     ChimpAstDecl        ast_decl;
     ChimpAstStmt        ast_stmt;

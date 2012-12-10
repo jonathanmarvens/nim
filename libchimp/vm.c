@@ -356,7 +356,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 /*
                 ChimpRef *args;
                 */
+                ChimpTaskInternal *task;
                 ChimpRef *target;
+                ChimpRef *result;
 
                 /*
                 args = chimp_vm_pop (vm);
@@ -369,8 +371,14 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return CHIMP_FALSE;
                 }
 
-                /* XXX this will leak */
-                if (!chimp_task_new (target)) {
+                task = chimp_task_new (target);
+                if (task == NULL) {
+                    return CHIMP_FALSE;
+                }
+                result = chimp_class_new_instance (chimp_task_class, NULL);
+                CHIMP_TASK(result)->impl = task;
+
+                if (!chimp_vm_push (vm, result)) {
                     return CHIMP_FALSE;
                 }
 

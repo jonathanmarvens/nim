@@ -187,7 +187,7 @@ chimp_nil_str (ChimpRef *self)
     return CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(self));
 }
 
-static ChimpTask *main_task = NULL;
+static ChimpTaskInternal *main_task = NULL;
 
 static chimp_bool_t
 chimp_core_init_builtins (void)
@@ -272,6 +272,7 @@ chimp_core_startup (void *stack_start)
     if (!chimp_symtable_class_bootstrap ()) goto error;
     if (!chimp_symtable_entry_class_bootstrap ()) goto error;
     if (!chimp_msg_class_bootstrap ()) goto error;
+    if (!chimp_task_class_bootstrap ()) goto error;
 
     /*
     if (!chimp_task_push_frame (main_task)) goto error;

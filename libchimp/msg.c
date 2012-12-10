@@ -32,7 +32,7 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
                 }
             case CHIMP_VALUE_TYPE_STR:
                 {
-                    size += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref);
+                    size += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1;
                     break;
                 }
             default:
@@ -50,6 +50,7 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
     temp->num_cells = CHIMP_ARRAY_SIZE(data);
     temp->next = NULL;
     temp->cells = (ChimpMsgCell *)(buf + sizeof(ChimpMsgInternal));
+    buf += sizeof(ChimpMsgInternal);
 
     /* map array elements to message cells */
     for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
@@ -67,9 +68,15 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
                 {
                     ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_STR;
                     ((ChimpMsgCell*)buf)->str.data =
-                        (char *)(buf + sizeof(ChimpMsgCell));
+                        (buf + sizeof(ChimpMsgCell));
+                    memcpy (
+                        ((ChimpMsgCell*)buf)->str.data,
+                        CHIMP_STR_DATA(ref),
+                        CHIMP_STR_SIZE(ref)
+                    );
+                    ((ChimpMsgCell*)buf)->str.data[CHIMP_STR_SIZE(ref)] = '0';
                     ((ChimpMsgCell*)buf)->str.size = CHIMP_STR_SIZE(ref);
-                    buf += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref);
+                    buf += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1;
                     break;
                 }
             default:

@@ -107,7 +107,7 @@ real_main (int argc, char **argv)
 static int
 real_main (int argc, char **argv)
 {
-    ChimpTask *task;
+    ChimpTaskInternal *task;
     ChimpRef *ref;
     ChimpRef *args;
     size_t i;
