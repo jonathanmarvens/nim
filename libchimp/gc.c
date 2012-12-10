@@ -252,6 +252,7 @@ chimp_gc_new (void *stack_start)
     gc->free = gc->heap.slabs[0]->refs;
     gc->roots = NULL;
     gc->num_roots = 0;
+    gc->collection_count = 0;
     return gc;
 }
 
