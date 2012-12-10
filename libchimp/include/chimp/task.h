@@ -14,7 +14,7 @@ chimp_task_new (ChimpRef *callable);
 ChimpTask *
 chimp_task_new_main (void *stack_start);
 
-ChimpRef *
+chimp_bool_t
 chimp_task_send (ChimpTask *task, ChimpRef *msg);
 
 ChimpRef *

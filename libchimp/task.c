@@ -20,8 +20,12 @@ struct _ChimpTask {
     struct _ChimpTask *parent;
     chimp_bool_t is_main;
     pthread_t thread;
+    pthread_mutex_t lock;
+    pthread_cond_t  send_cond;
+    pthread_cond_t  recv_cond;
     ChimpRef *impl;
     ChimpRef *modules;
+    ChimpRef *inbox;
     chimp_bool_t done;
 };
 
@@ -77,6 +81,9 @@ chimp_task_new (ChimpRef *callable)
     task->is_main = CHIMP_FALSE;
     /* TODO error checking */
     pthread_create (&task->thread, NULL, chimp_task_thread_func, task);
+    pthread_mutex_init (&task->lock, NULL);
+    pthread_cond_init (&task->send_cond, NULL);
+    pthread_cond_init (&task->recv_cond, NULL);
     return task;
 }
 
@@ -105,6 +112,9 @@ chimp_task_new_main (void *stack_start)
         CHIMP_FREE (task);
         return NULL;
     }
+    pthread_mutex_init (&task->lock, NULL);
+    pthread_cond_init (&task->send_cond, NULL);
+    pthread_cond_init (&task->recv_cond, NULL);
     return task;
 }
 
@@ -121,18 +131,40 @@ chimp_task_delete (ChimpTask *task)
     }
 }
 
-ChimpRef *
+chimp_bool_t
 chimp_task_send (ChimpTask *task, ChimpRef *msg)
 {
-    /* TODO */
-    return NULL;
+    if (pthread_mutex_lock (&task->lock) != 0) {
+        return CHIMP_FALSE;
+    }
+    msg = chimp_msg_dup (msg);
+    task->inbox = msg;
+    pthread_cond_signal (&task->recv_cond);
+    while (task->inbox != NULL) {
+        pthread_cond_wait (&task->send_cond, &task->lock);
+    }
+    pthread_mutex_unlock (&task->lock);
+    return CHIMP_TRUE;
 }
 
 ChimpRef *
 chimp_task_recv (ChimpTask *task)
 {
-    /* TODO */
-    return NULL;
+    ChimpRef *msg;
+
+    if (pthread_mutex_lock (&task->lock) != 0) {
+        return NULL;
+    }
+    while (task->inbox == NULL) {
+        pthread_cond_wait (&task->recv_cond, &task->lock);
+    }
+    pthread_mutex_unlock (&task->lock);
+
+    msg = task->inbox;
+    task->inbox = NULL;
+    pthread_cond_signal (&task->send_cond);
+
+    return msg;
 }
 
 void
@@ -140,6 +172,9 @@ chimp_task_wait (ChimpTask *task)
 {
     if (!task->is_main && !task->done) {
         pthread_join (task->thread, NULL);
+        pthread_cond_destroy (&task->send_cond);
+        pthread_cond_destroy (&task->recv_cond);
+        pthread_mutex_destroy (&task->lock);
     }
     task->done = CHIMP_TRUE;
 }
