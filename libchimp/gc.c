@@ -30,6 +30,7 @@ struct _ChimpRef {
 #define CHIMP_FAST_FRAME(ref) (&((ref)->value.frame))
 #define CHIMP_FAST_SYMTABLE(ref) (&((ref)->value.symtable))
 #define CHIMP_FAST_SYMTABLE_ENTRY(ref) (&((ref)->value.symtable_entry))
+#define CHIMP_FAST_MSG(ref) (&((ref)->value.msg))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value.any.type)
 
@@ -296,6 +297,7 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_INT:
+        case CHIMP_VALUE_TYPE_MSG:
         case CHIMP_VALUE_TYPE_AST_MOD:
         case CHIMP_VALUE_TYPE_AST_STMT:
         case CHIMP_VALUE_TYPE_AST_DECL:

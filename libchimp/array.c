@@ -221,6 +221,23 @@ chimp_array_new (void)
 }
 
 ChimpRef *
+chimp_array_new_with_capacity (size_t capacity)
+{
+    ChimpRef *ref = chimp_gc_new_object (NULL);
+    if (ref == NULL) {
+        return NULL;
+    }
+    CHIMP_ARRAY_INIT(ref);
+    CHIMP_ARRAY(ref)->items = CHIMP_MALLOC(ChimpRef *, capacity);
+    if (CHIMP_ARRAY(ref)->items == NULL) {
+        return NULL;
+    }
+    CHIMP_ARRAY(ref)->size = 0;
+    CHIMP_ARRAY(ref)->capacity = capacity;
+    return ref;
+}
+
+ChimpRef *
 chimp_array_new_var (ChimpRef *a, ...)
 {
     va_list args;

@@ -22,6 +22,9 @@ ChimpRef *
 chimp_array_new (void);
 
 ChimpRef *
+chimp_array_new_with_capacity (size_t capacity);
+
+ChimpRef *
 chimp_array_new_var (ChimpRef *a, ...);
 
 chimp_bool_t

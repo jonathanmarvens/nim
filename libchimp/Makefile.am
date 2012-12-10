@@ -33,6 +33,7 @@ libchimp_la_SOURCES = \
 	compile.c \
 	vm.c \
 	symtable.c \
+	msg.c \
 	module.c \
 	modules/iomod.c \
 	modules/assertmod.c \

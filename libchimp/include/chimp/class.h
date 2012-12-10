@@ -23,6 +23,7 @@ typedef struct _ChimpClass {
     ChimpRef *super;
     ChimpValueType inst_type;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*init)(ChimpRef *, ChimpRef *);
     ChimpRef *(*str)(ChimpRef *);
     ChimpRef *(*add)(ChimpRef *, ChimpRef *);
     ChimpRef *(*sub)(ChimpRef *, ChimpRef *);

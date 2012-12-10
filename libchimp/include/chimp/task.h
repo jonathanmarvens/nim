@@ -14,6 +14,12 @@ chimp_task_new (ChimpRef *callable);
 ChimpTask *
 chimp_task_new_main (void *stack_start);
 
+ChimpRef *
+chimp_task_send (ChimpTask *task, ChimpRef *msg);
+
+ChimpRef *
+chimp_task_recv (ChimpTask *task);
+
 void
 chimp_task_delete (ChimpTask *task);
 

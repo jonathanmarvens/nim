@@ -121,6 +121,20 @@ chimp_task_delete (ChimpTask *task)
     }
 }
 
+ChimpRef *
+chimp_task_send (ChimpTask *task, ChimpRef *msg)
+{
+    /* TODO */
+    return NULL;
+}
+
+ChimpRef *
+chimp_task_recv (ChimpTask *task)
+{
+    /* TODO */
+    return NULL;
+}
+
 void
 chimp_task_wait (ChimpTask *task)
 {
