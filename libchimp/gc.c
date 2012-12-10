@@ -11,7 +11,7 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define DEFAULT_SLAB_SIZE (1024 * sizeof(ChimpRef)) /* ((4 * 1024) / sizeof(ChimpRef)) */
+#define DEFAULT_SLAB_SIZE (4096 * sizeof(ChimpRef)) /* ((4 * 1024) / sizeof(ChimpRef)) */
 
 struct _ChimpRef {
     chimp_bool_t marked;
@@ -55,6 +55,7 @@ struct _ChimpGC {
     size_t     num_roots;
 
     void      *stack_start;
+    uint64_t   collection_count;
 };
 
 static const char *
@@ -560,9 +561,6 @@ chimp_gc_sweep (ChimpGC *gc)
         ref = next;
     }
 
-    if (getenv("CHIMP_DEBUG_MODE") != NULL) {
-        fprintf (stderr, "sweep complete! freed %lu, kept %lu\n", freed, kept);
-    } 
     gc->live = live;
     gc->free = free_;
     gc->heap.used -= freed;
@@ -582,6 +580,8 @@ chimp_gc_collect (ChimpGC *gc)
     if (gc == NULL) {
         gc = CHIMP_CURRENT_GC;
     }
+
+    gc->collection_count++;
 
     ref = gc->live;
     while (ref != NULL) {
@@ -610,5 +610,35 @@ chimp_gc_collect (ChimpGC *gc)
     }
 
     return chimp_gc_sweep (gc) > 0;
+}
+
+uint64_t
+chimp_gc_collection_count (ChimpGC *gc)
+{
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
+    return gc->collection_count;
+}
+
+uint64_t
+chimp_gc_num_live (ChimpGC *gc)
+{
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
+    return gc->heap.used;
+}
+
+uint64_t
+chimp_gc_num_free (ChimpGC *gc)
+{
+    if (gc == NULL) {
+        gc = CHIMP_CURRENT_GC;
+    }
+
+    return (gc->heap.slab_count * gc->heap.slab_size) - gc->heap.used;
 }
 

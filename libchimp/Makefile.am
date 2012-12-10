@@ -36,7 +36,8 @@ libchimp_la_SOURCES = \
 	module.c \
 	modules/iomod.c \
 	modules/assertmod.c \
-	modules/osmod.c
+	modules/osmod.c \
+	modules/gcmod.c
 
 include_HEADERS = \
 	include/chimp.h \

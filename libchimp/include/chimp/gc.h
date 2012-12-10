@@ -37,6 +37,15 @@ chimp_gc_collect (ChimpGC *gc);
 void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref);
 
+uint64_t
+chimp_gc_collection_count (ChimpGC *gc);
+
+uint64_t
+chimp_gc_num_live (ChimpGC *gc);
+
+uint64_t
+chimp_gc_num_free (ChimpGC *gc);
+
 #define CHIMP_REF_TYPE(ref) chimp_gc_ref_type(ref)
 
 #define CHIMP_GC_MAKE_STACK_ROOT(p) \

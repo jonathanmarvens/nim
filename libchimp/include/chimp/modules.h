@@ -17,6 +17,9 @@ chimp_init_assert_module (void);
 ChimpRef *
 chimp_init_os_module (void);
 
+ChimpRef *
+chimp_init_gc_module (void);
+
 #ifdef __cplusplus
 };
 #endif
