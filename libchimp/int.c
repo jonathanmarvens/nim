@@ -16,7 +16,7 @@ ChimpRef *chimp_int_class = NULL;
 static ChimpRef *
 chimp_int_str (ChimpRef *self)
 {
-    char buf[32];
+    char buf[64];
     int len;
 
     len = snprintf (buf, sizeof(buf), "%" PRId64, CHIMP_INT(self)->value);
