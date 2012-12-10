@@ -52,6 +52,7 @@ chimp_task_thread_func (void *arg)
         return NULL;
     }
 
+    printf ("%s\n", "testing");
     chimp_task_init_per_thread_key_once (task);
 
     task->vm = chimp_vm_new ();

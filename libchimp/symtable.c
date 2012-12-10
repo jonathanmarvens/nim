@@ -344,6 +344,32 @@ chimp_symtable_visit_expr_fn (ChimpRef *self, ChimpRef *expr)
 
     return CHIMP_TRUE;
 }
+
+static chimp_bool_t
+chimp_symtable_visit_expr_spawn (ChimpRef *self, ChimpRef *expr)
+{
+    ChimpRef *args = CHIMP_AST_EXPR(expr)->spawn.args;
+    ChimpRef *body = CHIMP_AST_EXPR(expr)->spawn.body;
+
+    if (!chimp_symtable_enter_scope (self, expr)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_visit_decls (self, args)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_visit_stmts_or_decls (self, body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_leave_scope (self)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
 static chimp_bool_t
 chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
 {
@@ -370,6 +396,8 @@ chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
             return CHIMP_TRUE;
         case CHIMP_AST_EXPR_FN:
             return chimp_symtable_visit_expr_fn (self, expr);
+        case CHIMP_AST_EXPR_SPAWN:
+            return chimp_symtable_visit_expr_spawn (self, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;

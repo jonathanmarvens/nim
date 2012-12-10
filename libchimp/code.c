@@ -210,6 +210,16 @@ chimp_code_panic (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_spawn (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(SPAWN);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {

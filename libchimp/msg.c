@@ -68,8 +68,8 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
                     ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_STR;
                     ((ChimpMsgCell*)buf)->str.data =
                         (char *)(buf + sizeof(ChimpMsgCell));
-                    ((ChimpMsgCell*)buf)->str.size = CHIMP_ARRAY_SIZE(ref);
-                    buf += sizeof(ChimpMsgCell) + CHIMP_ARRAY_SIZE(ref);
+                    ((ChimpMsgCell*)buf)->str.size = CHIMP_STR_SIZE(ref);
+                    buf += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref);
                     break;
                 }
             default:

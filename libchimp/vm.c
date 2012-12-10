@@ -351,6 +351,32 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 chimp_vm_panic (vm, value);
                 break;
             }
+            case CHIMP_OPCODE_SPAWN:
+            {
+                /*
+                ChimpRef *args;
+                */
+                ChimpRef *target;
+
+                /*
+                args = chimp_vm_pop (vm);
+                if (args == NULL) {
+                    return CHIMP_FALSE;
+                }
+                */
+                target = chimp_vm_pop (vm);
+                if (target == NULL) {
+                    return CHIMP_FALSE;
+                }
+
+                /* XXX this will leak */
+                if (!chimp_task_new (target)) {
+                    return CHIMP_FALSE;
+                }
+
+                pc++;
+                break;
+            }
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {

@@ -59,6 +59,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef **mod);
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
+%token TOK_SPAWN
 
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
@@ -166,6 +167,7 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      | expr TOK_ASTERISK expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_MUL, $1, $3, &@$); }
      | expr TOK_SLASH expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
      | TOK_FN opt_params TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_fn ($2, $4, &@$); }
+     | TOK_SPAWN opt_params TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_spawn ($2, $4, &@$); }
      | simple opt_simple_tail {
         $$ = $1;
         if ($2 != NULL) {
