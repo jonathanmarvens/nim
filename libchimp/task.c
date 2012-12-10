@@ -25,7 +25,7 @@ struct _ChimpTask {
     pthread_cond_t  recv_cond;
     ChimpRef *impl;
     ChimpRef *modules;
-    ChimpRef *inbox;
+    ChimpMsgInternal *inbox;
     chimp_bool_t done;
 };
 
@@ -134,11 +134,25 @@ chimp_task_delete (ChimpTask *task)
 chimp_bool_t
 chimp_task_send (ChimpTask *task, ChimpRef *msg)
 {
+    ChimpMsgInternal *temp;
+    size_t i;
+
+    temp = malloc (CHIMP_MSG(msg)->impl->size);
+    if (temp == NULL) {
+        pthread_mutex_unlock (&task->lock);
+        return CHIMP_FALSE;
+    }
+    memcpy (temp, CHIMP_MSG(msg)->impl, CHIMP_MSG(msg)->impl->size);
+    temp->cells = ((void *)temp) + sizeof(ChimpMsgInternal);
+    for (i = 0; i < CHIMP_MSG(msg)->impl->num_cells; i++) {
+        /* update pointers invalidated by the copy */
+        temp->cells[i].str.data = ((void *)(temp->cells + i)) + sizeof(ChimpMsgCell);
+    }
+
     if (pthread_mutex_lock (&task->lock) != 0) {
         return CHIMP_FALSE;
     }
-    msg = chimp_msg_dup (msg);
-    task->inbox = msg;
+    task->inbox = temp;
     pthread_cond_signal (&task->recv_cond);
     while (task->inbox != NULL) {
         pthread_cond_wait (&task->send_cond, &task->lock);
@@ -150,7 +164,8 @@ chimp_task_send (ChimpTask *task, ChimpRef *msg)
 ChimpRef *
 chimp_task_recv (ChimpTask *task)
 {
-    ChimpRef *msg;
+    ChimpMsgInternal *temp;
+    ChimpRef *ref;
 
     if (pthread_mutex_lock (&task->lock) != 0) {
         return NULL;
@@ -158,13 +173,14 @@ chimp_task_recv (ChimpTask *task)
     while (task->inbox == NULL) {
         pthread_cond_wait (&task->recv_cond, &task->lock);
     }
-    pthread_mutex_unlock (&task->lock);
-
-    msg = task->inbox;
+    temp = task->inbox;
     task->inbox = NULL;
     pthread_cond_signal (&task->send_cond);
+    pthread_mutex_unlock (&task->lock);
 
-    return msg;
+    ref = chimp_msg_unpack (temp);
+    free (temp);
+    return ref;
 }
 
 void

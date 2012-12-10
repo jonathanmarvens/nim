@@ -13,21 +13,71 @@ static ChimpRef *
 _chimp_msg_init (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
+    void *buf;
+    ChimpMsgInternal *temp;
     ChimpRef *data = args;
+    size_t size;
+    
+    /* compute the full message size up-front */
+    size = sizeof(ChimpMsgInternal);
     for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
-        ChimpValueType type = CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(data, i));
+        ChimpRef *ref = CHIMP_ARRAY_ITEM(data, i);
+        ChimpValueType type = CHIMP_ANY_TYPE(ref);
+        /* check acceptable (immutable values) */
         switch (type) {
             case CHIMP_VALUE_TYPE_INT:
+                {
+                    size += sizeof(ChimpMsgCell);
+                    break;
+                }
             case CHIMP_VALUE_TYPE_STR:
                 {
-                    /* acceptable (immutable values) */
+                    size += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref);
                     break;
                 }
             default:
                 return NULL;
         };
     }
-    CHIMP_MSG(self)->data = data;
+
+    /* allocate & initialize the internal message */
+    buf = malloc (size);
+    if (buf == NULL) {
+        return NULL;
+    }
+    temp = (ChimpMsgInternal *) buf;
+    temp->size = size;
+    temp->num_cells = CHIMP_ARRAY_SIZE(data);
+    temp->next = NULL;
+    temp->cells = (ChimpMsgCell *)(buf + sizeof(ChimpMsgInternal));
+
+    /* map array elements to message cells */
+    for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
+        ChimpRef *ref = CHIMP_ARRAY_ITEM(data, i);
+        ChimpValueType type = CHIMP_ANY_TYPE(ref);
+        switch (type) {
+            case CHIMP_VALUE_TYPE_INT:
+                {
+                    ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_INT;
+                    ((ChimpMsgCell*)buf)->int_ = CHIMP_INT(ref)->value;
+                    buf += sizeof(ChimpMsgCell);
+                    break;
+                }
+            case CHIMP_VALUE_TYPE_STR:
+                {
+                    ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_STR;
+                    ((ChimpMsgCell*)buf)->str.data =
+                        (char *)(buf + sizeof(ChimpMsgCell));
+                    ((ChimpMsgCell*)buf)->str.size = CHIMP_ARRAY_SIZE(ref);
+                    buf += sizeof(ChimpMsgCell) + CHIMP_ARRAY_SIZE(ref);
+                    break;
+                }
+            default:
+                free (temp);
+                return NULL;
+        };
+    }
+    CHIMP_MSG(self)->impl = temp;
     return self;
 }
 
@@ -51,40 +101,34 @@ chimp_msg_new (ChimpRef *data)
 }
 
 ChimpRef *
-chimp_msg_dup (ChimpRef *self)
+chimp_msg_unpack (ChimpMsgInternal *msg)
 {
     size_t i;
-    ChimpRef *arr = CHIMP_MSG(self)->data;
-    ChimpRef *data =
-        chimp_array_new_with_capacity (CHIMP_ARRAY_SIZE(arr));
-    for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
-        ChimpRef *ref = CHIMP_ARRAY_ITEM(arr, i);
-        switch (CHIMP_ANY_TYPE(ref)) {
-            case CHIMP_VALUE_TYPE_STR:
+    ChimpRef *arr = chimp_array_new_with_capacity (msg->num_cells);
+    for (i = 0; i < msg->num_cells; i++) {
+        ChimpRef *ref;
+        ChimpMsgCell *cell = msg->cells + i;
+        switch (cell->type) {
+            case CHIMP_MSG_CELL_INT:
                 {
-                    ChimpRef *str =
-                        chimp_str_new (
-                            CHIMP_STR_DATA(ref), CHIMP_STR_SIZE(ref));
-                    if (str == NULL) {
-                        return NULL;
-                    }
-                    CHIMP_ARRAY(data)->items[i] = str;
+                    ref = chimp_int_new (cell->int_);
                     break;
                 }
-            case CHIMP_VALUE_TYPE_INT:
+            case CHIMP_MSG_CELL_STR:
                 {
-                    ChimpRef *n = chimp_int_new (CHIMP_INT(ref)->value);
-                    CHIMP_ARRAY(data)->items[i] = n;
+                    ref = chimp_str_new (cell->str.data, cell->str.size);
                     break;
                 }
             default:
-                chimp_bug (__FILE__, __LINE__,
-                    "invalid type passed to msg() ctor: %s",
-                    CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref)));
                 return NULL;
+        };
+        if (ref == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (arr, ref)) {
+            return NULL;
         }
     }
-    CHIMP_ARRAY(data)->size = CHIMP_ARRAY_SIZE(arr);
-    return chimp_msg_new (data);
+    return arr;
 }
 

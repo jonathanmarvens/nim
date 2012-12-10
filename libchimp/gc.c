@@ -292,12 +292,16 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_CODE(ref)->bytecode);
                 break;
             }
+        case CHIMP_VALUE_TYPE_MSG:
+            {
+                CHIMP_FREE (CHIMP_FAST_MSG(ref)->impl);
+                break;
+            }
         case CHIMP_VALUE_TYPE_MODULE:
         case CHIMP_VALUE_TYPE_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_INT:
-        case CHIMP_VALUE_TYPE_MSG:
         case CHIMP_VALUE_TYPE_AST_MOD:
         case CHIMP_VALUE_TYPE_AST_STMT:
         case CHIMP_VALUE_TYPE_AST_DECL:
