@@ -27,6 +27,7 @@ struct _ChimpTaskInternal {
     pthread_cond_t  recv_cond;
     ChimpRef *impl;
     ChimpRef *modules;
+    ChimpRef *ref;
     ChimpMsgInternal *inbox;
     chimp_bool_t done;
 };
@@ -87,6 +88,12 @@ _chimp_task_wait (ChimpRef *self, ChimpRef *args)
 {
     chimp_task_wait (CHIMP_TASK(self)->impl);
     return chimp_nil;
+}
+
+void
+chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task)
+{
+    chimp_gc_mark_ref (gc, task->ref);
 }
 
 chimp_bool_t
@@ -153,6 +160,18 @@ chimp_task_new_main (void *stack_start)
     pthread_cond_init (&task->send_cond, NULL);
     pthread_cond_init (&task->recv_cond, NULL);
     return task;
+}
+
+chimp_bool_t
+chimp_task_main_ready (void)
+{
+    ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
+    task->ref = chimp_class_new_instance (chimp_task_class, NULL);
+    if (task->ref == NULL) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_TASK(task->ref)->impl = task;
+    return CHIMP_TRUE;
 }
 
 void
@@ -232,6 +251,12 @@ chimp_task_wait (ChimpTaskInternal *task)
         pthread_mutex_destroy (&task->lock);
         task->done = CHIMP_TRUE;
     }
+}
+
+chimp_bool_t
+chimp_task_is_main (ChimpTaskInternal *task)
+{
+    return task->is_main;
 }
 
 /*

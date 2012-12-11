@@ -284,7 +284,11 @@ chimp_core_startup (void *stack_start)
     chimp_task_add_module (NULL, chimp_init_os_module ());
     chimp_task_add_module (NULL, chimp_init_gc_module ());
 
-    return chimp_core_init_builtins ();
+    if (!chimp_core_init_builtins ()) {
+        goto error;
+    }
+
+    return chimp_task_main_ready ();
 
 error:
 

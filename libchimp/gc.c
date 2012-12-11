@@ -300,7 +300,10 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
             }
         case CHIMP_VALUE_TYPE_TASK:
             {
-                chimp_task_delete (CHIMP_FAST_TASK(ref)->impl);
+                /* we clean up the main task elsewhere */
+                if (!chimp_task_is_main (CHIMP_FAST_TASK(ref)->impl)) {
+                    chimp_task_delete (CHIMP_FAST_TASK(ref)->impl);
+                }
                 break;
             }
         case CHIMP_VALUE_TYPE_MODULE:
@@ -527,6 +530,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
                 break;
             }
+        case CHIMP_VALUE_TYPE_TASK:
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_STR:
         case CHIMP_VALUE_TYPE_INT:
@@ -606,6 +610,7 @@ chimp_gc_collect (ChimpGC *gc)
         chimp_gc_mark_ref (gc, gc->roots[i]);
     }
 
+    chimp_task_mark (gc, CHIMP_CURRENT_TASK);
     chimp_gc_mark_ref (gc, chimp_source_file);
 
     if (gc->stack_start != NULL) {
