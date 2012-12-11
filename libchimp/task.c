@@ -134,8 +134,6 @@ chimp_task_new_main (void *stack_start)
         return NULL;
     }
     memset (task, 0, sizeof (*task));
-    task->parent = NULL;
-    task->impl = NULL;
     task->is_main = CHIMP_TRUE;
     task->gc = chimp_gc_new (stack_start);
     if (task->gc == NULL) {
@@ -225,13 +223,15 @@ chimp_task_recv (ChimpTaskInternal *task)
 void
 chimp_task_wait (ChimpTaskInternal *task)
 {
-    if (!task->is_main && !task->done) {
-        pthread_join (task->thread, NULL);
+    if (!task->done) {
+        if (!task->is_main) {
+            pthread_join (task->thread, NULL);
+        }
         pthread_cond_destroy (&task->send_cond);
         pthread_cond_destroy (&task->recv_cond);
         pthread_mutex_destroy (&task->lock);
+        task->done = CHIMP_TRUE;
     }
-    task->done = CHIMP_TRUE;
 }
 
 /*
