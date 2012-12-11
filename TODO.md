@@ -1,3 +1,5 @@
+* Communication between tasks needs more thought.
+* Return value of spawn needs to be one side of a duplex socket.
 * More tests.
 * chimp_hash_get returning NULL and chimp\_nil completely sucks.
   Find a better way.
