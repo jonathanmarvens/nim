@@ -9,19 +9,19 @@ fib n {
 
 main argv {
   var f3 = spawn me {
-    io.print(fib(30));
+    me.send(msg(fib(30)));
   };
 
   var f2 = spawn me {
-    io.print(fib(20));
+    me.send(msg(fib(20)));
   };
 
   var f1 = spawn me {
-    io.print(fib(10));
+    me.send(msg(fib(10)));
   };
 
-  f1.join();
-  f2.join();
-  f3.join();
+  io.print(f1.recv().pop());
+  io.print(f2.recv().pop());
+  io.print(f3.recv().pop());
 }
 
