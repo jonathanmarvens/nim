@@ -1,3 +1,5 @@
+#include <inttypes.h>
+
 #include "chimp/msg.h"
 #include "chimp/class.h"
 #include "chimp/object.h"
@@ -14,6 +16,7 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
     void *buf;
+    char *strbuf;
     ChimpMsgInternal *temp;
     ChimpRef *data = args;
     size_t size;
@@ -49,8 +52,9 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
     temp->size = size;
     temp->num_cells = CHIMP_ARRAY_SIZE(data);
     temp->next = NULL;
-    temp->cells = (ChimpMsgCell *)(buf + sizeof(ChimpMsgInternal));
     buf += sizeof(ChimpMsgInternal);
+    temp->cells = buf;
+    strbuf = buf + sizeof(ChimpMsgCell) * temp->num_cells;
 
     /* map array elements to message cells */
     for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
@@ -67,8 +71,7 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
             case CHIMP_VALUE_TYPE_STR:
                 {
                     ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_STR;
-                    ((ChimpMsgCell*)buf)->str.data =
-                        (buf + sizeof(ChimpMsgCell));
+                    ((ChimpMsgCell*)buf)->str.data = strbuf;
                     memcpy (
                         ((ChimpMsgCell*)buf)->str.data,
                         CHIMP_STR_DATA(ref),
@@ -76,7 +79,8 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
                     );
                     ((ChimpMsgCell*)buf)->str.data[CHIMP_STR_SIZE(ref)] = '0';
                     ((ChimpMsgCell*)buf)->str.size = CHIMP_STR_SIZE(ref);
-                    buf += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1;
+                    buf += sizeof(ChimpMsgCell);
+                    strbuf += CHIMP_STR_SIZE(ref) + 1;
                     break;
                 }
             default:
@@ -127,6 +131,7 @@ chimp_msg_unpack (ChimpMsgInternal *msg)
                     break;
                 }
             default:
+                chimp_bug (__FILE__, __LINE__, "unexpected value type in packed msg: %d", cell->type);
                 return NULL;
         };
         if (ref == NULL) {
