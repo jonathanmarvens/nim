@@ -25,34 +25,11 @@ chimp_task_new_main (void *stack_start);
 chimp_bool_t
 chimp_task_main_ready (void);
 
-chimp_bool_t
-chimp_task_send (ChimpTaskInternal *task, ChimpRef *msg);
-
-ChimpRef *
-chimp_task_recv (ChimpTaskInternal *task);
-
 void
-chimp_task_delete (ChimpTaskInternal *task);
-
-void
-chimp_task_wait (ChimpTaskInternal *task);
+chimp_task_main_delete ();
 
 void
 chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task);
-
-chimp_bool_t
-chimp_task_is_main (ChimpTaskInternal *task);
-
-/*
-ChimpRef *
-chimp_task_push_frame (ChimpTaskInternal *task);
-
-ChimpRef *
-chimp_task_pop_frame (ChimpTaskInternal *task);
-
-ChimpRef *
-chimp_task_get_frame (ChimpTaskInternal *task);
-*/
 
 ChimpTaskInternal *
 chimp_task_current (void);

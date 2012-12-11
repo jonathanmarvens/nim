@@ -299,13 +299,6 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 break;
             }
         case CHIMP_VALUE_TYPE_TASK:
-            {
-                /* we clean up the main task elsewhere */
-                if (!chimp_task_is_main (CHIMP_FAST_TASK(ref)->impl)) {
-                    chimp_task_delete (CHIMP_FAST_TASK(ref)->impl);
-                }
-                break;
-            }
         case CHIMP_VALUE_TYPE_MODULE:
         case CHIMP_VALUE_TYPE_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:

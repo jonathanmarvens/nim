@@ -27,7 +27,7 @@
         CHIMP_ANY(CHIMP_CLASS(c)->name)->klass = chimp_str_class; \
         CHIMP_STR(CHIMP_CLASS(c)->name)->data = fake_strndup ((n), (sizeof(n)-1)); \
         if (CHIMP_STR(CHIMP_CLASS(c)->name)->data == NULL) { \
-            chimp_task_delete (main_task); \
+            chimp_task_main_delete (); \
             main_task = NULL; \
             return CHIMP_FALSE; \
         } \
@@ -292,7 +292,7 @@ chimp_core_startup (void *stack_start)
 
 error:
 
-    chimp_task_delete (main_task);
+    chimp_task_main_delete ();
     main_task = NULL;
     return CHIMP_FALSE;
 }
@@ -301,7 +301,7 @@ void
 chimp_core_shutdown (void)
 {
     if (main_task != NULL) {
-        chimp_task_delete (main_task);
+        chimp_task_main_delete ();
         main_task = NULL;
         chimp_object_class = NULL;
         chimp_class_class = NULL;

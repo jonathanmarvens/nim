@@ -8,6 +8,6 @@ main argv {
     # var data = me.recv();
   };
   # task.send(m);
-  task.wait();
+  task.join();
 }
 
