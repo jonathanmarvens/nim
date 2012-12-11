@@ -1,13 +1,14 @@
 use io;
 
 main argv {
-  # var m = msg("foo", 1);
-  var task = spawn me {
-    io.print(me);
+  var task = spawn receiver {
     io.print("hello, from a background task");
-    # var data = me.recv();
+    var m2 = receiver.recv();
+    io.print(m2);
   };
-  # task.send(m);
+
+  var m = msg("foo", 1);
+  task.send(m);
   task.join();
 }
 

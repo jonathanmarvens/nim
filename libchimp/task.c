@@ -1,5 +1,8 @@
 #include <pthread.h>
 
+#include <stddef.h>
+#include <inttypes.h>
+
 #include "chimp/gc.h"
 #include "chimp/task.h"
 #include "chimp/object.h"
@@ -54,6 +57,8 @@ struct _ChimpTaskInternal {
     int                flags;
     pthread_t          thread;
     pthread_mutex_t    lock;
+    pthread_cond_t     inbox_cond;
+    ChimpMsgInternal  *inbox;
 };
 
 static ChimpRef *
@@ -167,6 +172,11 @@ chimp_task_new (ChimpRef *callable)
         CHIMP_FREE (task);
         return NULL;
     }
+    if (pthread_cond_init (&task->inbox_cond, NULL) != 0) {
+        pthread_mutex_destroy (&task->lock);
+        CHIMP_FREE (task);
+        return NULL;
+    }
     CHIMP_TASK_LOCK(task);
     if (pthread_create (&task->thread, NULL, chimp_task_thread_func, task) != 0) {
         pthread_mutex_destroy (&task->lock);
@@ -200,6 +210,13 @@ chimp_task_new_main (void *stack_start)
         return NULL;
     }
     if (pthread_mutex_init (&task->lock, NULL) != 0) {
+        chimp_gc_delete (task->gc);
+        chimp_vm_delete (task->vm);
+        CHIMP_FREE (task);
+        return NULL;
+    }
+    if (pthread_cond_init (&task->inbox_cond, NULL) != 0) {
+        pthread_mutex_destroy (&task->lock);
         chimp_gc_delete (task->gc);
         chimp_vm_delete (task->vm);
         CHIMP_FREE (task);
@@ -373,6 +390,8 @@ static ChimpRef *
 _chimp_task_send (ChimpRef *self, ChimpRef *args)
 {
     ChimpMsgInternal *temp;
+    ChimpTaskInternal *task;
+    char *strbuf;
     size_t i;
     ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
 
@@ -382,11 +401,21 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
     }
     memcpy (temp, CHIMP_MSG(msg)->impl, CHIMP_MSG(msg)->impl->size);
     temp->cells = ((void *)temp) + sizeof(ChimpMsgInternal);
+    temp->next = NULL;
+    strbuf = ((char *)temp->cells) + sizeof(ChimpMsgCell) * temp->num_cells;
     for (i = 0; i < CHIMP_MSG(msg)->impl->num_cells; i++) {
         /* update pointers invalidated by the copy */
-        temp->cells[i].str.data = ((void *)(temp->cells + i)) + sizeof(ChimpMsgCell);
+        if (temp->cells[i].type == CHIMP_MSG_CELL_STR) {
+            temp->cells[i].str.data = strbuf;
+            strbuf += temp->cells[i].str.size + 1;
+        }
     }
-    free (temp);
+
+    task = CHIMP_TASK(self)->impl;
+    CHIMP_TASK_LOCK(task);
+    task->inbox = temp;
+    pthread_cond_broadcast(&task->inbox_cond);
+    CHIMP_TASK_UNLOCK(task);
 
     return chimp_true;
 }
@@ -394,9 +423,18 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_task_recv (ChimpRef *self, ChimpRef *args)
 {
-    ChimpMsgInternal *temp = NULL;
+    ChimpTaskInternal *task;
     ChimpRef *ref;
+    ChimpMsgInternal *temp = NULL;
 
+    task = CHIMP_TASK(self)->impl;
+    CHIMP_TASK_LOCK(task);
+    while (task->inbox == NULL) {
+        pthread_cond_wait (&task->inbox_cond, &task->lock);
+    }
+    temp = task->inbox;
+    task->inbox = NULL;
+    CHIMP_TASK_UNLOCK(task);
     ref = chimp_msg_unpack (temp);
     free (temp);
     return ref;
