@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <unistd.h>
+
 #include "chimp/any.h"
 #include "chimp/object.h"
 #include "chimp/array.h"
@@ -16,6 +18,19 @@ _chimp_os_getenv (ChimpRef *self, ChimpRef *args)
     }
 }
 
+static ChimpRef *
+_chimp_os_sleep (ChimpRef *ref, ChimpRef *args)
+{
+    ChimpRef *duration = CHIMP_ARRAY_ITEM(args, 0);
+    if (duration == NULL) {
+        sleep (0);
+    }
+    else {
+        sleep ((time_t)CHIMP_INT(duration)->value);
+    }
+    return chimp_nil;
+}
+
 ChimpRef *
 chimp_init_os_module (void)
 {
@@ -27,6 +42,10 @@ chimp_init_os_module (void)
     }
 
     if (!chimp_module_add_method_str (os, "getenv", _chimp_os_getenv)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "sleep", _chimp_os_sleep)) {
         return NULL;
     }
 
