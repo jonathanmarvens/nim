@@ -94,7 +94,7 @@ chimp_task_thread_func (void *arg)
     /*       this will prevent other threads fiddling before we're ready */
 
     ChimpTaskInternal *task = (ChimpTaskInternal *) arg;
-    printf ("[%p] started\n", task);
+    /* printf ("[%p] started\n", task); */
     task->gc = chimp_gc_new ((void *)&task);
     if (task->gc == NULL) {
         CHIMP_FREE (task);
