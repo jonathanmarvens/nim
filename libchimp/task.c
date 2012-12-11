@@ -64,7 +64,8 @@ chimp_task_thread_func (void *arg)
         return NULL;
     }
     if (task->impl != NULL) {
-        chimp_object_call (task->impl, chimp_array_new ());
+        ChimpRef *args = chimp_array_new_var (task->ref, NULL);
+        chimp_vm_invoke (task->vm, task->impl, args);
     }
     return NULL;
 }
@@ -125,6 +126,12 @@ chimp_task_new (ChimpRef *callable)
     task->parent = chimp_task_current ();
     task->impl = callable;
     task->is_main = CHIMP_FALSE;
+    task->ref = chimp_class_new_instance (chimp_task_class, NULL);
+    if (task->ref == NULL) {
+        CHIMP_FREE (task);
+        return NULL;
+    }
+    CHIMP_TASK(task->ref)->impl = task;
     /* TODO error checking */
     pthread_create (&task->thread, NULL, chimp_task_thread_func, task);
     pthread_mutex_init (&task->lock, NULL);
@@ -178,9 +185,10 @@ void
 chimp_task_delete (ChimpTaskInternal *task)
 {
     if (task != NULL) {
-        if (!task->done) {
-            chimp_task_wait (task);
-        }
+        chimp_task_wait (task);
+        pthread_cond_destroy (&task->send_cond);
+        pthread_cond_destroy (&task->recv_cond);
+        pthread_mutex_destroy (&task->lock);
         chimp_vm_delete (task->vm);
         chimp_gc_delete (task->gc);
         CHIMP_FREE (task);
@@ -246,9 +254,6 @@ chimp_task_wait (ChimpTaskInternal *task)
         if (!task->is_main) {
             pthread_join (task->thread, NULL);
         }
-        pthread_cond_destroy (&task->send_cond);
-        pthread_cond_destroy (&task->recv_cond);
-        pthread_mutex_destroy (&task->lock);
         task->done = CHIMP_TRUE;
     }
 }

@@ -167,7 +167,7 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      | expr TOK_ASTERISK expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_MUL, $1, $3, &@$); }
      | expr TOK_SLASH expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
      | TOK_FN opt_params TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_fn ($2, $4, &@$); }
-     | TOK_SPAWN opt_params TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_spawn ($2, $4, &@$); }
+     | TOK_SPAWN param TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_spawn (chimp_array_new_var ($2, NULL), $4, &@$); }
      | simple opt_simple_tail {
         $$ = $1;
         if ($2 != NULL) {
