@@ -228,7 +228,7 @@ chimp_array_new_with_capacity (size_t capacity)
         return NULL;
     }
     CHIMP_ARRAY_INIT(ref);
-    CHIMP_ARRAY(ref)->items = CHIMP_MALLOC(ChimpRef *, capacity);
+    CHIMP_ARRAY(ref)->items = CHIMP_MALLOC(ChimpRef *, capacity * sizeof(ChimpRef *));
     if (CHIMP_ARRAY(ref)->items == NULL) {
         return NULL;
     }
