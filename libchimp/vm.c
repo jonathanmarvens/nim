@@ -376,7 +376,8 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return CHIMP_FALSE;
                 }
                 result = chimp_class_new_instance (chimp_task_class, NULL);
-                CHIMP_TASK(result)->impl = task;
+                CHIMP_TASK(result)->remote = task;
+                CHIMP_TASK(result)->local = CHIMP_CURRENT_TASK;
 
                 if (!chimp_vm_push (vm, result)) {
                     return CHIMP_FALSE;

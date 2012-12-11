@@ -1,14 +1,45 @@
 use io;
+use os;
 
 main argv {
-  var task = spawn receiver {
+  var task = spawn me {
+    #
+    # Let the user know we're not just twiddling our thumbs.
+    #
     io.print("hello, from a background task");
-    var m2 = receiver.recv();
+
+    #
+    # Testing recv()
+    #
+    var m2 = me.recv();
     io.print(m2);
+    me.send(msg("ohai"));
+
+    #
+    # let's see if orphans get detached properly.
+    # Inner task should be abandoned after f.join() returns.
+    #
+    var f = spawn dude {
+      spawn man {
+        os.sleep(3);
+        io.print("orphan is done");
+      };
+    };
+    f.join();
   };
 
+  var task2 = spawn another {
+    os.sleep(5);
+  };
+
+  #
+  # Testing send()
+  # TODO: do away with user-land msg object
+  #
   var m = msg("foo", 1);
   task.send(m);
+  task.recv();
+  task2.join();
   task.join();
 }
 

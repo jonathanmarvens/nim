@@ -10,7 +10,8 @@ typedef struct _ChimpTaskInternal ChimpTaskInternal;
 
 typedef struct _ChimpTask {
     ChimpAny any;
-    ChimpTaskInternal *impl;
+    ChimpTaskInternal *local;
+    ChimpTaskInternal *remote;
 } ChimpTask;
 
 chimp_bool_t

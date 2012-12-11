@@ -54,6 +54,7 @@ struct _ChimpTaskInternal {
     ChimpTaskInternal *parent;
     ChimpTaskInternal *children;
     ChimpTaskInternal *next;
+    pthread_cond_t     flags_cond;
     int                flags;
     pthread_t          thread;
     pthread_mutex_t    lock;
@@ -93,6 +94,7 @@ chimp_task_thread_func (void *arg)
     /*       this will prevent other threads fiddling before we're ready */
 
     ChimpTaskInternal *task = (ChimpTaskInternal *) arg;
+    printf ("[%p] started\n", task);
     task->gc = chimp_gc_new ((void *)&task);
     if (task->gc == NULL) {
         CHIMP_FREE (task);
@@ -110,9 +112,14 @@ chimp_task_thread_func (void *arg)
 
     task->flags |= CHIMP_TASK_FLAG_READY;
     CHIMP_TASK_UNLOCK(task);
+    pthread_cond_broadcast (&task->flags_cond);
 
     if (task->method != NULL) {
-        ChimpRef *args = chimp_array_new_var (task->self, NULL);
+        ChimpRef *pipe = chimp_class_new_instance (chimp_task_class, NULL);
+        ChimpRef *args = chimp_array_new_var (pipe, NULL);
+        CHIMP_TASK(pipe)->local = task;
+        /* XXX unsafe */
+        CHIMP_TASK(pipe)->remote = task->parent;
         if (chimp_vm_invoke (task->vm, task->method, args) == NULL) {
             chimp_gc_delete (task->gc);
             chimp_vm_delete (task->vm);
@@ -170,12 +177,6 @@ chimp_task_new (ChimpRef *callable)
     /* XXX can we guarantee callable won't be collected? think so ... */
     task->method = callable;
     task->flags = 0;
-    task->self = chimp_class_new_instance (chimp_task_class, NULL);
-    if (task->self == NULL) {
-        CHIMP_FREE (task);
-        return NULL;
-    }
-    CHIMP_TASK(task->self)->impl = task;
     if (pthread_mutex_init (&task->lock, NULL) != 0) {
         CHIMP_FREE (task);
         return NULL;
@@ -185,9 +186,16 @@ chimp_task_new (ChimpRef *callable)
         CHIMP_FREE (task);
         return NULL;
     }
+    if (pthread_cond_init (&task->flags_cond, NULL) != 0) {
+        pthread_mutex_destroy (&task->lock);
+        pthread_cond_destroy (&task->inbox_cond);
+        CHIMP_FREE (task);
+        return NULL;
+    }
     CHIMP_TASK_LOCK(task);
     if (pthread_create (&task->thread, NULL, chimp_task_thread_func, task) != 0) {
         pthread_mutex_destroy (&task->lock);
+        pthread_cond_destroy (&task->inbox_cond);
         CHIMP_FREE (task);
         return NULL;
     }
@@ -230,6 +238,14 @@ chimp_task_new_main (void *stack_start)
         CHIMP_FREE (task);
         return NULL;
     }
+    if (pthread_cond_init (&task->flags_cond, NULL) != 0) {
+        pthread_cond_destroy (&task->inbox_cond);
+        pthread_mutex_destroy (&task->lock);
+        chimp_gc_delete (task->gc);
+        chimp_vm_delete (task->vm);
+        CHIMP_FREE (task);
+        return NULL;
+    }
     CHIMP_TASK_LOCK(task);
     return task;
 }
@@ -240,13 +256,9 @@ chimp_task_main_ready (void)
     /* NOTE: lock still held by chimp_task_main_new here */
 
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
-    task->self = chimp_class_new_instance (chimp_task_class, NULL);
-    if (task->self == NULL) {
-        return CHIMP_FALSE;
-    }
-    CHIMP_TASK(task->self)->impl = task;
     task->flags |= CHIMP_TASK_FLAG_READY;
     CHIMP_TASK_UNLOCK(task);
+    pthread_cond_broadcast (&task->flags_cond);
     return CHIMP_TRUE;
 }
 
@@ -271,6 +283,7 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     while (child != NULL) {
         CHIMP_TASK_LOCK(child);
         child->flags |= CHIMP_TASK_FLAG_DETACHED;
+        pthread_cond_broadcast (&child->flags_cond);
         child->parent = NULL;
         pthread_detach (child->thread);
         CHIMP_TASK_UNLOCK(child);
@@ -334,7 +347,6 @@ chimp_task_join (ChimpTaskInternal *task)
 void
 chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task)
 {
-    chimp_gc_mark_ref (gc, task->self);
 }
 
 ChimpTaskInternal *
@@ -428,10 +440,19 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
         }
     }
 
-    task = CHIMP_TASK(self)->impl;
+    task = CHIMP_TASK(self)->remote;
     CHIMP_TASK_LOCK(task);
+    while (!CHIMP_TASK_IS_READY(task)) {
+        if (CHIMP_TASK_IS_DONE(task)) {
+            return NULL;
+        }
+        pthread_cond_wait (&task->flags_cond, &task->lock);
+    }
+    while (task->inbox != NULL) {
+        pthread_cond_wait (&task->inbox_cond, &task->lock);
+    }
     task->inbox = temp;
-    pthread_cond_broadcast(&task->inbox_cond);
+    pthread_cond_broadcast (&task->inbox_cond);
     CHIMP_TASK_UNLOCK(task);
 
     return chimp_true;
@@ -444,13 +465,20 @@ _chimp_task_recv (ChimpRef *self, ChimpRef *args)
     ChimpRef *ref;
     ChimpMsgInternal *temp = NULL;
 
-    task = CHIMP_TASK(self)->impl;
+    task = CHIMP_TASK(self)->local;
     CHIMP_TASK_LOCK(task);
+    while (!CHIMP_TASK_IS_READY(task)) {
+        if (CHIMP_TASK_IS_DONE(task)) {
+            return NULL;
+        }
+        pthread_cond_wait (&task->flags_cond, &task->lock);
+    }
     while (task->inbox == NULL) {
         pthread_cond_wait (&task->inbox_cond, &task->lock);
     }
     temp = task->inbox;
     task->inbox = NULL;
+    pthread_cond_broadcast (&task->inbox_cond);
     CHIMP_TASK_UNLOCK(task);
     ref = chimp_msg_unpack (temp);
     free (temp);
@@ -460,7 +488,7 @@ _chimp_task_recv (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_task_join (ChimpRef *self, ChimpRef *args)
 {
-    chimp_task_join (CHIMP_TASK(self)->impl);
+    chimp_task_join (CHIMP_TASK(self)->remote);
     return chimp_nil;
 }
 
