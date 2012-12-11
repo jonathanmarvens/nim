@@ -121,10 +121,18 @@ chimp_task_thread_func (void *arg)
         }
     }
 
-    /* TODO if the current thread has been detached, we're now responsible
-     *      for cleaning ourselves up at this point.
+    /* if the current thread has been detached, we're now responsible
+     * for cleaning ourselves up at this point (normally it's left to
+     * a join on a task).
      */
-    CHIMP_TASK_LOCK (task);
+    CHIMP_TASK_LOCK(task);
+    if (CHIMP_TASK_IS_DETACHED(task)) {
+        chimp_task_cleanup (task);
+    }
+    else {
+        CHIMP_TASK_UNLOCK(task);
+    }
+
     return NULL;
 }
 
@@ -263,6 +271,7 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     while (child != NULL) {
         CHIMP_TASK_LOCK(child);
         child->flags |= CHIMP_TASK_FLAG_DETACHED;
+        child->parent = NULL;
         pthread_detach (child->thread);
         CHIMP_TASK_UNLOCK(child);
         child = child->next;
@@ -301,8 +310,13 @@ chimp_task_cleanup (ChimpTaskInternal *task)
 static void
 chimp_task_join (ChimpTaskInternal *task)
 {
+    CHIMP_TASK_LOCK(task);
     if (CHIMP_TASK_IS_JOINABLE(task)) {
+        CHIMP_TASK_UNLOCK(task);
+
         pthread_join (task->thread, NULL);
+
+        CHIMP_TASK_LOCK(task);
 
         task->flags |= CHIMP_TASK_FLAG_DONE;
 
@@ -311,6 +325,9 @@ chimp_task_join (ChimpTaskInternal *task)
          */
 
         chimp_task_cleanup (task);
+    }
+    else {
+        CHIMP_TASK_UNLOCK(task);
     }
 }
 
