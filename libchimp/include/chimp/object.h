@@ -39,7 +39,6 @@ typedef union _ChimpValue {
     ChimpFrame          frame;
     ChimpSymtable       symtable;
     ChimpSymtableEntry  symtable_entry;
-    ChimpMsg            msg;
     ChimpTask           task;
     ChimpAstMod         ast_mod;
     ChimpAstDecl        ast_decl;

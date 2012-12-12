@@ -15,7 +15,6 @@
 #include "chimp/module.h"
 #include "chimp/modules.h"
 #include "chimp/symtable.h"
-#include "chimp/msg.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -208,7 +207,6 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
-    chimp_hash_put_str (chimp_builtins, "msg",    chimp_msg_class);
 
     return CHIMP_TRUE;
 }
@@ -271,7 +269,6 @@ chimp_core_startup (void *stack_start)
     if (!chimp_module_class_bootstrap ()) goto error;
     if (!chimp_symtable_class_bootstrap ()) goto error;
     if (!chimp_symtable_entry_class_bootstrap ()) goto error;
-    if (!chimp_msg_class_bootstrap ()) goto error;
     if (!chimp_task_class_bootstrap ()) goto error;
 
     /*

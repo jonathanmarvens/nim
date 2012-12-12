@@ -5,26 +5,19 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 
-#define CHIMP_MSG_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_MSG; \
-    CHIMP_ANY(ref)->klass = chimp_msg_class;
-
-ChimpRef *chimp_msg_class = NULL;
-
-static ChimpRef *
-_chimp_msg_init (ChimpRef *self, ChimpRef *args)
+ChimpMsgInternal *
+chimp_msg_pack (ChimpRef *array)
 {
     size_t i;
     void *buf;
     char *strbuf;
     ChimpMsgInternal *temp;
-    ChimpRef *data = args;
     size_t size;
     
     /* compute the full message size up-front */
     size = sizeof(ChimpMsgInternal);
-    for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
-        ChimpRef *ref = CHIMP_ARRAY_ITEM(data, i);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
+        ChimpRef *ref = CHIMP_ARRAY_ITEM(array, i);
         ChimpValueType type = CHIMP_ANY_TYPE(ref);
         /* check acceptable (immutable values) */
         switch (type) {
@@ -50,15 +43,15 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
     }
     temp = (ChimpMsgInternal *) buf;
     temp->size = size;
-    temp->num_cells = CHIMP_ARRAY_SIZE(data);
+    temp->num_cells = CHIMP_ARRAY_SIZE(array);
     temp->next = NULL;
     buf += sizeof(ChimpMsgInternal);
     temp->cells = buf;
     strbuf = buf + sizeof(ChimpMsgCell) * temp->num_cells;
 
     /* map array elements to message cells */
-    for (i = 0; i < CHIMP_ARRAY_SIZE(data); i++) {
-        ChimpRef *ref = CHIMP_ARRAY_ITEM(data, i);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
+        ChimpRef *ref = CHIMP_ARRAY_ITEM(array, i);
         ChimpValueType type = CHIMP_ANY_TYPE(ref);
         switch (type) {
             case CHIMP_VALUE_TYPE_INT:
@@ -88,27 +81,8 @@ _chimp_msg_init (ChimpRef *self, ChimpRef *args)
                 return NULL;
         };
     }
-    CHIMP_MSG(self)->impl = temp;
-    return self;
-}
 
-chimp_bool_t
-chimp_msg_class_bootstrap (void)
-{
-    chimp_msg_class =
-        chimp_class_new (CHIMP_STR_NEW("msg"), chimp_object_class);
-    if (chimp_msg_class == NULL) {
-        return CHIMP_FALSE;
-    }
-    CHIMP_CLASS(chimp_msg_class)->init = _chimp_msg_init;
-    CHIMP_CLASS(chimp_msg_class)->inst_type = CHIMP_VALUE_TYPE_MSG;
-    return CHIMP_TRUE;
-}
-
-ChimpRef *
-chimp_msg_new (ChimpRef *data)
-{
-    return chimp_class_new_instance (chimp_msg_class, data, NULL);
+    return temp;
 }
 
 ChimpRef *

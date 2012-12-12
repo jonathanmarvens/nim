@@ -10,11 +10,6 @@
 extern "C" {
 #endif
 
-typedef struct _ChimpMsg {
-    ChimpAny any;
-    struct _ChimpMsgInternal *impl;
-} ChimpMsg;
-
 typedef struct _ChimpMsgCell {
     enum {
         CHIMP_MSG_CELL_INT,
@@ -36,19 +31,11 @@ typedef struct _ChimpMsgInternal {
     struct _ChimpMsgInternal *next;
 } ChimpMsgInternal;
 
-chimp_bool_t
-chimp_msg_class_bootstrap (void);
-
-ChimpRef *
-chimp_msg_new (ChimpRef *data);
+ChimpMsgInternal *
+chimp_msg_pack (ChimpRef *array);
 
 ChimpRef *
 chimp_msg_unpack (ChimpMsgInternal *internal);
-
-#define CHIMP_MSG(ref) \
-    CHIMP_CHECK_CAST(ChimpMsg, (ref), CHIMP_VALUE_TYPE_MSG)
-
-CHIMP_EXTERN_CLASS(msg);
 
 #ifdef __cplusplus
 };

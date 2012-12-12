@@ -13,7 +13,7 @@ main argv {
     #
     var m2 = me.recv();
     io.print(m2);
-    me.send(msg("ohai"));
+    me.send("ohai");
 
     #
     # let's see if orphans get detached properly.
@@ -36,8 +36,7 @@ main argv {
   # Testing send()
   # TODO: do away with user-land msg object
   #
-  var m = msg("foo", 1);
-  task.send(m);
+  task.send("msg", 1);
   task.recv();
   task2.join();
   task.join();

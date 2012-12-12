@@ -420,24 +420,10 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
 {
     ChimpMsgInternal *temp;
     ChimpTaskInternal *task;
-    char *strbuf;
-    size_t i;
-    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
 
-    temp = malloc (CHIMP_MSG(msg)->impl->size);
+    temp = chimp_msg_pack (args);
     if (temp == NULL) {
         return chimp_false;
-    }
-    memcpy (temp, CHIMP_MSG(msg)->impl, CHIMP_MSG(msg)->impl->size);
-    temp->cells = ((void *)temp) + sizeof(ChimpMsgInternal);
-    temp->next = NULL;
-    strbuf = ((char *)temp->cells) + sizeof(ChimpMsgCell) * temp->num_cells;
-    for (i = 0; i < CHIMP_MSG(msg)->impl->num_cells; i++) {
-        /* update pointers invalidated by the copy */
-        if (temp->cells[i].type == CHIMP_MSG_CELL_STR) {
-            temp->cells[i].str.data = strbuf;
-            strbuf += temp->cells[i].str.size + 1;
-        }
     }
 
     task = CHIMP_TASK(self)->remote;
