@@ -1,6 +1,11 @@
-* Communication between tasks needs more thought.
-* Return value of spawn needs to be one side of a duplex socket.
+* Return value of spawn needs to be one side of a duplex pipe.
 * More tests.
+* Revisit the bytecode format.
+  - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
+  - MAKEARRAY for every call is probably slow/dumb.
+* Bitwise operators.
+* Modulo operator.
+* In-place operators for integers: +=, -=, /=, \*=, etc.
 * chimp_hash_get returning NULL and chimp\_nil completely sucks.
   Find a better way.
 * Exceptions & exception handling.
@@ -8,13 +13,8 @@
 * Custom native types.
 * Class definitions.
 * Expose methods on more classes.
-* Rubyish keyword args:
-  foo(a, b, bar: 10, baz: 20)
 * Rubyish symbols?
 * Annotations?
-* Revisit the bytecode format.
-  - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
-  - MAKEARRAY for every call is probably slow/dumb.
 * Immutable values ...
 * Module definitions.
 * Revisit my half-baked crappy memory management ideas: tasks, threads & GC.
