@@ -12,8 +12,8 @@ main argv {
   var f2 = spawn me { me.send(fib(20)); };
   var f1 = spawn me { me.send(fib(10)); };
 
-  io.print(f1.recv().pop());
-  io.print(f2.recv().pop());
-  io.print(f3.recv().pop());
+  io.print(f1.recv());
+  io.print(f2.recv());
+  io.print(f3.recv());
 }
 

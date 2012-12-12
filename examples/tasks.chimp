@@ -36,7 +36,7 @@ main argv {
   # Testing send()
   # TODO: do away with user-land msg object
   #
-  task.send("msg", 1);
+  task.send(["msg", 1]);
   task.recv();
   task2.join();
   task.join();

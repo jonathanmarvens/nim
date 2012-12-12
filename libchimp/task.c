@@ -420,8 +420,9 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
 {
     ChimpMsgInternal *temp;
     ChimpTaskInternal *task;
+    ChimpRef *arg = CHIMP_ARRAY_ITEM(args, 0);
 
-    temp = chimp_msg_pack (args);
+    temp = chimp_msg_pack (arg);
     if (temp == NULL) {
         return chimp_false;
     }

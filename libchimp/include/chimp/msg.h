@@ -13,7 +13,8 @@ extern "C" {
 typedef struct _ChimpMsgCell {
     enum {
         CHIMP_MSG_CELL_INT,
-        CHIMP_MSG_CELL_STR
+        CHIMP_MSG_CELL_STR,
+        CHIMP_MSG_CELL_ARRAY
     } type;
     union {
         int64_t  int_;
@@ -21,13 +22,16 @@ typedef struct _ChimpMsgCell {
             char    *data;
             size_t   size;
         } str;
+        struct {
+            struct _ChimpMsgCell *items;
+            size_t                size;
+        } array;
     };
 } ChimpMsgCell;
 
 typedef struct _ChimpMsgInternal {
     size_t                    size;
-    ChimpMsgCell             *cells;
-    size_t                    num_cells;
+    ChimpMsgCell             *cell;
     struct _ChimpMsgInternal *next;
 } ChimpMsgInternal;
 

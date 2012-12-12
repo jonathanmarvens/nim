@@ -5,36 +5,143 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 
-ChimpMsgInternal *
-chimp_msg_pack (ChimpRef *array)
+#define chimp_msg_int_cell_size(ref) sizeof(ChimpMsgCell)
+#define chimp_msg_str_cell_size(ref) \
+    (sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1)
+
+static chimp_bool_t
+chimp_msg_value_cell_encode (char **buf_ptr, ChimpRef *ref);
+
+static chimp_bool_t
+chimp_msg_value_cell_decode (char **buf_ptr, ChimpRef **ref);
+
+static size_t
+chimp_msg_value_cell_size (ChimpRef *ref);
+
+static size_t
+chimp_msg_array_cell_size (ChimpRef *array)
 {
     size_t i;
-    void *buf;
-    char *strbuf;
+    size_t size = sizeof(ChimpMsgCell);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
+        size += chimp_msg_value_cell_size (CHIMP_ARRAY_ITEM(array, i));
+    }
+    return size;
+}
+
+static size_t
+chimp_msg_value_cell_size (ChimpRef *ref)
+{
+    /* check acceptable (immutable values) */
+    switch (CHIMP_ANY_TYPE(ref)) {
+        case CHIMP_VALUE_TYPE_INT:
+            {
+                return chimp_msg_int_cell_size(ref);
+            }
+        case CHIMP_VALUE_TYPE_STR:
+            {
+                return chimp_msg_str_cell_size(ref);
+            }
+        case CHIMP_VALUE_TYPE_ARRAY:
+            {
+                return chimp_msg_array_cell_size (ref);
+            }
+        default:
+            chimp_bug (__FILE__, __LINE__, "unsupported message type in array encode: %s", CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+            return 0;
+    };
+}
+
+static chimp_bool_t
+chimp_msg_int_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    cell->type = CHIMP_MSG_CELL_INT;
+    cell->int_ = CHIMP_INT(ref)->value;
+    buf += chimp_msg_int_cell_size (ref);
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_msg_str_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    cell->type = CHIMP_MSG_CELL_STR;
+    cell->str.data = buf + sizeof(ChimpMsgCell);
+    memcpy (cell->str.data, CHIMP_STR_DATA(ref), CHIMP_STR_SIZE(ref));
+    cell->str.size = CHIMP_STR_SIZE(ref);
+    buf += chimp_msg_str_cell_size (ref);
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_msg_array_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    size_t i;
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    cell->type = CHIMP_MSG_CELL_ARRAY;
+    cell->array.items = ((ChimpMsgCell *)(buf + sizeof(ChimpMsgCell)));
+    cell->array.size  = CHIMP_ARRAY_SIZE(ref);
+    buf += sizeof(ChimpMsgCell);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(ref); i++) {
+        if (!chimp_msg_value_cell_encode (&buf, CHIMP_ARRAY_ITEM(ref, i))) {
+            return CHIMP_FALSE;
+        }
+    }
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_msg_value_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    switch (CHIMP_ANY_TYPE(ref)) {
+        case CHIMP_VALUE_TYPE_INT:
+            {
+                if (!chimp_msg_int_cell_encode (buf_ptr, ref)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_VALUE_TYPE_STR:
+            {
+                if (!chimp_msg_str_cell_encode (buf_ptr, ref)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_VALUE_TYPE_ARRAY:
+            {
+                if (!chimp_msg_array_cell_encode (buf_ptr, ref)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        default:
+            chimp_bug (__FILE__, __LINE__, "unsupported message type in encode: %s", CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+            return CHIMP_FALSE;
+    };
+    return CHIMP_TRUE;
+}
+
+ChimpMsgInternal *
+chimp_msg_pack (ChimpRef *value)
+{
+    char *buf;
     ChimpMsgInternal *temp;
     size_t size;
+    size_t cell_size;
     
     /* compute the full message size up-front */
     size = sizeof(ChimpMsgInternal);
-    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
-        ChimpRef *ref = CHIMP_ARRAY_ITEM(array, i);
-        ChimpValueType type = CHIMP_ANY_TYPE(ref);
-        /* check acceptable (immutable values) */
-        switch (type) {
-            case CHIMP_VALUE_TYPE_INT:
-                {
-                    size += sizeof(ChimpMsgCell);
-                    break;
-                }
-            case CHIMP_VALUE_TYPE_STR:
-                {
-                    size += sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1;
-                    break;
-                }
-            default:
-                return NULL;
-        };
-    }
+    cell_size = chimp_msg_value_cell_size (value);
+    if (cell_size == 0) return NULL;
+    size += cell_size;
 
     /* allocate & initialize the internal message */
     buf = malloc (size);
@@ -43,78 +150,97 @@ chimp_msg_pack (ChimpRef *array)
     }
     temp = (ChimpMsgInternal *) buf;
     temp->size = size;
-    temp->num_cells = CHIMP_ARRAY_SIZE(array);
     temp->next = NULL;
     buf += sizeof(ChimpMsgInternal);
-    temp->cells = buf;
-    strbuf = buf + sizeof(ChimpMsgCell) * temp->num_cells;
+    temp->cell = (ChimpMsgCell *) buf;
 
-    /* map array elements to message cells */
-    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
-        ChimpRef *ref = CHIMP_ARRAY_ITEM(array, i);
-        ChimpValueType type = CHIMP_ANY_TYPE(ref);
-        switch (type) {
-            case CHIMP_VALUE_TYPE_INT:
-                {
-                    ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_INT;
-                    ((ChimpMsgCell*)buf)->int_ = CHIMP_INT(ref)->value;
-                    buf += sizeof(ChimpMsgCell);
-                    break;
-                }
-            case CHIMP_VALUE_TYPE_STR:
-                {
-                    ((ChimpMsgCell*)buf)->type = CHIMP_MSG_CELL_STR;
-                    ((ChimpMsgCell*)buf)->str.data = strbuf;
-                    memcpy (
-                        ((ChimpMsgCell*)buf)->str.data,
-                        CHIMP_STR_DATA(ref),
-                        CHIMP_STR_SIZE(ref)
-                    );
-                    ((ChimpMsgCell*)buf)->str.data[CHIMP_STR_SIZE(ref)] = '0';
-                    ((ChimpMsgCell*)buf)->str.size = CHIMP_STR_SIZE(ref);
-                    buf += sizeof(ChimpMsgCell);
-                    strbuf += CHIMP_STR_SIZE(ref) + 1;
-                    break;
-                }
-            default:
-                free (temp);
-                return NULL;
-        };
+    if (!chimp_msg_value_cell_encode (&buf, value)) {
+        free (buf);
+        return NULL;
     }
 
     return temp;
 }
 
+static chimp_bool_t
+chimp_msg_array_cell_decode (char **buf_ptr, ChimpRef **ref)
+{
+    size_t i;
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    ChimpRef *array = chimp_array_new_with_capacity (cell->array.size);
+
+    if (array == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    buf += sizeof(ChimpMsgCell);
+
+    for (i = 0; i < cell->array.size; i++) {
+        ChimpRef *item;
+        if (!chimp_msg_value_cell_decode (&buf, &item)) {
+            return CHIMP_FALSE;
+        }
+        if (!chimp_array_push (array, item)) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    *ref = array;
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_msg_value_cell_decode (char **buf_ptr, ChimpRef **ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    switch (cell->type) {
+        case CHIMP_MSG_CELL_INT:
+            {
+                *ref = chimp_int_new (cell->int_);
+                if (*ref == NULL) {
+                    return CHIMP_FALSE;
+                }
+                buf += sizeof(ChimpMsgCell);
+                *buf_ptr = buf;
+                break;
+            }
+        case CHIMP_MSG_CELL_STR:
+            {
+                *ref = chimp_str_new (cell->str.data, cell->str.size);
+                if (*ref == NULL) {
+                    return CHIMP_FALSE;
+                }
+                buf += sizeof(ChimpMsgCell) + cell->str.size + 1;
+                *buf_ptr = buf;
+                break;
+            }
+        case CHIMP_MSG_CELL_ARRAY:
+            {
+                if (!chimp_msg_array_cell_decode (buf_ptr, ref)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        default:
+            chimp_bug (__FILE__, __LINE__, "unknown message cell type in decode: %d\n", cell->type);
+            return CHIMP_FALSE;
+    };
+    return CHIMP_TRUE;
+}
+
 ChimpRef *
 chimp_msg_unpack (ChimpMsgInternal *msg)
 {
-    size_t i;
-    ChimpRef *arr = chimp_array_new_with_capacity (msg->num_cells);
-    for (i = 0; i < msg->num_cells; i++) {
-        ChimpRef *ref;
-        ChimpMsgCell *cell = msg->cells + i;
-        switch (cell->type) {
-            case CHIMP_MSG_CELL_INT:
-                {
-                    ref = chimp_int_new (cell->int_);
-                    break;
-                }
-            case CHIMP_MSG_CELL_STR:
-                {
-                    ref = chimp_str_new (cell->str.data, cell->str.size);
-                    break;
-                }
-            default:
-                chimp_bug (__FILE__, __LINE__, "unexpected value type in packed msg: %d", cell->type);
-                return NULL;
-        };
-        if (ref == NULL) {
-            return NULL;
-        }
-        if (!chimp_array_push (arr, ref)) {
-            return NULL;
-        }
+    char *buf = (char *)msg->cell;
+    ChimpRef *value;
+    
+    if (!chimp_msg_value_cell_decode (&buf, &value)) {
+        return NULL;
     }
-    return arr;
+
+    return value;
 }
 
