@@ -991,29 +991,28 @@ error:
     return NULL;
 }
 
-extern int yyparse(ChimpRef **mod);
+extern int yyparse(ChimpRef *filename, ChimpRef **mod);
 extern void yylex_destroy(void);
 extern FILE *yyin;
-extern ChimpRef *chimp_source_file;
 
 ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename)
 {
     int rc;
+    ChimpRef *filename_obj;
     ChimpRef *mod;
     yyin = fopen (filename, "r");
     if (yyin == NULL) {
         return NULL;
     }
-    chimp_source_file = chimp_str_new (filename, strlen (filename));
-    if (chimp_source_file == NULL) {
+    filename_obj = chimp_str_new (filename, strlen (filename));
+    if (filename_obj == NULL) {
         fclose (yyin);
         return NULL;
     }
-    rc = yyparse(&mod);
+    rc = yyparse(filename_obj, &mod);
     fclose (yyin);
     yylex_destroy ();
-    chimp_source_file = NULL;
     if (rc == 0) {
         /* keep a ptr to main_mod on the stack so it doesn't get collected */
         if (name == NULL) {

@@ -12,9 +12,7 @@
 #include "chimp/object.h"
 #include "chimp/_parser_ext.h"
 
-void yyerror(const ChimpAstNodeLocation *loc, ChimpRef **mod, const char *format, ...);
-
-extern ChimpRef *chimp_source_file;
+void yyerror(const ChimpAstNodeLocation *loc, ChimpRef *filename, ChimpRef **mod, const char *format, ...);
 
 %}
 
@@ -33,22 +31,24 @@ extern ChimpRef *chimp_source_file;
 /* better error messages for free */
 %error-verbose
 
+%parse-param { ChimpRef *filename }
 /* We pass this around so we can avoid using a global */
 /* XXX odd. doing this seems to trigger %locations for yyerror too */
 /*     handy, but unexpected. */
 %parse-param { ChimpRef **mod }
+%lex-param { ChimpRef *filename }
 %lex-param { ChimpRef **mod }
 
 /* setting a custom YYLTYPE means bison no longer initializes yylval for us */
 %initial-action {
     memset (&@$, 0, sizeof(@$));
-    @$.filename = chimp_source_file;
+    @$.filename = filename;
     @$.first_line = @$.last_line = 1;
     @$.first_column = @$.last_column = 1;
 }
 
 %{
-extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef **mod);
+extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **mod);
 %}
 
 %expect 1
@@ -278,7 +278,7 @@ ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2, &@$); }
 ChimpRef *chimp_source_file = NULL;
 
 void
-yyerror (const ChimpAstNodeLocation *loc, ChimpRef **mod, const char *format, ...)
+yyerror (const ChimpAstNodeLocation *loc, ChimpRef *filename, ChimpRef **mod, const char *format, ...)
 {
     va_list args;
 
