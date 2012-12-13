@@ -31,7 +31,7 @@ static ChimpRef *
 _chimp_array_map (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
-    ChimpRef *result = chimp_array_new ();
+    ChimpRef *result = chimp_array_new_with_capacity (CHIMP_ARRAY_SIZE(self));
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpRef *fn_args;
@@ -209,15 +209,7 @@ chimp_array_class_bootstrap (void)
 ChimpRef *
 chimp_array_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ARRAY_INIT(ref);
-    CHIMP_ARRAY(ref)->items = NULL;
-    CHIMP_ARRAY(ref)->size = 0;
-    CHIMP_ARRAY(ref)->capacity = 0;
-    return ref;
+    return chimp_array_new_with_capacity (10);
 }
 
 ChimpRef *

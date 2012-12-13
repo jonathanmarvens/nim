@@ -191,7 +191,7 @@ chimp_vm_makearray (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     int32_t nargs = CHIMP_INSTR_ARG1(code, pc);
     int32_t i;
 
-    array = chimp_array_new ();
+    array = chimp_array_new_with_capacity (nargs);
     if (array == NULL) {
         return CHIMP_FALSE;
     }
