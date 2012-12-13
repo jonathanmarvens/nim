@@ -180,12 +180,12 @@ chimp_code_getattr (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
-chimp_code_call (ChimpRef *self)
+chimp_code_call (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {
         return CHIMP_FALSE;
     }
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(CALL);
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(CALL, (int32_t)nargs);
     return CHIMP_TRUE;
 }
 

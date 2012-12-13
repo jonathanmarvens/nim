@@ -599,11 +599,7 @@ chimp_compile_ast_expr_call (ChimpCodeCompiler *c, ChimpRef *expr)
         }
     }
 
-    if (!chimp_code_makearray (code, CHIMP_ARRAY_SIZE(args))) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_code_call (code)) {
+    if (!chimp_code_call (code, CHIMP_ARRAY_SIZE(args))) {
         return CHIMP_FALSE;
     }
 

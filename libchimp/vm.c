@@ -164,10 +164,16 @@ chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     ChimpRef *args;
     ChimpRef *target;
     ChimpRef *result;
+    uint8_t nargs;
+    uint8_t i;
 
-    args = chimp_vm_pop (vm);
+    nargs = CHIMP_INSTR_ARG1 (code, pc);
+    args = chimp_array_new_with_capacity (nargs);
     if (args == NULL) {
         return CHIMP_FALSE;
+    }
+    for (i = 0; i < nargs; i++) {
+        chimp_array_unshift (args, chimp_vm_pop (vm));
     }
     target = chimp_vm_pop (vm);
     if (target == NULL) {

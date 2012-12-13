@@ -89,7 +89,7 @@ chimp_bool_t
 chimp_code_getattr (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
-chimp_code_call (ChimpRef *self);
+chimp_code_call (ChimpRef *self, uint8_t nargs);
 
 chimp_bool_t
 chimp_code_ret (ChimpRef *self);
