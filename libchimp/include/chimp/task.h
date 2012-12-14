@@ -8,15 +8,6 @@ extern "C" {
 
 typedef struct _ChimpTaskInternal ChimpTaskInternal;
 
-typedef struct _ChimpTask {
-    ChimpAny any;
-    ChimpTaskInternal *local;
-    ChimpTaskInternal *remote;
-} ChimpTask;
-
-chimp_bool_t
-chimp_task_class_bootstrap (void);
-
 ChimpTaskInternal *
 chimp_task_new (ChimpRef *callable);
 
@@ -47,8 +38,6 @@ chimp_task_add_module (ChimpTaskInternal *task, ChimpRef *module);
 ChimpRef *
 chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name);
 
-#define CHIMP_TASK(ref)    CHIMP_CHECK_CAST(ChimpTask, (ref), CHIMP_VALUE_TYPE_TASK)
-
 #define CHIMP_CURRENT_TASK chimp_task_current ()
 #define CHIMP_CURRENT_STACK_FRAME \
     chimp_task_top_stack_frame (chimp_task_current())
@@ -61,8 +50,6 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name);
 
 #define CHIMP_POP_STACK_FRAME() \
     chimp_task_pop_stack_frame (chimp_task_current ())
-
-CHIMP_EXTERN_CLASS(task);
 
 #ifdef __cplusplus
 };

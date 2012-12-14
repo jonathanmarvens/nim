@@ -10,7 +10,6 @@
 #include "chimp/frame.h"
 #include "chimp/vm.h"
 
-ChimpRef *chimp_task_class = NULL;
 static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 
 enum {
@@ -58,18 +57,7 @@ struct _ChimpTaskInternal {
     int                flags;
     pthread_t          thread;
     pthread_mutex_t    lock;
-    pthread_cond_t     inbox_cond;
-    ChimpMsgInternal  *inbox;
 };
-
-static ChimpRef *
-_chimp_task_send (ChimpRef *self, ChimpRef *msg);
-
-static ChimpRef *
-_chimp_task_recv (ChimpRef *self, ChimpRef *args);
-
-static ChimpRef *
-_chimp_task_join (ChimpRef *self, ChimpRef *args);
 
 static void
 chimp_task_cleanup (ChimpTaskInternal *task);
@@ -115,11 +103,8 @@ chimp_task_thread_func (void *arg)
     pthread_cond_broadcast (&task->flags_cond);
 
     if (task->method != NULL) {
-        ChimpRef *pipe = chimp_class_new_instance (chimp_task_class, NULL);
-        ChimpRef *args = chimp_array_new_var (pipe, NULL);
-        CHIMP_TASK(pipe)->local = task;
-        /* XXX unsafe */
-        CHIMP_TASK(pipe)->remote = task->parent;
+        /* TODO pass pipe in as an argument here */
+        ChimpRef *args = chimp_array_new_var (NULL);
         if (chimp_vm_invoke (task->vm, task->method, args) == NULL) {
             chimp_gc_delete (task->gc);
             chimp_vm_delete (task->vm);
@@ -141,22 +126,6 @@ chimp_task_thread_func (void *arg)
     }
 
     return NULL;
-}
-
-chimp_bool_t
-chimp_task_class_bootstrap (void)
-{
-    chimp_task_class =
-        chimp_class_new (CHIMP_STR_NEW("task"), NULL);
-    if (chimp_task_class == NULL) {
-        return CHIMP_FALSE;
-    }
-    chimp_gc_make_root (NULL, chimp_task_class);
-    CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
-    chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
-    chimp_class_add_native_method (chimp_task_class, "recv", _chimp_task_recv);
-    chimp_class_add_native_method (chimp_task_class, "join", _chimp_task_join);
-    return CHIMP_TRUE;
 }
 
 ChimpTaskInternal *
@@ -181,21 +150,14 @@ chimp_task_new (ChimpRef *callable)
         CHIMP_FREE (task);
         return NULL;
     }
-    if (pthread_cond_init (&task->inbox_cond, NULL) != 0) {
-        pthread_mutex_destroy (&task->lock);
-        CHIMP_FREE (task);
-        return NULL;
-    }
     if (pthread_cond_init (&task->flags_cond, NULL) != 0) {
         pthread_mutex_destroy (&task->lock);
-        pthread_cond_destroy (&task->inbox_cond);
         CHIMP_FREE (task);
         return NULL;
     }
     CHIMP_TASK_LOCK(task);
     if (pthread_create (&task->thread, NULL, chimp_task_thread_func, task) != 0) {
         pthread_mutex_destroy (&task->lock);
-        pthread_cond_destroy (&task->inbox_cond);
         CHIMP_FREE (task);
         return NULL;
     }
@@ -231,15 +193,7 @@ chimp_task_new_main (void *stack_start)
         CHIMP_FREE (task);
         return NULL;
     }
-    if (pthread_cond_init (&task->inbox_cond, NULL) != 0) {
-        pthread_mutex_destroy (&task->lock);
-        chimp_gc_delete (task->gc);
-        chimp_vm_delete (task->vm);
-        CHIMP_FREE (task);
-        return NULL;
-    }
     if (pthread_cond_init (&task->flags_cond, NULL) != 0) {
-        pthread_cond_destroy (&task->inbox_cond);
         pthread_mutex_destroy (&task->lock);
         chimp_gc_delete (task->gc);
         chimp_vm_delete (task->vm);
@@ -413,69 +367,5 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name)
         task = task->parent;
     }
     return NULL;
-}
-
-static ChimpRef *
-_chimp_task_send (ChimpRef *self, ChimpRef *args)
-{
-    ChimpMsgInternal *temp;
-    ChimpTaskInternal *task;
-    ChimpRef *arg = CHIMP_ARRAY_ITEM(args, 0);
-
-    temp = chimp_msg_pack (arg);
-    if (temp == NULL) {
-        return chimp_false;
-    }
-
-    task = CHIMP_TASK(self)->remote;
-    CHIMP_TASK_LOCK(task);
-    while (!CHIMP_TASK_IS_READY(task)) {
-        if (CHIMP_TASK_IS_DONE(task)) {
-            return NULL;
-        }
-        pthread_cond_wait (&task->flags_cond, &task->lock);
-    }
-    while (task->inbox != NULL) {
-        pthread_cond_wait (&task->inbox_cond, &task->lock);
-    }
-    task->inbox = temp;
-    pthread_cond_broadcast (&task->inbox_cond);
-    CHIMP_TASK_UNLOCK(task);
-
-    return chimp_true;
-}
-
-static ChimpRef *
-_chimp_task_recv (ChimpRef *self, ChimpRef *args)
-{
-    ChimpTaskInternal *task;
-    ChimpRef *ref;
-    ChimpMsgInternal *temp = NULL;
-
-    task = CHIMP_TASK(self)->local;
-    CHIMP_TASK_LOCK(task);
-    while (!CHIMP_TASK_IS_READY(task)) {
-        if (CHIMP_TASK_IS_DONE(task)) {
-            return NULL;
-        }
-        pthread_cond_wait (&task->flags_cond, &task->lock);
-    }
-    while (task->inbox == NULL) {
-        pthread_cond_wait (&task->inbox_cond, &task->lock);
-    }
-    temp = task->inbox;
-    task->inbox = NULL;
-    pthread_cond_broadcast (&task->inbox_cond);
-    CHIMP_TASK_UNLOCK(task);
-    ref = chimp_msg_unpack (temp);
-    free (temp);
-    return ref;
-}
-
-static ChimpRef *
-_chimp_task_join (ChimpRef *self, ChimpRef *args)
-{
-    chimp_task_join (CHIMP_TASK(self)->remote);
-    return chimp_nil;
 }
 

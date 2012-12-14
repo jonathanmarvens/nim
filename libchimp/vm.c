@@ -376,14 +376,12 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (target == NULL) {
                     return CHIMP_FALSE;
                 }
-
                 task = chimp_task_new (target);
                 if (task == NULL) {
                     return CHIMP_FALSE;
                 }
-                result = chimp_class_new_instance (chimp_task_class, NULL);
-                CHIMP_TASK(result)->remote = task;
-                CHIMP_TASK(result)->local = CHIMP_CURRENT_TASK;
+                /* TODO create pipe here */
+                result = NULL;
 
                 if (!chimp_vm_push (vm, result)) {
                     return CHIMP_FALSE;
