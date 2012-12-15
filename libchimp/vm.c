@@ -362,9 +362,8 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 /*
                 ChimpRef *args;
                 */
-                ChimpTaskInternal *task;
+                ChimpRef *task;
                 ChimpRef *target;
-                ChimpRef *result;
 
                 /*
                 args = chimp_vm_pop (vm);
@@ -380,10 +379,8 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (task == NULL) {
                     return CHIMP_FALSE;
                 }
-                /* TODO create pipe here */
-                result = NULL;
 
-                if (!chimp_vm_push (vm, result)) {
+                if (!chimp_vm_push (vm, task)) {
                     return CHIMP_FALSE;
                 }
 

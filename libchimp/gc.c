@@ -122,6 +122,10 @@ type_name (ChimpValueType type)
             {
                 return "symtable";
             }
+        case CHIMP_VALUE_TYPE_TASK:
+            {
+                return "task";
+            }
         case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
             {
                 return "symtable.entry";
@@ -291,6 +295,7 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
                 CHIMP_FREE (CHIMP_FAST_CODE(ref)->bytecode);
                 break;
             }
+        case CHIMP_VALUE_TYPE_TASK:
         case CHIMP_VALUE_TYPE_MODULE:
         case CHIMP_VALUE_TYPE_FRAME:
         case CHIMP_VALUE_TYPE_METHOD:
@@ -515,6 +520,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
                 break;
             }
+        case CHIMP_VALUE_TYPE_TASK:
         case CHIMP_VALUE_TYPE_OBJECT:
         case CHIMP_VALUE_TYPE_STR:
         case CHIMP_VALUE_TYPE_INT:

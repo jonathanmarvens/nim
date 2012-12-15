@@ -269,6 +269,7 @@ chimp_core_startup (void *stack_start)
     if (!chimp_module_class_bootstrap ()) goto error;
     if (!chimp_symtable_class_bootstrap ()) goto error;
     if (!chimp_symtable_entry_class_bootstrap ()) goto error;
+    if (!chimp_task_class_bootstrap ()) goto error;
 
     /*
     if (!chimp_task_push_frame (main_task)) goto error;

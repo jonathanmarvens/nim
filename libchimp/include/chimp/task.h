@@ -2,14 +2,26 @@
 #define _CHIMP_TASK_H_INCLUDED_
 
 #include <chimp/vm.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct _ChimpTaskInternal ChimpTaskInternal;
 
-ChimpTaskInternal *
+typedef struct _ChimpTask {
+    ChimpAny           base;
+    ChimpTaskInternal *priv;
+} ChimpTask;
+
+chimp_bool_t
+chimp_task_class_bootstrap (void);
+
+ChimpRef *
 chimp_task_new (ChimpRef *callable);
+
+ChimpRef *
+chimp_task_from_remote (ChimpRef *remote);
 
 ChimpTaskInternal *
 chimp_task_new_main (void *stack_start);
@@ -19,6 +31,12 @@ chimp_task_main_ready (void);
 
 void
 chimp_task_main_delete ();
+
+chimp_bool_t
+chimp_task_send (ChimpRef *self, ChimpRef *value);
+
+ChimpRef *
+chimp_task_recv (ChimpRef *self);
 
 void
 chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task);
@@ -50,6 +68,10 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name);
 
 #define CHIMP_POP_STACK_FRAME() \
     chimp_task_pop_stack_frame (chimp_task_current ())
+
+#define CHIMP_TASK(ref)  CHIMP_CHECK_CAST(ChimpTask, (ref), CHIMP_VALUE_TYPE_TASK)
+
+CHIMP_EXTERN_CLASS(task);
 
 #ifdef __cplusplus
 };
