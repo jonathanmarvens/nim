@@ -19,6 +19,7 @@ enum {
     CHIMP_TASK_FLAG_READY      = 0x02,
     CHIMP_TASK_FLAG_DETACHED   = 0x04,
     CHIMP_TASK_FLAG_INBOX_FULL = 0x08,
+    CHIMP_TASK_FLAG_OUTBOX_FULL = 0x10,
     CHIMP_TASK_FLAG_DONE       = 0x80,
 };
 
@@ -43,6 +44,10 @@ enum {
     ((((task)->flags) & CHIMP_TASK_FLAG_INBOX_FULL) \
         == CHIMP_TASK_FLAG_INBOX_FULL)
 
+#define CHIMP_TASK_IS_OUTBOX_FULL(task) \
+    ((((task)->flags) & CHIMP_TASK_FLAG_OUTBOX_FULL) \
+        == CHIMP_TASK_FLAG_OUTBOX_FULL)
+
 #define CHIMP_TASK_LOCK(task) \
     pthread_mutex_lock (&(task)->lock)
 
@@ -65,7 +70,8 @@ struct _ChimpTaskInternal {
     pthread_t          thread;
     pthread_mutex_t    lock;
     int                refs;
-    ChimpMsgInternal  *msg;
+    ChimpMsgInternal  *inbox;
+    ChimpMsgInternal  *outbox;
 };
 
 static void
@@ -116,6 +122,7 @@ chimp_task_thread_func (void *arg)
             return NULL;
         }
         CHIMP_TASK(taskobj)->priv = task;
+        CHIMP_TASK(taskobj)->local = CHIMP_TRUE;
         task->refs++;
         task->self = taskobj;
         args = chimp_array_new_var (taskobj, NULL);
@@ -196,6 +203,7 @@ chimp_task_new (ChimpRef *callable)
         return NULL;
     }
     CHIMP_TASK(taskobj)->priv = task;
+    CHIMP_TASK(taskobj)->local = CHIMP_FALSE;
     task->refs++;
     CHIMP_TASK_UNLOCK(task);
     return taskobj;
@@ -287,15 +295,22 @@ chimp_task_send (ChimpRef *self, ChimpRef *value)
     }
 
     CHIMP_TASK_LOCK(task);
-    while (CHIMP_TASK_IS_INBOX_FULL(task)) {
+    while ((CHIMP_TASK(self)->local && CHIMP_TASK_IS_OUTBOX_FULL(task)) ||
+            (!CHIMP_TASK(self)->local && CHIMP_TASK_IS_INBOX_FULL(task))) {
         if (pthread_cond_wait (&task->flags_cond, &task->lock) != 0) {
             CHIMP_FREE(msg);
             CHIMP_TASK_UNLOCK(task);
             return CHIMP_FALSE;
         }
     }
-    task->msg = msg;
-    task->flags |= CHIMP_TASK_FLAG_INBOX_FULL;
+    if (!CHIMP_TASK(self)->local) {
+        task->inbox = msg;
+        task->flags |= CHIMP_TASK_FLAG_INBOX_FULL;
+    }
+    else {
+        task->outbox = msg;
+        task->flags |= CHIMP_TASK_FLAG_OUTBOX_FULL;
+    }
     if (pthread_cond_broadcast (&task->flags_cond) != 0) {
         CHIMP_TASK_UNLOCK(task);
         return CHIMP_FALSE;
@@ -311,15 +326,23 @@ chimp_task_recv (ChimpRef *self)
     ChimpTaskInternal *task = CHIMP_TASK(self)->priv;
 
     CHIMP_TASK_LOCK(task);
-    while (!CHIMP_TASK_IS_INBOX_FULL(task)) {
+    while ((!CHIMP_TASK(self)->local && !CHIMP_TASK_IS_OUTBOX_FULL(task)) ||
+            (CHIMP_TASK(self)->local && !CHIMP_TASK_IS_INBOX_FULL(task))) {
         if (pthread_cond_wait (&task->flags_cond, &task->lock) != 0) {
             CHIMP_TASK_UNLOCK(task);
             return NULL;
         }
     }
-    msg = task->msg;
-    task->msg = NULL;
-    task->flags &= ~CHIMP_TASK_FLAG_INBOX_FULL;
+    if (CHIMP_TASK(self)->local) {
+        msg = task->inbox;
+        task->inbox = NULL;
+        task->flags &= ~CHIMP_TASK_FLAG_INBOX_FULL;
+    }
+    else {
+        msg = task->outbox;
+        task->outbox = NULL;
+        task->flags &= ~CHIMP_TASK_FLAG_OUTBOX_FULL;
+    }
     if (pthread_cond_broadcast (&task->flags_cond) != 0) {
         CHIMP_TASK_UNLOCK(task);
         return NULL;
