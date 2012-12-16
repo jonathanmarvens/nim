@@ -138,7 +138,13 @@ chimp_task_thread_func (void *arg)
      */
     CHIMP_TASK_LOCK(task);
     if (CHIMP_TASK_IS_DETACHED(task)) {
-        chimp_task_cleanup (task);
+        task->refs--;
+        if (task->refs == 0) {
+            chimp_task_cleanup (task);
+        }
+        else {
+            CHIMP_TASK_UNLOCK(task);
+        }
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -209,20 +215,6 @@ chimp_task_new (ChimpRef *callable)
     return taskobj;
 }
 
-ChimpRef *
-chimp_task_from_remote (ChimpRef *remote)
-{
-    ChimpRef *local = chimp_class_new_instance (chimp_task_class, NULL);
-    if (local == NULL) {
-        return NULL;
-    }
-    CHIMP_TASK_LOCK(CHIMP_TASK(remote)->priv);
-    CHIMP_TASK(local)->priv = CHIMP_TASK(remote)->priv;
-    CHIMP_TASK(remote)->priv->refs++;
-    CHIMP_TASK_UNLOCK(CHIMP_TASK(remote)->priv);
-    return local;
-}
-
 ChimpTaskInternal *
 chimp_task_new_main (void *stack_start)
 {
@@ -270,8 +262,8 @@ chimp_task_main_ready (void)
 
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
     task->flags |= CHIMP_TASK_FLAG_READY;
-    CHIMP_TASK_UNLOCK(task);
     pthread_cond_broadcast (&task->flags_cond);
+    CHIMP_TASK_UNLOCK(task);
     return CHIMP_TRUE;
 }
 
@@ -395,9 +387,9 @@ chimp_task_cleanup (ChimpTaskInternal *task)
         task->parent = NULL;
     }
 
+    CHIMP_TASK_UNLOCK (task);
     chimp_vm_delete (task->vm);
     chimp_gc_delete (task->gc);
-    CHIMP_TASK_UNLOCK (task);
     pthread_mutex_destroy (&task->lock);
     CHIMP_FREE (task);
 }
@@ -419,7 +411,13 @@ chimp_task_join (ChimpTaskInternal *task)
          *       unlocked/freed by the next call
          */
 
-        chimp_task_cleanup (task);
+        task->refs--;
+        if (task->refs == 0) {
+            chimp_task_cleanup (task);
+        }
+        else {
+            CHIMP_TASK_UNLOCK(task);
+        }
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -506,18 +504,18 @@ _chimp_task_init (ChimpRef *self, ChimpRef *args)
     return self;
 }
 
-#if 0
 static void
 _chimp_task_dtor (ChimpRef *self)
 {
     CHIMP_TASK_LOCK(CHIMP_TASK(self)->priv);
     CHIMP_TASK(self)->priv->refs--;
     if (CHIMP_TASK(self)->priv->refs == 0) {
-        printf ("task would be dtored here\n");
+        chimp_task_cleanup (CHIMP_TASK(self)->priv);
     }
-    CHIMP_TASK_UNLOCK(CHIMP_TASK(self)->priv);
+    else {
+        CHIMP_TASK_UNLOCK(CHIMP_TASK(self)->priv);
+    }
 }
-#endif
 
 static ChimpRef *
 _chimp_task_send (ChimpRef *self, ChimpRef *args)
@@ -547,9 +545,7 @@ chimp_task_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_task_class)->init = _chimp_task_init;
-#if 0
     CHIMP_CLASS(chimp_task_class)->dtor = _chimp_task_dtor;
-#endif
     CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
