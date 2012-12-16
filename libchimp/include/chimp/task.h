@@ -22,7 +22,7 @@ ChimpRef *
 chimp_task_new (ChimpRef *callable);
 
 ChimpRef *
-chimp_task_from_remote (ChimpRef *remote);
+chimp_task_new_from_internal (ChimpTaskInternal *task);
 
 ChimpTaskInternal *
 chimp_task_new_main (void *stack_start);
@@ -32,6 +32,12 @@ chimp_task_main_ready (void);
 
 void
 chimp_task_main_delete ();
+
+void
+chimp_task_ref (ChimpTaskInternal *task);
+
+void
+chimp_task_unref (ChimpTaskInternal *task);
 
 chimp_bool_t
 chimp_task_send (ChimpRef *self, ChimpRef *value);

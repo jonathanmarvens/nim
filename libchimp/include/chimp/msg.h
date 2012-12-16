@@ -5,6 +5,7 @@
 
 #include <chimp/any.h>
 #include <chimp/gc.h>
+#include <chimp/task.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +15,8 @@ typedef struct _ChimpMsgCell {
     enum {
         CHIMP_MSG_CELL_INT,
         CHIMP_MSG_CELL_STR,
-        CHIMP_MSG_CELL_ARRAY
+        CHIMP_MSG_CELL_ARRAY,
+        CHIMP_MSG_CELL_TASK
     } type;
     union {
         int64_t  int_;
@@ -26,6 +28,7 @@ typedef struct _ChimpMsgCell {
             struct _ChimpMsgCell *items;
             size_t                size;
         } array;
+        ChimpTaskInternal    *task;
     };
 } ChimpMsgCell;
 

@@ -215,6 +215,28 @@ chimp_task_new (ChimpRef *callable)
     return taskobj;
 }
 
+ChimpRef *
+chimp_task_new_from_internal (ChimpTaskInternal *priv)
+{
+    ChimpRef *ref = chimp_class_new_instance (chimp_task_class, NULL);
+    if (ref == NULL) {
+        return NULL;
+    }
+    /* XXX blatant copy/paste from chimp_task_new */
+    CHIMP_TASK_LOCK(priv);
+    while (!CHIMP_TASK_IS_READY(priv)) {
+        if (pthread_cond_wait (&priv->flags_cond, &priv->lock) != 0) {
+            CHIMP_TASK_UNLOCK(priv);
+            return NULL;
+        }
+    }
+    CHIMP_TASK(ref)->priv = priv;
+    CHIMP_TASK(ref)->local = CHIMP_FALSE;
+    priv->refs++;
+    CHIMP_TASK_UNLOCK(priv);
+    return ref;
+}
+
 ChimpTaskInternal *
 chimp_task_new_main (void *stack_start)
 {
@@ -273,6 +295,22 @@ chimp_task_main_delete ()
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
     CHIMP_TASK_LOCK(task);
     chimp_task_cleanup(task);
+}
+
+void
+chimp_task_ref (ChimpTaskInternal *task)
+{
+    CHIMP_TASK_LOCK(task);
+    task->refs++;
+    CHIMP_TASK_UNLOCK(task);
+}
+
+void
+chimp_task_unref (ChimpTaskInternal *task)
+{
+    CHIMP_TASK_LOCK(task);
+    task->refs--;
+    CHIMP_TASK_UNLOCK(task);
 }
 
 chimp_bool_t
@@ -543,6 +581,12 @@ _chimp_task_join (ChimpRef *self, ChimpRef *args)
     return chimp_nil;
 }
 
+static ChimpRef *
+_chimp_task_str (ChimpRef *self)
+{
+    return chimp_str_new_format ("<task id:0x%X>", CHIMP_TASK(self)->priv);
+}
+
 chimp_bool_t
 chimp_task_class_bootstrap (void)
 {
@@ -553,6 +597,7 @@ chimp_task_class_bootstrap (void)
     }
     CHIMP_CLASS(chimp_task_class)->init = _chimp_task_init;
     CHIMP_CLASS(chimp_task_class)->dtor = _chimp_task_dtor;
+    CHIMP_CLASS(chimp_task_class)->str  = _chimp_task_str;
     CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
