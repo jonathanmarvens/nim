@@ -30,12 +30,8 @@ ping me {
 }
 
 main argv {
-  var ponger = spawn { |me|
-    pong(me);
-  };
-  var pinger = spawn { |me|
-    ping(me);
-  };
+  var ponger = spawn { |me| pong(me); };
+  var pinger = spawn { |me| ping(me); };
   ponger.send(pinger);
   pinger.send(ponger);
   ponger.join();
