@@ -19,7 +19,7 @@ chimp_module_init (ChimpRef *self, ChimpRef *args)
         }
         CHIMP_MODULE(self)->locals = temp;
     }
-    return chimp_nil;
+    return self;
 }
 
 static ChimpRef *

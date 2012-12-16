@@ -35,7 +35,8 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
         else {
             ctor = chimp_object_getattr_str (ref, "init");
             if (ctor != NULL && ctor != chimp_nil) {
-                if (chimp_object_call (ctor, args) == NULL) {
+                ref = chimp_object_call (ctor, args);
+                if (ref == NULL) {
                     return NULL;
                 }
             }
@@ -56,9 +57,11 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
     }
     else if (CHIMP_ARRAY_SIZE(args) == 1) {
         ChimpRef *temp = CHIMP_ARRAY_FIRST(args);
-        if (CHIMP_ANY_CLASS(temp) != chimp_str_class) {
-            temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
+        /* optimization for str("some string") */
+        if (CHIMP_ANY_CLASS(temp) == chimp_str_class) {
+            return temp;
         }
+        temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
         CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(temp));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
     }
@@ -73,7 +76,10 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
 
         /* 1. convert all constructor args to strings */
         for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-            ChimpRef *str = chimp_object_str (CHIMP_ARRAY_ITEM(args, i));
+            ChimpRef *str = CHIMP_ARRAY_ITEM(args, i);
+            if (CHIMP_ANY_CLASS(str) != chimp_str_class) {
+                str = chimp_object_str (CHIMP_ARRAY_ITEM(args, i));
+            }
             if (str == NULL) {
                 return NULL;
             }
@@ -109,7 +115,7 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         }
         *p = '\0';
     }
-    return chimp_nil;
+    return self;
 }
 
 static void
@@ -202,8 +208,7 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_str_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
-    chimp_class_add_native_method (chimp_str_class, "init", chimp_str_init);
-    /* CHIMP_CLASS(chimp_str_class)->init = chimp_str_init; */
+    CHIMP_CLASS(chimp_str_class)->init = chimp_str_init;
     CHIMP_CLASS(chimp_str_class)->dtor = chimp_str_dtor;
 
     return CHIMP_TRUE;
