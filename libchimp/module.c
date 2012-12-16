@@ -71,9 +71,7 @@ chimp_module_class_bootstrap (void)
     CHIMP_CLASS(chimp_module_class)->inst_type = CHIMP_VALUE_TYPE_MODULE;
     CHIMP_CLASS(chimp_module_class)->str = chimp_module_str;
     CHIMP_CLASS(chimp_module_class)->getattr = chimp_module_getattr;
-    if (!chimp_class_add_native_method (chimp_module_class, "init", chimp_module_init)) {
-        return CHIMP_FALSE;
-    }
+    CHIMP_CLASS(chimp_module_class)->init = chimp_module_init;
     return CHIMP_TRUE;
 }
 
