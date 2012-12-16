@@ -315,6 +315,7 @@ ChimpRef *
 chimp_task_recv (ChimpRef *self)
 {
     ChimpMsgInternal *msg;
+    ChimpRef *value;
     ChimpTaskInternal *task = CHIMP_TASK(self)->priv;
 
     CHIMP_TASK_LOCK(task);
@@ -336,12 +337,18 @@ chimp_task_recv (ChimpRef *self)
         task->flags &= ~CHIMP_TASK_FLAG_OUTBOX_FULL;
     }
     if (pthread_cond_broadcast (&task->flags_cond) != 0) {
+        CHIMP_FREE (msg);
         CHIMP_TASK_UNLOCK(task);
         return NULL;
     }
     CHIMP_TASK_UNLOCK(task);
 
-    return chimp_msg_unpack (msg);
+    value = chimp_msg_unpack (msg);
+    CHIMP_FREE (msg);
+    if (value == NULL) {
+        return NULL;
+    }
+    return value;
 }
 
 static void
