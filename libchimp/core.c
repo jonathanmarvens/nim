@@ -236,9 +236,15 @@ chimp_core_startup (void *stack_start)
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_str_class);
 
+    if (!chimp_method_class_bootstrap ()) goto error;
+
     if (!_chimp_bootstrap_L3 ()) {
         return CHIMP_FALSE;
     }
+
+    if (!chimp_int_class_bootstrap ()) goto error;
+    if (!chimp_array_class_bootstrap ()) goto error;
+    if (!chimp_hash_class_bootstrap ()) goto error;
 
     chimp_nil_class = chimp_class_new (CHIMP_STR_NEW("nil"), chimp_object_class);
     if (chimp_nil_class == NULL) goto error;
@@ -260,10 +266,6 @@ chimp_core_startup (void *stack_start)
     if (chimp_false == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_false);
 
-    if (!chimp_int_class_bootstrap ()) goto error;
-    if (!chimp_array_class_bootstrap ()) goto error;
-    if (!chimp_hash_class_bootstrap ()) goto error;
-    if (!chimp_method_class_bootstrap ()) goto error;
     if (!chimp_frame_class_bootstrap ()) goto error;
     if (!chimp_code_class_bootstrap ()) goto error;
     if (!chimp_module_class_bootstrap ()) goto error;
@@ -281,11 +283,11 @@ chimp_core_startup (void *stack_start)
     chimp_task_add_module (NULL, chimp_init_os_module ());
     chimp_task_add_module (NULL, chimp_init_gc_module ());
 
-    if (!chimp_core_init_builtins ()) {
-        goto error;
-    }
+    if (!chimp_core_init_builtins ()) goto error;
 
-    return chimp_task_main_ready ();
+    if (!chimp_task_main_ready ()) goto error;
+
+    return CHIMP_TRUE;
 
 error:
 

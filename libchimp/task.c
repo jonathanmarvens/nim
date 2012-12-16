@@ -232,12 +232,6 @@ chimp_task_new_main (void *stack_start)
 
     chimp_task_init_per_thread_key_once (task);
 
-    task->vm = chimp_vm_new ();
-    if (task->vm == NULL) {
-        chimp_gc_delete (task->gc);
-        CHIMP_FREE (task);
-        return NULL;
-    }
     if (pthread_mutex_init (&task->lock, NULL) != 0) {
         chimp_gc_delete (task->gc);
         chimp_vm_delete (task->vm);
@@ -261,6 +255,12 @@ chimp_task_main_ready (void)
     /* NOTE: lock still held by chimp_task_main_new here */
 
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
+    task->vm = chimp_vm_new ();
+    if (task->vm == NULL) {
+        chimp_gc_delete (task->gc);
+        CHIMP_FREE (task);
+        return CHIMP_FALSE;
+    }
     task->flags |= CHIMP_TASK_FLAG_READY;
     pthread_cond_broadcast (&task->flags_cond);
     CHIMP_TASK_UNLOCK(task);

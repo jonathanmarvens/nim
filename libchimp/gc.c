@@ -268,13 +268,8 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
         return;
     }
 
-    /* XXX need to check this because we're using e.g. array, hash, etc. before
-     *     we have created their class objects (this is a bug).
-     */
-    if (CHIMP_ANY_CLASS(ref) != NULL) {
-        if (CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor) {
-            CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor (ref);
-        }
+    if (CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor) {
+        CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor (ref);
     }
 
     switch (CHIMP_FAST_REF_TYPE(ref)) {
