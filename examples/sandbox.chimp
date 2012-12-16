@@ -13,7 +13,7 @@ main argv {
 
   io.print(hash(), z, y, str(z), {"foo": "bar", "bar": "baz"}, true, 9223372036854775807);
 
-  var some_func = fn x { io.print(str("a function! ", x)); };
+  var some_func = fn { |x| io.print(str("a function! ", x)); };
   some_func("testing");
 
   var num_array = [1, 2, 3];
@@ -25,7 +25,7 @@ main argv {
   io.print(str_array);
   num_array.each(io.print);
 
-  if ["a", "b", "c"].filter(fn x { ret x != "b"; }).contains("b") {
+  if ["a", "b", "c"].filter(fn { |x| ret x != "b"; }).contains("b") {
     panic "array should not contain 'b'";
   }
 

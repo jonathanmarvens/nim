@@ -53,6 +53,7 @@
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
 ";"                         { CHIMP_TOKEN(TOK_SEMICOLON) }
 ","                         { CHIMP_TOKEN(TOK_COMMA) }
+"|"                         { CHIMP_TOKEN(TOK_PIPE) }
 "["                         { CHIMP_TOKEN(TOK_LSQBRACKET) }
 "]"                         { CHIMP_TOKEN(TOK_RSQBRACKET) }
 "="                         { CHIMP_TOKEN(TOK_ASSIGN) }

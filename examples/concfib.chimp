@@ -8,9 +8,9 @@ fib n {
 }
 
 main argv {
-  var f3 = spawn me { me.send(fib(30)); };
-  var f2 = spawn me { me.send(fib(20)); };
-  var f1 = spawn me { me.send(fib(10)); };
+  var f3 = spawn { |me| me.send(fib(30)); };
+  var f2 = spawn { |me| me.send(fib(20)); };
+  var f1 = spawn { |me| me.send(fib(10)); };
 
   io.print(f1.recv());
   io.print(f2.recv());

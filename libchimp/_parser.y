@@ -56,7 +56,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_TRUE TOK_FALSE TOK_NIL
 %token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
 %token TOK_FULLSTOP
-%token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE
+%token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
 %token TOK_SPAWN
@@ -166,8 +166,11 @@ expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3
      | expr TOK_MINUS expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_SUB, $1, $3, &@$); }
      | expr TOK_ASTERISK expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_MUL, $1, $3, &@$); }
      | expr TOK_SLASH expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
-     | TOK_FN opt_params TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_fn ($2, $4, &@$); }
-     | TOK_SPAWN param TOK_LBRACE opt_stmts TOK_RBRACE { $$ = chimp_ast_expr_new_spawn (chimp_array_new_var ($2, NULL), $4, &@$); }
+     | TOK_FN TOK_LBRACE TOK_PIPE opt_params TOK_PIPE opt_stmts TOK_RBRACE {
+        $$ = chimp_ast_expr_new_fn ($4, $6, &@$); }
+     | TOK_SPAWN TOK_LBRACE TOK_PIPE param TOK_PIPE opt_stmts TOK_RBRACE {
+        $$ = chimp_ast_expr_new_spawn (chimp_array_new_var ($4, NULL), $6, &@$);
+     }
      | simple opt_simple_tail {
         $$ = $1;
         if ($2 != NULL) {

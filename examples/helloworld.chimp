@@ -14,6 +14,5 @@ ohai name {
 main argv {
   var name = readname ();
   ohai (name);
-  io.print (argv);
 }
 
