@@ -1,0 +1,43 @@
+use io;
+
+pong me {
+  io.print(str("ponger starts: ", me));
+  var pinger = me.recv();
+  io.print(str("ponger got pinger: ", pinger));
+  var msg = me.recv();
+  while msg != "finished" {
+    io.print(msg);
+    io.print("ponger sending");
+    pinger.send("pong");
+    io.print("ponger waiting");
+    msg = me.recv();
+  }
+}
+
+ping me {
+  io.print(str("pinger starts: ", me));
+  var ponger = me.recv();
+  io.print(str("pinger got ponger: ", ponger));
+  var i = 0;
+  while i < 3 {
+    io.print("pinger sending");
+    ponger.send("ping");
+    io.print("pinger waiting");
+    io.print(me.recv());
+    i = i + 1;
+  }
+  ponger.send("finished");
+}
+
+main argv {
+  var ponger = spawn { |me|
+    pong(me);
+  };
+  var pinger = spawn { |me|
+    ping(me);
+  };
+  ponger.send(pinger);
+  pinger.send(ponger);
+  ponger.join();
+}
+
