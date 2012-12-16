@@ -271,51 +271,6 @@ chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
     if (CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor) {
         CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->dtor (ref);
     }
-
-    switch (CHIMP_FAST_REF_TYPE(ref)) {
-        case CHIMP_VALUE_TYPE_STR:
-            {
-                CHIMP_FREE (CHIMP_FAST_STR(ref)->data);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_CLASS:
-            {
-                chimp_lwhash_delete (CHIMP_FAST_CLASS(ref)->methods);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_ARRAY:
-            {
-                CHIMP_FREE (CHIMP_FAST_ARRAY(ref)->items);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_HASH:
-            {
-                CHIMP_FREE (CHIMP_FAST_HASH(ref)->keys);
-                CHIMP_FREE (CHIMP_FAST_HASH(ref)->values);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_CODE:
-            {
-                CHIMP_FREE (CHIMP_FAST_CODE(ref)->bytecode);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_TASK:
-        case CHIMP_VALUE_TYPE_MODULE:
-        case CHIMP_VALUE_TYPE_FRAME:
-        case CHIMP_VALUE_TYPE_METHOD:
-        case CHIMP_VALUE_TYPE_OBJECT:
-        case CHIMP_VALUE_TYPE_INT:
-        case CHIMP_VALUE_TYPE_AST_MOD:
-        case CHIMP_VALUE_TYPE_AST_STMT:
-        case CHIMP_VALUE_TYPE_AST_DECL:
-        case CHIMP_VALUE_TYPE_AST_EXPR:
-        case CHIMP_VALUE_TYPE_SYMTABLE:
-        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
-            break;
-        default:
-            chimp_bug (__FILE__, __LINE__, "unknown ref type: %s", type_name (ref->value.any.type));
-            return;
-    };
 }
 
 void

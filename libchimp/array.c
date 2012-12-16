@@ -186,6 +186,12 @@ chimp_array_str (ChimpRef *self)
     return chimp_str_new_take (data, total_len-1);
 }
 
+static void
+_chimp_array_dtor (ChimpRef *self)
+{
+    CHIMP_FREE (CHIMP_ARRAY(self)->items);
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -196,6 +202,7 @@ chimp_array_class_bootstrap (void)
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
+    CHIMP_CLASS(chimp_array_class)->dtor = _chimp_array_dtor;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);

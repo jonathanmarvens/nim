@@ -55,7 +55,10 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         CHIMP_STR(self)->size = 0;
     }
     else if (CHIMP_ARRAY_SIZE(args) == 1) {
-        ChimpRef *temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
+        ChimpRef *temp = CHIMP_ARRAY_FIRST(args);
+        if (CHIMP_ANY_CLASS(temp) != chimp_str_class) {
+            temp = chimp_object_str (CHIMP_ARRAY_FIRST(args));
+        }
         CHIMP_STR(self)->data = strdup (CHIMP_STR_DATA(temp));
         CHIMP_STR(self)->size = strlen (CHIMP_STR_DATA(self));
     }
@@ -107,6 +110,12 @@ chimp_str_init (ChimpRef *self, ChimpRef *args)
         *p = '\0';
     }
     return chimp_nil;
+}
+
+static void
+chimp_str_dtor (ChimpRef *self)
+{
+    CHIMP_FREE(CHIMP_STR(self)->data);
 }
 
 ChimpRef *
@@ -172,12 +181,19 @@ chimp_class_add_native_method (ChimpRef *self, const char *name, ChimpNativeMeth
     return chimp_class_add_method (self, name_ref, method_ref);
 }
 
+static void
+chimp_class_dtor (ChimpRef *self)
+{
+    chimp_lwhash_delete (CHIMP_CLASS(self)->methods);
+}
+
 chimp_bool_t
 _chimp_bootstrap_L3 (void)
 {
     CHIMP_CLASS(chimp_class_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_class_class)->inst_type = CHIMP_VALUE_TYPE_CLASS;
+    CHIMP_CLASS(chimp_class_class)->dtor = chimp_class_dtor;
 
     CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_object_class)->call = chimp_class_call;
@@ -187,6 +203,8 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
     chimp_class_add_native_method (chimp_str_class, "init", chimp_str_init);
+    /* CHIMP_CLASS(chimp_str_class)->init = chimp_str_init; */
+    CHIMP_CLASS(chimp_str_class)->dtor = chimp_str_dtor;
 
     return CHIMP_TRUE;
 }

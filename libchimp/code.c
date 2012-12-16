@@ -6,6 +6,12 @@
 
 ChimpRef *chimp_code_class = NULL;
 
+static void
+_chimp_code_dtor (ChimpRef *self)
+{
+    CHIMP_FREE (CHIMP_CODE(self)->bytecode);
+}
+
 chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
@@ -14,6 +20,7 @@ chimp_code_class_bootstrap (void)
     if (chimp_code_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_code_class)->dtor = _chimp_code_dtor;
     chimp_gc_make_root (NULL, chimp_code_class);
     return CHIMP_TRUE;
 }
