@@ -1,17 +1,16 @@
-* Return value of spawn needs to be one side of a duplex pipe.
 * More tests.
 * Revisit the bytecode format.
   - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
-  - MAKEARRAY for every call is probably slow/dumb.
+* Syntax for structured data. (class definitions?)
 * Bitwise operators.
 * Modulo operator.
 * In-place operators for integers: +=, -=, /=, \*=, etc.
+* Unary operators ++, --
 * chimp_hash_get returning NULL and chimp\_nil completely sucks.
   Find a better way.
-* Exceptions & exception handling.
+* Error handling.
 * File I/O.
-* Custom native types.
-* Class definitions.
+* Sockets.
 * Expose methods on more classes.
 * Rubyish symbols?
 * Annotations?
@@ -23,10 +22,6 @@
   set at destruction. Either figure out a way to let VMs mark themselves, or
   provide a means of clearing elements from the root set.
 * Explicit mallocs for lwhashes. Should be managed by the GC?
-* If a task creates a child task, I think (but haven't proven) that it's
-  safe for the child to hold a reference to objects in the parent's GC,
-  but not vice versa (i.e. values in new GCs may reference values in old GCs).
-  XXX pretty sure this is dumb ^^
 * Are we rooting all the core classes correctly?
 * Arbitrary precision for ChimpInt.
 * ChimpFloat?
