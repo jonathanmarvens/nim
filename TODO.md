@@ -1,6 +1,7 @@
 * Error handling.
 * Unit testing API.
 * More tests.
+* Less semicolons.
 * Revisit the bytecode format.
   - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
 * The task API is sucky and inconsistent with the rest of the codebase
