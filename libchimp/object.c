@@ -8,17 +8,6 @@
         CHIMP_ANY(ref)->klass = ((c) == NULL ? chimp_object_class : (c)); \
     } while (0)
 
-ChimpRef *
-chimp_object_new (ChimpRef *klass)
-{
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_OBJECT_INIT(ref, klass);
-    return ref;
-}
-
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b)
 {

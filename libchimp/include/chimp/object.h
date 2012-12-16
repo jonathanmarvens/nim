@@ -45,9 +45,6 @@ typedef union _ChimpValue {
     ChimpAstExpr        ast_expr;
 } ChimpValue;
 
-ChimpRef *
-chimp_object_new (ChimpRef *klass);
-
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
 
