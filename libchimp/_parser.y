@@ -59,8 +59,9 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
-%token TOK_SPAWN
+%token TOK_SPAWN TOK_NOT
 
+%right TOK_NOT
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
 %left TOK_PLUS TOK_MINUS
@@ -154,7 +155,8 @@ var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->iden
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3, &@$); }
        ;
 
-expr : expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3, &@$); }
+expr : TOK_NOT expr { $$ = chimp_ast_expr_new_not ($2, &@$); }
+     | expr TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3, &@$); }
      | expr TOK_AND expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3, &@$); }
      | expr TOK_GT expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GT, $1, $3, &@$); }
      | expr TOK_GTE expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GTE, $1, $3, &@$); }

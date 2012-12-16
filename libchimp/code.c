@@ -227,6 +227,16 @@ chimp_code_spawn (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_code_not (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(NOT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_makearray (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {
@@ -504,6 +514,10 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "MUL";
         case CHIMP_OPCODE_DIV:
              return "DIV";
+        case CHIMP_OPCODE_SPAWN:
+             return "SPAWN";
+        case CHIMP_OPCODE_NOT:
+             return "NOT";
         default:
              return "???OPCODE???";
     };

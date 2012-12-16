@@ -262,6 +262,12 @@ chimp_vm_pushfalse (ChimpVM *vm)
     return chimp_vm_push (vm, chimp_false);
 }
 
+static chimp_bool_t
+chimp_vm_truthy (ChimpRef *value)
+{
+    return value != NULL && value != chimp_nil && value != chimp_false;
+}
+
 static ChimpCmpResult
 chimp_vm_cmp (ChimpVM *vm)
 {
@@ -359,18 +365,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_SPAWN:
             {
-                /*
-                ChimpRef *args;
-                */
                 ChimpRef *task;
                 ChimpRef *target;
 
-                /*
-                args = chimp_vm_pop (vm);
-                if (args == NULL) {
-                    return CHIMP_FALSE;
-                }
-                */
                 target = chimp_vm_pop (vm);
                 if (target == NULL) {
                     return CHIMP_FALSE;
@@ -384,6 +381,25 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return CHIMP_FALSE;
                 }
 
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_NOT:
+            {
+                ChimpRef *value = chimp_vm_pop (vm);
+                if (value == NULL) {
+                    return CHIMP_FALSE;
+                }
+                if (chimp_vm_truthy (value)) {
+                    if (!chimp_vm_push (vm, chimp_false)) {
+                        return CHIMP_FALSE;
+                    }
+                }
+                else {
+                    if (!chimp_vm_push (vm, chimp_true)) {
+                        return CHIMP_FALSE;
+                    }
+                }
                 pc++;
                 break;
             }
@@ -412,8 +428,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
                     return NULL;
                 }
-                /* TODO test for truthiness */
-                if (value == chimp_true || value != chimp_nil) {
+                if (chimp_vm_truthy (value)) {
                     pc = CHIMP_INSTR_ADDR(code, pc);
                 }
                 else {

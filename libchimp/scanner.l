@@ -46,6 +46,7 @@
 "panic"                     { CHIMP_TOKEN(TOK_PANIC) }
 "fn"                        { CHIMP_TOKEN(TOK_FN) }
 "var"                       { CHIMP_TOKEN(TOK_VAR) }
+"not"                       { CHIMP_TOKEN(TOK_NOT) }
 "spawn"                     { CHIMP_TOKEN(TOK_SPAWN) }
 [ \t\r]                     { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }

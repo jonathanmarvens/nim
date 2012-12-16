@@ -371,6 +371,12 @@ chimp_symtable_visit_expr_spawn (ChimpRef *self, ChimpRef *expr)
 }
 
 static chimp_bool_t
+chimp_symtable_visit_expr_not (ChimpRef *self, ChimpRef *expr)
+{
+    return chimp_symtable_visit_expr (self, CHIMP_AST_EXPR(expr)->not.value);
+}
+
+static chimp_bool_t
 chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
 {
     switch (CHIMP_AST_EXPR_TYPE(expr)) {
@@ -398,6 +404,8 @@ chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
             return chimp_symtable_visit_expr_fn (self, expr);
         case CHIMP_AST_EXPR_SPAWN:
             return chimp_symtable_visit_expr_spawn (self, expr);
+        case CHIMP_AST_EXPR_NOT:
+            return chimp_symtable_visit_expr_not (self, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;

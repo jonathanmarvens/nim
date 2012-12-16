@@ -43,6 +43,10 @@ main argv {
     i = i + 1;
   }
 
+  while not true {
+    io.print ("this should never run");
+  }
+
   io.print ("Enter your name:");
   var name = io.readline();
   if name == "dude" {

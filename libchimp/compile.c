@@ -76,6 +76,9 @@ static chimp_bool_t
 chimp_compile_ast_expr_spawn (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
+chimp_compile_ast_expr_not (ChimpCodeCompiler *c, ChimpRef *expr);
+
+static chimp_bool_t
 chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
@@ -573,6 +576,8 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_fn (c, expr);
         case CHIMP_AST_EXPR_SPAWN:
             return chimp_compile_ast_expr_spawn (c, expr);
+        case CHIMP_AST_EXPR_NOT:
+            return chimp_compile_ast_expr_not (c, expr);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;
@@ -932,6 +937,21 @@ chimp_compile_ast_expr_spawn (ChimpCodeCompiler *c, ChimpRef *expr)
     }
 
     if (!chimp_code_spawn (code)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_expr_not (ChimpCodeCompiler *c, ChimpRef *expr)
+{
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->not.value)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_not (code)) {
         return CHIMP_FALSE;
     }
 
