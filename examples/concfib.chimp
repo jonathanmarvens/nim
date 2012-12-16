@@ -8,6 +8,8 @@ fib n {
 }
 
 main argv {
+  io.print("Running fib(10), fib(20), fib(30) concurrently ...");
+
   var f3 = spawn { |me| me.send(fib(30)); };
   var f2 = spawn { |me| me.send(fib(20)); };
   var f1 = spawn { |me| me.send(fib(10)); };
