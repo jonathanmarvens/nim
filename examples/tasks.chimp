@@ -2,7 +2,7 @@ use io;
 use os;
 
 main argv {
-  var task = spawn me {
+  var task = spawn { |me|
     #
     # Let the user know we're not just twiddling our thumbs.
     #
@@ -19,8 +19,8 @@ main argv {
     # let's see if orphans get detached properly.
     # Inner task should be abandoned after f.join() returns.
     #
-    var f = spawn dude {
-      spawn man {
+    var f = spawn { |me2|
+      spawn { |me3|
         os.sleep(3);
         io.print("orphan is done");
       };
@@ -28,7 +28,7 @@ main argv {
     f.join();
   };
 
-  var task2 = spawn another {
+  var task2 = spawn { |me|
     os.sleep(5);
   };
 
