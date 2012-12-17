@@ -341,7 +341,7 @@ chimp_task_send (ChimpRef *self, ChimpRef *value)
         task->outbox = msg;
         task->flags |= CHIMP_TASK_FLAG_OUTBOX_FULL;
     }
-    if (pthread_cond_broadcast (&task->flags_cond) != 0) {
+    if (pthread_cond_signal (&task->flags_cond) != 0) {
         CHIMP_TASK_UNLOCK(task);
         return CHIMP_FALSE;
     }
@@ -374,7 +374,7 @@ chimp_task_recv (ChimpRef *self)
         task->outbox = NULL;
         task->flags &= ~CHIMP_TASK_FLAG_OUTBOX_FULL;
     }
-    if (pthread_cond_broadcast (&task->flags_cond) != 0) {
+    if (pthread_cond_signal (&task->flags_cond) != 0) {
         CHIMP_FREE (msg);
         CHIMP_TASK_UNLOCK(task);
         return NULL;
