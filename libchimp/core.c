@@ -203,6 +203,7 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "array",  chimp_array_class);
     chimp_hash_put_str (chimp_builtins, "int",    chimp_int_class);
     chimp_hash_put_str (chimp_builtins, "str",    chimp_str_class);
+    chimp_hash_put_str (chimp_builtins, "bool",   chimp_bool_class);
     chimp_hash_put_str (chimp_builtins, "module", chimp_module_class);
     chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);

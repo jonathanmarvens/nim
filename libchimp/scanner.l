@@ -49,11 +49,13 @@
 "not"                       { CHIMP_TOKEN(TOK_NOT) }
 "spawn"                     { CHIMP_TOKEN(TOK_SPAWN) }
 "receive"                   { CHIMP_TOKEN(TOK_RECEIVE) }
+"match"                     { CHIMP_TOKEN(TOK_MATCH) }
 [ \t\r]                     { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
 ";"                         { CHIMP_TOKEN(TOK_SEMICOLON) }
+":"                         { CHIMP_TOKEN(TOK_COLON) }
 ","                         { CHIMP_TOKEN(TOK_COMMA) }
 "|"                         { CHIMP_TOKEN(TOK_PIPE) }
 "["                         { CHIMP_TOKEN(TOK_LSQBRACKET) }

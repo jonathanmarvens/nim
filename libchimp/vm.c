@@ -43,6 +43,12 @@ chimp_vm_pop (ChimpVM *vm)
     return chimp_array_pop (vm->stack);
 }
 
+static ChimpRef *
+chimp_vm_top (ChimpVM *vm)
+{
+    return chimp_array_last (vm->stack);
+}
+
 static chimp_bool_t
 chimp_vm_push (ChimpVM *vm, ChimpRef *value)
 {
@@ -334,6 +340,19 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
+            case CHIMP_OPCODE_GETCLASS:
+            {
+                ChimpRef *value = chimp_vm_pop (vm);
+                if (value == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "GETCLASS instruction failed");
+                    return NULL;
+                }
+                if (!chimp_vm_push (vm, CHIMP_ANY_CLASS(value))) {
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
             case CHIMP_OPCODE_GETATTR:
             {
                 if (!chimp_vm_getattr (vm, code, locals, pc)) {
@@ -390,6 +409,21 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 ChimpRef *value = chimp_task_recv (task);
 
                 if (!chimp_vm_push (vm, value)) {
+                    return CHIMP_FALSE;
+                }
+
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_DUP:
+            {
+                ChimpRef *top = chimp_vm_top (vm);
+
+                if (top == NULL) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_vm_push (vm, top)) {
                     return CHIMP_FALSE;
                 }
 

@@ -59,7 +59,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
-%token TOK_SPAWN TOK_NOT TOK_RECEIVE
+%token TOK_SPAWN TOK_NOT TOK_RECEIVE TOK_MATCH
 
 %right TOK_NOT
 %left TOK_OR TOK_AND
@@ -73,13 +73,15 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %type <ref> stmt simple_stmt compound_stmt
 %type <ref> var_decl assign
 %type <ref> stmts opt_stmts block else
-%type <ref> opt_expr expr simple
+%type <ref> opt_expr expr simple simpler
 %type <ref> opt_simple_tail
 %type <ref> opt_decls opt_uses
 %type <ref> use
 %type <ref> func_decl
 %type <ref> opt_params opt_params_tail param
 %type <ref> opt_args args opt_args_tail
+%type <ref> opt_patterns pattern pattern_test opt_pattern_array_elements
+%type <ref> pattern_array_elements opt_pattern_array_elements_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> hash_elements opt_hash_elements_tail
 %type <ref> ident str array hash bool nil int
@@ -138,6 +140,9 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1, &@$); }
 compound_stmt : TOK_IF expr block else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4, &@$); }
               | TOK_IF expr block { $$ = chimp_ast_stmt_new_if_ ($2, $3, NULL, &@$); }
               | TOK_WHILE expr block { $$ = chimp_ast_stmt_new_while_ ($2, $3, &@$); }
+              | TOK_MATCH expr TOK_LBRACE opt_patterns TOK_RBRACE {
+                    $$ = chimp_ast_stmt_new_match ($2, $4, &@$);
+              }
               ;
 
 else : TOK_ELSE block { $$ = $2; }
@@ -183,11 +188,44 @@ expr : TOK_NOT expr { $$ = chimp_ast_expr_new_not ($2, &@$); }
      }
      ;
 
-simple : nil { $$ = $1; }
-       | str { $$ = $1; }
-       | int { $$ = $1; }
+opt_patterns: pattern opt_patterns { $$ = $2; chimp_array_unshift ($$, $1); }
+            | /* empty */ { $$ = chimp_array_new (); }
+            ;
+
+pattern: pattern_test TOK_COLON block { $$ = chimp_ast_stmt_new_pattern ($1, $3, &@$); }
+       ;
+
+pattern_test: simpler { $$ = $1; }
+            | TOK_LSQBRACKET opt_pattern_array_elements TOK_RSQBRACKET {
+                $$ = chimp_ast_expr_new_array ($2, &@$);
+            }
+            | TOK_ELSE { $$ = NULL; }
+            ;
+
+opt_pattern_array_elements : pattern_array_elements { $$ = $1; }
+                           | /* empty */ { $$ = chimp_array_new (); }
+                           ;
+
+pattern_array_elements: pattern_test opt_pattern_array_elements_tail {
+                          $$ = $2; chimp_array_unshift ($$, $1);
+                      }
+                      ;
+
+opt_pattern_array_elements_tail:
+                        TOK_COMMA pattern_test opt_pattern_array_elements_tail {
+                          $$ = $3; chimp_array_unshift ($$, $2);
+                        }
+                        | /* empty */ { $$ = chimp_array_new (); }
+                        ;
+
+simple : simpler { $$ = $1; }
        | array { $$ = $1; }
        | hash { $$ = $1; }
+       ;
+
+simpler: nil { $$ = $1; }
+       | str { $$ = $1; }
+       | int { $$ = $1; }
        | ident { $$ = $1; }
        | bool { $$ = $1; }
        ;

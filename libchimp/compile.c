@@ -280,6 +280,192 @@ chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 }
 
 static chimp_bool_t
+chimp_compile_ast_stmt_simple_pattern (
+    ChimpCodeCompiler *c,
+    ChimpRef *pattern,
+    const char *class_name,
+    ChimpRef *value,
+    ChimpLabel *end_match
+)
+{
+    ChimpLabel labels[2];
+    size_t i;
+    size_t num_labels = 1;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
+
+    /*
+     * do the types match?
+     */
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getclass (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pushname (code, chimp_str_new (class_name, strlen(class_name)))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_eq (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, &labels[num_labels-1])) {
+        return CHIMP_FALSE;
+    }
+
+    if (value != NULL) {
+        /*
+         * okay, so the types match. are the values equivalent?
+         */
+        if (!chimp_code_dup (code)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_pushconst (code, value)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_eq (code)) {
+            return CHIMP_FALSE;
+        }
+
+        num_labels++;
+
+        if (!chimp_code_jumpiffalse (code, &labels[num_labels-1])) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    /* sweet! evaluate the body & jump to the end of the 'match' block. */
+    if (!chimp_compile_ast_stmts (c, body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jump (code, end_match)) {
+        return CHIMP_FALSE;
+    }
+
+    for (i = 0; i < num_labels; i++) {
+        if (!chimp_code_patch_jump_location (code, labels[i])) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_pattern (
+    ChimpCodeCompiler *c, ChimpRef *pattern, ChimpLabel *label)
+{
+    ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test;
+
+    switch (CHIMP_AST_EXPR(test)->type) {
+        case CHIMP_AST_EXPR_INT_:
+            {
+                ChimpRef *value = CHIMP_AST_EXPR(test)->int_.value;
+                if (!chimp_compile_ast_stmt_simple_pattern (
+                        c, pattern, "int", value, label)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_AST_EXPR_STR:
+            {
+                ChimpRef *value = CHIMP_AST_EXPR(test)->str.value;
+                if (!chimp_compile_ast_stmt_simple_pattern (
+                        c, pattern, "str", value, label)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_AST_EXPR_BOOL:
+            {
+                ChimpRef *value = CHIMP_AST_EXPR(test)->bool.value;
+                if (!chimp_compile_ast_stmt_simple_pattern (
+                        c, pattern, "bool", value, label)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_AST_EXPR_NIL:
+            {
+                if (!chimp_compile_ast_stmt_simple_pattern (
+                        c, pattern, "nil", NULL, label)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        case CHIMP_AST_EXPR_IDENT:
+            {
+                /* TODO */
+                chimp_bug (__FILE__, __LINE__, "TODO");
+                break;
+            }
+        case CHIMP_AST_EXPR_ARRAY:
+            {
+                /* TODO */
+                chimp_bug (__FILE__, __LINE__, "TODO");
+                break;
+            }
+        default:
+            chimp_bug (__FILE__, __LINE__, "TODO");
+            return CHIMP_FALSE;
+    };
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
+{
+    size_t i;
+    /* XXX holy fuck the way we handle labels atm sucks */
+    ChimpLabel *backpatch_list;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpRef *expr = CHIMP_AST_STMT(stmt)->match.expr;
+    ChimpRef *patterns = CHIMP_AST_STMT(stmt)->match.body;
+    const size_t size = CHIMP_ARRAY_SIZE(patterns);
+
+    backpatch_list = malloc (sizeof(*backpatch_list) * size);
+    if (backpatch_list == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_compile_ast_expr (c, expr)) {
+        free (backpatch_list);
+        return CHIMP_FALSE;
+    }
+
+    for (i = 0; i < size; i++) {
+        ChimpRef *pattern = CHIMP_ARRAY_ITEM(patterns, i);
+
+        if (!chimp_compile_ast_stmt_pattern (c, pattern, backpatch_list + i)) {
+            free (backpatch_list);
+            return CHIMP_FALSE;
+        }
+    }
+    
+    for (i = 0; i < size; i++) {
+        if (!chimp_code_patch_jump_location (code, backpatch_list[i])) {
+            free (backpatch_list);
+            return CHIMP_FALSE;
+        }
+    }
+
+    free (backpatch_list);
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_compile_ast_stmt_if_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
@@ -541,6 +727,8 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
             return chimp_compile_ast_stmt_if_ (c, stmt);
         case CHIMP_AST_STMT_WHILE_:
             return chimp_compile_ast_stmt_while_ (c, stmt);
+        case CHIMP_AST_STMT_MATCH:
+            return chimp_compile_ast_stmt_match (c, stmt);
         case CHIMP_AST_STMT_RET:
             return chimp_compile_ast_stmt_ret (c, stmt);
         case CHIMP_AST_STMT_PANIC:

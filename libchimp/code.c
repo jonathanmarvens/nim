@@ -170,6 +170,19 @@ chimp_code_storename (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
+chimp_code_getclass (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(GETCLASS);
+
+    return CHIMP_TRUE;
+}
+
+
+chimp_bool_t
 chimp_code_getattr (ChimpRef *self, ChimpRef *id)
 {
     int32_t arg;
@@ -243,6 +256,16 @@ chimp_code_not (ChimpRef *self)
         return CHIMP_FALSE;
     }
     CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(NOT);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
+chimp_code_dup (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(DUP);
     return CHIMP_TRUE;
 }
 
@@ -528,6 +551,10 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "SPAWN";
         case CHIMP_OPCODE_NOT:
              return "NOT";
+        case CHIMP_OPCODE_DUP:
+             return "DUP";
+        case CHIMP_OPCODE_GETCLASS:
+             return "GETCLASS";
         default:
              return "???OPCODE???";
     };

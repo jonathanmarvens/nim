@@ -9,7 +9,7 @@ if exists("b:current_syntax")
 endif
 
 syn keyword chimpKeyword nil use ret var and or panic fn spawn while not 
-syn keyword chimpKeyword receive
+syn keyword chimpKeyword receive match
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
 syn keyword chimpType str int hash class object array

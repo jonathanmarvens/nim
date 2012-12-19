@@ -29,6 +29,7 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_CMPLTE,
 
     CHIMP_OPCODE_NOT,
+    CHIMP_OPCODE_DUP,
 
     CHIMP_OPCODE_POP,
 
@@ -40,7 +41,10 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_ADD,
     CHIMP_OPCODE_SUB,
     CHIMP_OPCODE_MUL,
-    CHIMP_OPCODE_DIV
+    CHIMP_OPCODE_DIV,
+
+    /* XXX temporary until we get a better way to do it */
+    CHIMP_OPCODE_GETCLASS
 } ChimpOpcode;
 
 typedef enum _ChimpBinopType {
@@ -89,6 +93,9 @@ chimp_bool_t
 chimp_code_storename (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
+chimp_code_getclass (ChimpRef *self);
+
+chimp_bool_t
 chimp_code_getattr (ChimpRef *self, ChimpRef *id);
 
 chimp_bool_t
@@ -102,6 +109,9 @@ chimp_code_panic (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_not (ChimpRef *self);
+
+chimp_bool_t
+chimp_code_dup (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_spawn (ChimpRef *self);
