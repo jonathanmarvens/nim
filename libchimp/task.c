@@ -75,11 +75,13 @@ struct _ChimpTaskInternal {
     int                refs;
     ChimpMsgInternal  *inbox;
     ChimpMsgInternal  *outbox;
-    chimp_bool_t       cleaning_up;
 };
 
 static void
 chimp_task_cleanup (ChimpTaskInternal *task);
+
+static inline void
+_chimp_task_unref (ChimpTaskInternal *task);
 
 static void
 chimp_task_init_per_thread_key (void)
@@ -152,13 +154,7 @@ chimp_task_thread_func (void *arg)
      */
     CHIMP_TASK_LOCK(task);
     if (CHIMP_TASK_IS_DETACHED(task)) {
-        task->refs--;
-        if (task->refs == 0) {
-            chimp_task_cleanup (task);
-        }
-        else {
-            CHIMP_TASK_UNLOCK(task);
-        }
+        _chimp_task_unref (task);
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -327,12 +323,23 @@ chimp_task_ref (ChimpTaskInternal *task)
     CHIMP_TASK_UNLOCK(task);
 }
 
+static inline void
+_chimp_task_unref (ChimpTaskInternal *task)
+{
+    task->refs--;
+    if (task->refs == 0) {
+        chimp_task_cleanup (task);
+    }
+    else {
+        CHIMP_TASK_UNLOCK(task);
+    }
+}
+
 void
 chimp_task_unref (ChimpTaskInternal *task)
 {
     CHIMP_TASK_LOCK(task);
-    task->refs--;
-    CHIMP_TASK_UNLOCK(task);
+    _chimp_task_unref (task);
 }
 
 chimp_bool_t
@@ -417,12 +424,6 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     ChimpTaskInternal *child;
     ChimpTaskInternal *prev;
 
-    if (task->cleaning_up) {
-        CHIMP_TASK_UNLOCK(task);
-        return;
-    }
-    task->cleaning_up = CHIMP_TRUE;
-
     /* NOTE: we assume the task lock is held here */
 
     /* detach all child tasks since we can no longer join on them */
@@ -463,7 +464,9 @@ chimp_task_cleanup (ChimpTaskInternal *task)
 
     CHIMP_TASK_UNLOCK (task);
     chimp_vm_delete (task->vm);
+    task->vm = NULL;
     chimp_gc_delete (task->gc);
+    task->gc = NULL;
     pthread_cond_destroy (&task->flags_cond);
     pthread_mutex_destroy (&task->lock);
     CHIMP_FREE (task);
@@ -486,13 +489,7 @@ chimp_task_join (ChimpTaskInternal *task)
          *       unlocked/freed by the next call
          */
 
-        task->refs--;
-        if (task->refs == 0) {
-            chimp_task_cleanup (task);
-        }
-        else {
-            CHIMP_TASK_UNLOCK(task);
-        }
+        _chimp_task_unref (task);
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -588,14 +585,7 @@ _chimp_task_init (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_task_dtor (ChimpRef *self)
 {
-    CHIMP_TASK_LOCK(CHIMP_TASK(self)->priv);
-    CHIMP_TASK(self)->priv->refs--;
-    if (CHIMP_TASK(self)->priv->refs == 0) {
-        chimp_task_cleanup (CHIMP_TASK(self)->priv);
-    }
-    else {
-        CHIMP_TASK_UNLOCK(CHIMP_TASK(self)->priv);
-    }
+    chimp_task_unref (CHIMP_TASK(self)->priv);
 }
 
 static ChimpRef *
