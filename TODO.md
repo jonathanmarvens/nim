@@ -1,3 +1,7 @@
+* Fix task destruction.
+* Improve the label API in the compiler.
+* Finish pattern matching.
+* Hash matching.
 * Error handling.
 * Unit testing API.
 * More tests.
