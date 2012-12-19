@@ -279,20 +279,18 @@ chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
     return CHIMP_TRUE;
 }
 
+/* XXX interface to this is ugly as hell. revisit after visiting labels. */
 static chimp_bool_t
-chimp_compile_ast_stmt_simple_pattern (
+chimp_compile_ast_simple_pattern_test (
     ChimpCodeCompiler *c,
-    ChimpRef *pattern,
     const char *class_name,
     ChimpRef *value,
-    ChimpLabel *next_step
+    ChimpLabel *labels,
+    size_t *num_labels_ptr
 )
 {
-    ChimpLabel labels[2];
-    size_t i;
-    size_t num_labels = 1;
+    size_t num_labels = *num_labels_ptr;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
 
     /*
      * do the types match?
@@ -341,6 +339,30 @@ chimp_compile_ast_stmt_simple_pattern (
         }
     }
 
+    *num_labels_ptr = num_labels;
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_simple_pattern (
+    ChimpCodeCompiler *c,
+    ChimpRef *pattern,
+    const char *class_name,
+    ChimpRef *value,
+    ChimpLabel *next_step
+)
+{
+    ChimpLabel labels[2];
+    size_t i;
+    size_t num_labels = 0;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
+
+    if (!chimp_compile_ast_simple_pattern_test (c, class_name, value, labels, &num_labels)) {
+        return CHIMP_FALSE;
+    }
+
     /* sweet! evaluate the body & jump to the end of the 'match' block. */
     if (!chimp_compile_ast_stmts (c, body)) {
         return CHIMP_FALSE;
@@ -357,12 +379,6 @@ chimp_compile_ast_stmt_simple_pattern (
     }
 
     return CHIMP_TRUE;
-}
-
-static chimp_bool_t
-chimp_compile_ast_stmt_array_pattern (
-    ChimpCodeCompiler *c, ChimpRef *expr, ChimpLabel *label)
-{
 }
 
 static chimp_bool_t
