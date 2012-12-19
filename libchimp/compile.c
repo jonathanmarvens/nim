@@ -285,7 +285,7 @@ chimp_compile_ast_stmt_simple_pattern (
     ChimpRef *pattern,
     const char *class_name,
     ChimpRef *value,
-    ChimpLabel *end_match
+    ChimpLabel *next_step
 )
 {
     ChimpLabel labels[2];
@@ -305,7 +305,8 @@ chimp_compile_ast_stmt_simple_pattern (
         return CHIMP_FALSE;
     }
 
-    if (!chimp_code_pushname (code, chimp_str_new (class_name, strlen(class_name)))) {
+    if (!chimp_code_pushname (code,
+            chimp_str_new (class_name, strlen(class_name)))) {
         return CHIMP_FALSE;
     }
 
@@ -345,7 +346,7 @@ chimp_compile_ast_stmt_simple_pattern (
         return CHIMP_FALSE;
     }
 
-    if (!chimp_code_jump (code, end_match)) {
+    if (!chimp_code_jump (code, next_step)) {
         return CHIMP_FALSE;
     }
 
@@ -356,6 +357,12 @@ chimp_compile_ast_stmt_simple_pattern (
     }
 
     return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_array_pattern (
+    ChimpCodeCompiler *c, ChimpRef *expr, ChimpLabel *label)
+{
 }
 
 static chimp_bool_t
