@@ -1,6 +1,6 @@
 * Fix task destruction.
-* Improve the label API in the compiler.
 * Finish pattern matching.
+* Add the `self` keyword.
 * Hash matching.
 * Error handling.
 * Unit testing API.
