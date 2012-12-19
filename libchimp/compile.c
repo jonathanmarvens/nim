@@ -439,6 +439,12 @@ chimp_compile_ast_stmt_pattern (
                 chimp_bug (__FILE__, __LINE__, "TODO");
                 break;
             }
+        case CHIMP_AST_EXPR_HASH:
+            {
+                /* TODO */
+                chimp_bug (__FILE__, __LINE__, "TODO");
+                break;
+            }
         default:
             chimp_bug (__FILE__, __LINE__, "TODO");
             return CHIMP_FALSE;
