@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <inttypes.h>
+#include <errno.h>
 
 #include "chimp/gc.h"
 #include "chimp/task.h"
@@ -10,17 +11,19 @@
 #include "chimp/frame.h"
 #include "chimp/vm.h"
 
+/* XXX this stuff leaks like a sieve */
+
 ChimpRef *chimp_task_class = NULL;
 
 static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 
 enum {
-    CHIMP_TASK_FLAG_MAIN       = 0x01,
-    CHIMP_TASK_FLAG_READY      = 0x02,
-    CHIMP_TASK_FLAG_DETACHED   = 0x04,
-    CHIMP_TASK_FLAG_INBOX_FULL = 0x08,
+    CHIMP_TASK_FLAG_MAIN        = 0x01,
+    CHIMP_TASK_FLAG_READY       = 0x02,
+    CHIMP_TASK_FLAG_DETACHED    = 0x04,
+    CHIMP_TASK_FLAG_INBOX_FULL  = 0x08,
     CHIMP_TASK_FLAG_OUTBOX_FULL = 0x10,
-    CHIMP_TASK_FLAG_DONE       = 0x80,
+    CHIMP_TASK_FLAG_DONE        = 0x80,
 };
 
 #define CHIMP_TASK_IS_MAIN(task) \
@@ -72,6 +75,7 @@ struct _ChimpTaskInternal {
     int                refs;
     ChimpMsgInternal  *inbox;
     ChimpMsgInternal  *outbox;
+    chimp_bool_t       cleaning_up;
 };
 
 static void
@@ -88,6 +92,19 @@ chimp_task_init_per_thread_key_once (ChimpTaskInternal *task)
 {
     pthread_once (&current_task_key_once, chimp_task_init_per_thread_key);
     pthread_setspecific (current_task_key, task);
+}
+
+static ChimpRef *
+chimp_task_new_local (ChimpTaskInternal *task)
+{
+    ChimpRef *taskobj = chimp_class_new_instance (chimp_task_class, NULL);
+    if (taskobj == NULL) {
+        return NULL;
+    }
+    CHIMP_TASK(taskobj)->priv = task;
+    CHIMP_TASK(taskobj)->local = CHIMP_TRUE;
+    task->refs++;
+    return taskobj;
 }
 
 static void *
@@ -117,13 +134,10 @@ chimp_task_thread_func (void *arg)
 
     if (task->method != NULL) {
         ChimpRef *args;
-        ChimpRef *taskobj = chimp_class_new_instance (chimp_task_class, NULL);
+        ChimpRef *taskobj = chimp_task_new_local (task);
         if (taskobj == NULL) {
             return NULL;
         }
-        CHIMP_TASK(taskobj)->priv = task;
-        CHIMP_TASK(taskobj)->local = CHIMP_TRUE;
-        task->refs++;
         task->self = taskobj;
         args = chimp_array_new ();
         CHIMP_TASK_UNLOCK(task);
@@ -283,6 +297,13 @@ chimp_task_main_ready (void)
         CHIMP_FREE (task);
         return CHIMP_FALSE;
     }
+    task->self = chimp_task_new_local (task);
+    if (task->self == NULL) {
+        chimp_vm_delete (task->vm);
+        chimp_gc_delete (task->gc);
+        CHIMP_FREE (task);
+        return CHIMP_FALSE;
+    }
     task->flags |= CHIMP_TASK_FLAG_READY;
     /* TODO init task->self */
     pthread_cond_broadcast (&task->flags_cond);
@@ -396,6 +417,12 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     ChimpTaskInternal *child;
     ChimpTaskInternal *prev;
 
+    if (task->cleaning_up) {
+        CHIMP_TASK_UNLOCK(task);
+        return;
+    }
+    task->cleaning_up = CHIMP_TRUE;
+
     /* NOTE: we assume the task lock is held here */
 
     /* detach all child tasks since we can no longer join on them */
@@ -406,6 +433,7 @@ chimp_task_cleanup (ChimpTaskInternal *task)
         pthread_cond_broadcast (&child->flags_cond);
         child->parent = NULL;
         pthread_detach (child->thread);
+        /* TODO drop ref count? */
         CHIMP_TASK_UNLOCK(child);
         child = child->next;
     }
@@ -436,6 +464,7 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     CHIMP_TASK_UNLOCK (task);
     chimp_vm_delete (task->vm);
     chimp_gc_delete (task->gc);
+    pthread_cond_destroy (&task->flags_cond);
     pthread_mutex_destroy (&task->lock);
     CHIMP_FREE (task);
 }
