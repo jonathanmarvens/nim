@@ -33,7 +33,7 @@ chimp_msg_array_cell_size (ChimpRef *array)
 static size_t
 chimp_msg_task_cell_size (ChimpRef *ref)
 {
-    return sizeof(ChimpTaskInternal *);
+    return sizeof(ChimpMsgCell) + sizeof(ChimpTaskInternal *);
 }
 
 static size_t
