@@ -80,7 +80,7 @@ struct _ChimpTaskInternal {
 static void
 chimp_task_cleanup (ChimpTaskInternal *task);
 
-static inline void
+static inline chimp_bool_t
 _chimp_task_unref (ChimpTaskInternal *task);
 
 static void
@@ -154,7 +154,9 @@ chimp_task_thread_func (void *arg)
      */
     CHIMP_TASK_LOCK(task);
     if (CHIMP_TASK_IS_DETACHED(task)) {
-        _chimp_task_unref (task);
+        if (!_chimp_task_unref (task)) {
+            CHIMP_TASK_UNLOCK(task);
+        }
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -210,6 +212,8 @@ chimp_task_new (ChimpRef *callable)
             return NULL;
         }
     }
+
+    /* create a heap-local handle for this task */
     taskobj = chimp_class_new_instance (chimp_task_class, NULL);
     if (taskobj == NULL) {
         CHIMP_TASK_UNLOCK (task);
@@ -311,8 +315,10 @@ void
 chimp_task_main_delete ()
 {
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
-    CHIMP_TASK_LOCK(task);
-    chimp_task_cleanup(task);
+    if (task != NULL) {
+        chimp_task_unref (task);
+        pthread_setspecific (current_task_key, NULL);
+    }
 }
 
 void
@@ -323,23 +329,26 @@ chimp_task_ref (ChimpTaskInternal *task)
     CHIMP_TASK_UNLOCK(task);
 }
 
-static inline void
+static inline chimp_bool_t
 _chimp_task_unref (ChimpTaskInternal *task)
 {
-    task->refs--;
-    if (task->refs == 0) {
-        chimp_task_cleanup (task);
+    if (task->refs > 0) {
+        task->refs--;
+        if (task->refs == 0) {
+            chimp_task_cleanup (task);
+            return CHIMP_TRUE;
+        }
     }
-    else {
-        CHIMP_TASK_UNLOCK(task);
-    }
+    return CHIMP_FALSE;
 }
 
 void
 chimp_task_unref (ChimpTaskInternal *task)
 {
     CHIMP_TASK_LOCK(task);
-    _chimp_task_unref (task);
+    if (!_chimp_task_unref (task)) {
+        CHIMP_TASK_UNLOCK(task);
+    }
 }
 
 chimp_bool_t
@@ -429,14 +438,21 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     /* detach all child tasks since we can no longer join on them */
     child = task->children;
     while (child != NULL) {
+        ChimpTaskInternal *next;
         CHIMP_TASK_LOCK(child);
+        next = child->next;
         child->flags |= CHIMP_TASK_FLAG_DETACHED;
         pthread_cond_broadcast (&child->flags_cond);
         child->parent = NULL;
-        pthread_detach (child->thread);
-        /* TODO drop ref count? */
-        CHIMP_TASK_UNLOCK(child);
-        child = child->next;
+        if (pthread_detach (child->thread) != 0) {
+            if (!_chimp_task_unref (child)) {
+                CHIMP_TASK_UNLOCK(child);
+            }
+        }
+        else {
+            CHIMP_TASK_UNLOCK(child);
+        }
+        child = next;
     }
 
     /* remove this task from its parent */
@@ -490,6 +506,8 @@ chimp_task_join (ChimpTaskInternal *task)
          */
 
         _chimp_task_unref (task);
+
+        CHIMP_TASK_UNLOCK(task);
     }
     else {
         CHIMP_TASK_UNLOCK(task);

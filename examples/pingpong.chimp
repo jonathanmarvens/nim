@@ -41,5 +41,6 @@ main argv {
   ponger.send(pinger);
   pinger.send(ponger);
   ponger.join();
+  pinger.join();
 }
 
