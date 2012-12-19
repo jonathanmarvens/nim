@@ -4,13 +4,19 @@ pong {
   io.print(str("ponger starts"));
   var pinger = receive;
   io.print(str("ponger got pinger: ", pinger));
-  var msg = receive;
-  while msg != "finished" {
-    io.print(msg);
-    io.print("ponger sending");
-    pinger.send("pong");
-    io.print("ponger waiting");
-    msg = receive;
+  while true {
+    var msg = receive;
+    match msg {
+      "ping": {
+        io.print(msg);
+        io.print("ponger sending");
+        pinger.send("pong");
+        io.print("ponger waiting");
+      }
+      "finished": {
+        ret;
+      }
+    }
   }
 }
 
