@@ -59,7 +59,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
-%token TOK_SPAWN TOK_NOT
+%token TOK_SPAWN TOK_NOT TOK_RECEIVE
 
 %right TOK_NOT
 %left TOK_OR TOK_AND
@@ -170,9 +170,10 @@ expr : TOK_NOT expr { $$ = chimp_ast_expr_new_not ($2, &@$); }
      | expr TOK_SLASH expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
      | TOK_FN TOK_LBRACE TOK_PIPE opt_params TOK_PIPE opt_stmts TOK_RBRACE {
         $$ = chimp_ast_expr_new_fn ($4, $6, &@$); }
-     | TOK_SPAWN TOK_LBRACE TOK_PIPE param TOK_PIPE opt_stmts TOK_RBRACE {
-        $$ = chimp_ast_expr_new_spawn (chimp_array_new_var ($4, NULL), $6, &@$);
+     | TOK_SPAWN TOK_LBRACE opt_stmts TOK_RBRACE {
+        $$ = chimp_ast_expr_new_spawn (chimp_array_new (), $3, &@$);
      }
+     | TOK_RECEIVE { $$ = chimp_ast_expr_new_receive (&@$); }
      | simple opt_simple_tail {
         $$ = $1;
         if ($2 != NULL) {

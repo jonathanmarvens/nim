@@ -125,7 +125,7 @@ chimp_task_thread_func (void *arg)
         CHIMP_TASK(taskobj)->local = CHIMP_TRUE;
         task->refs++;
         task->self = taskobj;
-        args = chimp_array_new_var (taskobj, NULL);
+        args = chimp_array_new ();
         CHIMP_TASK_UNLOCK(task);
         if (chimp_vm_invoke (task->vm, task->method, args) == NULL) {
             return NULL;
@@ -284,6 +284,7 @@ chimp_task_main_ready (void)
         return CHIMP_FALSE;
     }
     task->flags |= CHIMP_TASK_FLAG_READY;
+    /* TODO init task->self */
     pthread_cond_broadcast (&task->flags_cond);
     CHIMP_TASK_UNLOCK(task);
     return CHIMP_TRUE;
@@ -481,6 +482,12 @@ ChimpTaskInternal *
 chimp_task_current (void)
 {
     return (ChimpTaskInternal *) pthread_getspecific (current_task_key);
+}
+
+ChimpRef *
+chimp_task_get_self (ChimpTaskInternal *task)
+{
+    return task->self;
 }
 
 ChimpGC *

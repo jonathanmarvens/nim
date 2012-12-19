@@ -51,6 +51,9 @@ chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task);
 ChimpTaskInternal *
 chimp_task_current (void);
 
+ChimpRef *
+chimp_task_get_self (ChimpTaskInternal *task);
+
 ChimpGC *
 chimp_task_get_gc (ChimpTaskInternal *task);
 

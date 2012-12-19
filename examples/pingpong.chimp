@@ -1,37 +1,37 @@
 use io;
 
-pong me {
-  io.print(str("ponger starts: ", me));
-  var pinger = me.recv();
+pong {
+  io.print(str("ponger starts"));
+  var pinger = receive;
   io.print(str("ponger got pinger: ", pinger));
-  var msg = me.recv();
+  var msg = receive;
   while msg != "finished" {
     io.print(msg);
     io.print("ponger sending");
     pinger.send("pong");
     io.print("ponger waiting");
-    msg = me.recv();
+    msg = receive;
   }
 }
 
-ping me {
-  io.print(str("pinger starts: ", me));
-  var ponger = me.recv();
+ping {
+  io.print(str("pinger starts"));
+  var ponger = receive;
   io.print(str("pinger got ponger: ", ponger));
   var i = 0;
   while i < 3 {
     io.print("pinger sending");
     ponger.send("ping");
     io.print("pinger waiting");
-    io.print(me.recv());
+    io.print(receive);
     i = i + 1;
   }
   ponger.send("finished");
 }
 
 main argv {
-  var ponger = spawn { |me| pong(me); };
-  var pinger = spawn { |me| ping(me); };
+  var ponger = spawn { pong(); };
+  var pinger = spawn { ping(); };
   ponger.send(pinger);
   pinger.send(ponger);
   ponger.join();

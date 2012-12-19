@@ -406,6 +406,8 @@ chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
             return chimp_symtable_visit_expr_spawn (self, expr);
         case CHIMP_AST_EXPR_NOT:
             return chimp_symtable_visit_expr_not (self, expr);
+        case CHIMP_AST_EXPR_RECEIVE:
+            return CHIMP_TRUE;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;

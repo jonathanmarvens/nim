@@ -53,6 +53,7 @@ AST_DESCRIPTOR = [
             ['value', 'bool']],
         ['not',
             ['value', 'expr']],
+        ['receive'],
         ['spawn',
             ['args', 'array'],
             ['body', 'array']]],
