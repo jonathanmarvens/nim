@@ -1,4 +1,3 @@
-* Fix task lifecycle: stuff seems to be getting killed multiple times.
 * Finish pattern matching.
 * Add the `self` keyword.
 * Hash matching.
