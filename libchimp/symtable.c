@@ -473,6 +473,26 @@ chimp_symtable_visit_stmt_while_ (ChimpRef *self, ChimpRef *stmt)
 }
 
 static chimp_bool_t
+chimp_symtable_visit_stmt_pattern_test (ChimpRef *self, ChimpRef *test)
+{
+    switch (CHIMP_AST_EXPR(test)->type) {
+        case CHIMP_AST_EXPR_IDENT:
+            {
+                ChimpRef *id = CHIMP_AST_EXPR(test)->ident.id;
+                if (!chimp_symtable_add (self, id, CHIMP_SYM_DECL)) {
+                    return CHIMP_FALSE;
+                }
+
+                break;
+            }
+        default:
+            break;
+    };
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_symtable_visit_stmt_patterns (ChimpRef *self, ChimpRef *patterns)
 {
     size_t size = CHIMP_ARRAY_SIZE(patterns);
@@ -480,10 +500,12 @@ chimp_symtable_visit_stmt_patterns (ChimpRef *self, ChimpRef *patterns)
 
     for (i = 0; i < size; i++) {
         ChimpRef *pattern = CHIMP_ARRAY_ITEM(patterns, i);
-        /* ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test; */
+        ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test;
         ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
 
-        /* TODO visit test */
+        if (!chimp_symtable_visit_stmt_pattern_test (self, test)) {
+            return CHIMP_FALSE;
+        }
 
         if (!chimp_symtable_visit_stmts_or_decls (self, body)) {
             return CHIMP_FALSE;

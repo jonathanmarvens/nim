@@ -312,6 +312,8 @@ chimp_compile_ast_simple_pattern_test (
         return CHIMP_FALSE;
     }
 
+    num_labels++;
+
     if (!chimp_code_jumpiffalse (code, &labels[num_labels-1])) {
         return CHIMP_FALSE;
     }
@@ -385,6 +387,7 @@ static chimp_bool_t
 chimp_compile_ast_stmt_pattern (
     ChimpCodeCompiler *c, ChimpRef *pattern, ChimpLabel *label)
 {
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test;
 
     switch (CHIMP_AST_EXPR(test)->type) {
@@ -429,8 +432,21 @@ chimp_compile_ast_stmt_pattern (
             }
         case CHIMP_AST_EXPR_IDENT:
             {
-                /* TODO */
-                chimp_bug (__FILE__, __LINE__, "TODO");
+                ChimpRef *id = CHIMP_AST_EXPR(test)->ident.id;
+                ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
+
+                if (!chimp_code_storename (code, id)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_compile_ast_stmts (c, body)) {
+                    return CHIMP_FALSE;
+                }
+
+                if (!chimp_code_jump (code, label)) {
+                    return CHIMP_FALSE;
+                }
+
                 break;
             }
         case CHIMP_AST_EXPR_ARRAY:
