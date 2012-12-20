@@ -14,6 +14,7 @@
 /* XXX this stuff leaks like a sieve */
 
 ChimpRef *chimp_task_class = NULL;
+ChimpTaskInternal *main_task = NULL;
 
 static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 
@@ -65,8 +66,6 @@ struct _ChimpTaskInternal {
     ChimpRef          *self;    /* ChimpTask */
     ChimpRef          *method;  /* ChimpMethod -- NULL for main */
     ChimpRef          *modules; /* ChimpHash */
-    ChimpTaskInternal *parent;
-    ChimpTaskInternal *children;
     ChimpTaskInternal *next;
     pthread_cond_t     flags_cond;
     int                flags;
@@ -79,9 +78,6 @@ struct _ChimpTaskInternal {
 
 static void
 chimp_task_cleanup (ChimpTaskInternal *task);
-
-static inline chimp_bool_t
-_chimp_task_unref (ChimpTaskInternal *task);
 
 static void
 chimp_task_init_per_thread_key (void)
@@ -148,18 +144,15 @@ chimp_task_thread_func (void *arg)
         }
     }
 
-    /* if the current thread has been detached, we're now responsible
-     * for cleaning ourselves up at this point (normally it's left to
-     * a join on a task).
-     */
-    CHIMP_TASK_LOCK(task);
-    if (CHIMP_TASK_IS_DETACHED(task)) {
-        if (!_chimp_task_unref (task)) {
-            CHIMP_TASK_UNLOCK(task);
-        }
+    /* cleaning up the VM and GC is a-OK here because the task is finished */
+    /* bonus: this cleans up circular references & our 'self' ref */
+    if (task->vm != NULL) {
+        chimp_vm_delete (task->vm);
+        task->vm = NULL;
     }
-    else {
-        CHIMP_TASK_UNLOCK(task);
+    if (task->gc != NULL) {
+        chimp_gc_delete (task->gc);
+        task->gc = NULL;
     }
 
     return NULL;
@@ -174,12 +167,6 @@ chimp_task_new (ChimpRef *callable)
         return NULL;
     }
     memset (task, 0, sizeof (*task));
-    task->parent = chimp_task_current ();
-
-    CHIMP_TASK_LOCK(task->parent);
-    task->next = task->parent->children;
-    task->parent->children = task;
-    CHIMP_TASK_UNLOCK(task->parent);
 
     /* XXX can we guarantee callable won't be collected? think so ... */
     task->method = callable;
@@ -258,6 +245,7 @@ chimp_task_new_main (void *stack_start)
     if (task == NULL) {
         return NULL;
     }
+    main_task = task;
     memset (task, 0, sizeof (*task));
     task->flags = CHIMP_TASK_FLAG_MAIN;
     task->gc = chimp_gc_new (stack_start);
@@ -317,6 +305,7 @@ chimp_task_main_delete ()
     ChimpTaskInternal *task = CHIMP_CURRENT_TASK;
     if (task != NULL) {
         chimp_task_unref (task);
+        main_task = NULL;
         pthread_setspecific (current_task_key, NULL);
     }
 }
@@ -329,26 +318,19 @@ chimp_task_ref (ChimpTaskInternal *task)
     CHIMP_TASK_UNLOCK(task);
 }
 
-static inline chimp_bool_t
-_chimp_task_unref (ChimpTaskInternal *task)
-{
-    if (task->refs > 0) {
-        task->refs--;
-        if (task->refs == 0) {
-            chimp_task_cleanup (task);
-            return CHIMP_TRUE;
-        }
-    }
-    return CHIMP_FALSE;
-}
-
 void
 chimp_task_unref (ChimpTaskInternal *task)
 {
     CHIMP_TASK_LOCK(task);
-    if (!_chimp_task_unref (task)) {
-        CHIMP_TASK_UNLOCK(task);
+    if (task->refs > 0) {
+        task->refs--;
+        if (task->refs == 0) {
+            CHIMP_TASK_UNLOCK(task);
+            chimp_task_cleanup (task);
+            return;
+        }
     }
+    CHIMP_TASK_UNLOCK(task);
 }
 
 chimp_bool_t
@@ -430,59 +412,16 @@ chimp_task_recv (ChimpRef *self)
 static void
 chimp_task_cleanup (ChimpTaskInternal *task)
 {
-    ChimpTaskInternal *child;
-    ChimpTaskInternal *prev;
-
     /* NOTE: we assume the task lock is held here */
 
-    /* detach all child tasks since we can no longer join on them */
-    child = task->children;
-    while (child != NULL) {
-        ChimpTaskInternal *next;
-        CHIMP_TASK_LOCK(child);
-        next = child->next;
-        child->flags |= CHIMP_TASK_FLAG_DETACHED;
-        pthread_cond_broadcast (&child->flags_cond);
-        child->parent = NULL;
-        if (pthread_detach (child->thread) != 0) {
-            if (!_chimp_task_unref (child)) {
-                CHIMP_TASK_UNLOCK(child);
-            }
-        }
-        else {
-            CHIMP_TASK_UNLOCK(child);
-        }
-        child = next;
+    if (task->vm != NULL) {
+        chimp_vm_delete (task->vm);
+        task->vm = NULL;
     }
-
-    /* remove this task from its parent */
-    if (task->parent != NULL) {
-        CHIMP_TASK_LOCK(task->parent);
-        child = task->parent->children;
-        prev = NULL;
-        while (child != NULL) {
-            ChimpTaskInternal *next = child->next;
-            if (child == task) {
-                if (prev == NULL) {
-                    task->parent->children = child->next;
-                }
-                else {
-                    prev->next = child->next;
-                }
-                break;
-            }
-            prev = child;
-            child = next;
-        }
-        CHIMP_TASK_UNLOCK(task->parent);
-        task->parent = NULL;
+    if (task->gc != NULL) {
+        chimp_gc_delete (task->gc);
+        task->gc = NULL;
     }
-
-    CHIMP_TASK_UNLOCK (task);
-    chimp_vm_delete (task->vm);
-    task->vm = NULL;
-    chimp_gc_delete (task->gc);
-    task->gc = NULL;
     pthread_cond_destroy (&task->flags_cond);
     pthread_mutex_destroy (&task->lock);
     CHIMP_FREE (task);
@@ -496,18 +435,6 @@ chimp_task_join (ChimpTaskInternal *task)
         CHIMP_TASK_UNLOCK(task);
 
         pthread_join (task->thread, NULL);
-
-        CHIMP_TASK_LOCK(task);
-
-        task->flags |= CHIMP_TASK_FLAG_DONE;
-
-        /* NOTE: lock is acquired inside the thread & then
-         *       unlocked/freed by the next call
-         */
-
-        _chimp_task_unref (task);
-
-        CHIMP_TASK_UNLOCK(task);
     }
     else {
         CHIMP_TASK_UNLOCK(task);
@@ -573,25 +500,11 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name)
 {
     /* XXX total waste of time. modules are not really per-task atm. */
 
-    if (task == NULL) {
-        task = chimp_task_current ();
+    ChimpRef *ref = chimp_hash_get (main_task->modules, name);
+    if (ref == chimp_nil) {
+        return NULL;
     }
-
-    while (task != NULL) {
-        ChimpRef *value;
-        
-        if (task->modules != NULL) {
-            value = chimp_hash_get (task->modules, name);
-            if (value == NULL) {
-                return NULL;
-            }
-            else if (value != chimp_nil) {
-                return value;
-            }
-        }
-        task = task->parent;
-    }
-    return NULL;
+    return ref;
 }
 
 static ChimpRef *
