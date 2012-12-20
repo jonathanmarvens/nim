@@ -146,14 +146,10 @@ chimp_task_thread_func (void *arg)
 
     /* cleaning up the VM and GC is a-OK here because the task is finished */
     /* bonus: this cleans up circular references & our 'self' ref */
-    if (task->vm != NULL) {
-        chimp_vm_delete (task->vm);
-        task->vm = NULL;
-    }
-    if (task->gc != NULL) {
-        chimp_gc_delete (task->gc);
-        task->gc = NULL;
-    }
+    chimp_vm_delete (task->vm);
+    task->vm = NULL;
+    chimp_gc_delete (task->gc);
+    task->gc = NULL;
 
     return NULL;
 }
