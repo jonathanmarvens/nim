@@ -144,8 +144,17 @@ chimp_task_thread_func (void *arg)
         }
     }
 
-    /* cleaning up the VM and GC is a-OK here because the task is finished */
-    /* bonus: this cleans up circular references & our 'self' ref */
+    /************************************************************************
+     *                                                                      *
+     * Cleaning up the VM and GC is a-OK here because the task is finished. *
+     *                                                                      *
+     * We can't kill the mutex nor free the internal task, because it might *
+     * still be in use by other tasks.                                      *
+     *                                                                      *
+     * Bonus: this cleans up circular references & our 'self' ref.          *
+     *                                                                      *
+     ************************************************************************/
+
     chimp_vm_delete (task->vm);
     task->vm = NULL;
     chimp_gc_delete (task->gc);
