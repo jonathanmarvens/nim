@@ -249,34 +249,31 @@ static chimp_bool_t
 chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpLabel end_body;
-    ChimpLabel start_body;
-    ChimpLabel p = CHIMP_CODE(code)->used;
+    ChimpLabel end_body = CHIMP_LABEL_INIT;
+    ChimpLabel start_body = CHIMP_LABEL_INIT;
 
-    if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->while_.expr)) {
-        return CHIMP_FALSE;
-    }
+    chimp_code_use_label (code, &start_body);
 
-    if (!chimp_code_jumpiffalse (code, &end_body)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->while_.expr))
+        goto error;
 
-    if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->while_.body)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_code_jumpiffalse (code, &end_body))
+        goto error;
 
-    if (!chimp_code_jump (code, &start_body)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->while_.body))
+        goto error;
 
-    if (!chimp_code_set_jump_location (code, start_body, p)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_code_jump (code, &start_body))
+        goto error;
 
-    if (!chimp_code_patch_jump_location (code, end_body)) {
-        return CHIMP_FALSE;
-    }
+    chimp_code_use_label (code, &end_body);
+
     return CHIMP_TRUE;
+
+error:
+    chimp_label_free (&start_body);
+    chimp_label_free (&end_body);
+    return CHIMP_FALSE;
 }
 
 /* XXX interface to this is ugly as hell. revisit after visiting labels. */
@@ -285,11 +282,9 @@ chimp_compile_ast_simple_pattern_test (
     ChimpCodeCompiler *c,
     const char *class_name,
     ChimpRef *value,
-    ChimpLabel *labels,
-    size_t *num_labels_ptr
+    ChimpLabel *label
 )
 {
-    size_t num_labels = *num_labels_ptr;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
     /*
@@ -312,9 +307,7 @@ chimp_compile_ast_simple_pattern_test (
         return CHIMP_FALSE;
     }
 
-    num_labels++;
-
-    if (!chimp_code_jumpiffalse (code, &labels[num_labels-1])) {
+    if (!chimp_code_jumpiffalse (code, label)) {
         return CHIMP_FALSE;
     }
 
@@ -334,14 +327,10 @@ chimp_compile_ast_simple_pattern_test (
             return CHIMP_FALSE;
         }
 
-        num_labels++;
-
-        if (!chimp_code_jumpiffalse (code, &labels[num_labels-1])) {
+        if (!chimp_code_jumpiffalse (code, label)) {
             return CHIMP_FALSE;
         }
     }
-
-    *num_labels_ptr = num_labels;
 
     return CHIMP_TRUE;
 }
@@ -355,13 +344,11 @@ chimp_compile_ast_stmt_simple_pattern (
     ChimpLabel *next_step
 )
 {
-    ChimpLabel labels[2];
-    size_t i;
-    size_t num_labels = 0;
+    ChimpLabel label = CHIMP_LABEL_INIT;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
 
-    if (!chimp_compile_ast_simple_pattern_test (c, class_name, value, labels, &num_labels)) {
+    if (!chimp_compile_ast_simple_pattern_test (c, class_name, value, &label)) {
         return CHIMP_FALSE;
     }
 
@@ -374,11 +361,7 @@ chimp_compile_ast_stmt_simple_pattern (
         return CHIMP_FALSE;
     }
 
-    for (i = 0; i < num_labels; i++) {
-        if (!chimp_code_patch_jump_location (code, labels[i])) {
-            return CHIMP_FALSE;
-        }
-    }
+    chimp_code_use_label (code, &label);
 
     return CHIMP_TRUE;
 }
@@ -473,40 +456,28 @@ static chimp_bool_t
 chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     size_t i;
-    /* XXX holy fuck the way we handle labels atm sucks */
-    ChimpLabel *backpatch_list;
+    ChimpLabel end_label = CHIMP_LABEL_INIT;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
     ChimpRef *expr = CHIMP_AST_STMT(stmt)->match.expr;
     ChimpRef *patterns = CHIMP_AST_STMT(stmt)->match.body;
     const size_t size = CHIMP_ARRAY_SIZE(patterns);
 
-    backpatch_list = malloc (sizeof(*backpatch_list) * size);
-    if (backpatch_list == NULL) {
-        return CHIMP_FALSE;
-    }
-
     if (!chimp_compile_ast_expr (c, expr)) {
-        free (backpatch_list);
+        chimp_label_free (&end_label);
         return CHIMP_FALSE;
     }
 
     for (i = 0; i < size; i++) {
         ChimpRef *pattern = CHIMP_ARRAY_ITEM(patterns, i);
 
-        if (!chimp_compile_ast_stmt_pattern (c, pattern, backpatch_list + i)) {
-            free (backpatch_list);
-            return CHIMP_FALSE;
-        }
-    }
-    
-    for (i = 0; i < size; i++) {
-        if (!chimp_code_patch_jump_location (code, backpatch_list[i])) {
-            free (backpatch_list);
+        if (!chimp_compile_ast_stmt_pattern (c, pattern, &end_label)) {
+            chimp_label_free (&end_label);
             return CHIMP_FALSE;
         }
     }
 
-    free (backpatch_list);
+    chimp_code_use_label (code, &end_label);
+
     return CHIMP_TRUE;
 }
 
@@ -514,45 +485,40 @@ static chimp_bool_t
 chimp_compile_ast_stmt_if_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpLabel end_body;
+    ChimpLabel end_body = CHIMP_LABEL_INIT;
+    ChimpLabel end_orelse = CHIMP_LABEL_INIT;
 
-    if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->if_.expr)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->if_.expr))
+        goto error;
 
-    if (!chimp_code_jumpiffalse (code, &end_body)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_code_jumpiffalse (code, &end_body))
+        goto error;
 
-    if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->if_.body)) {
-        return CHIMP_FALSE;
-    }
+    if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->if_.body))
+        goto error;
 
     if (CHIMP_AST_STMT(stmt)->if_.orelse != NULL) {
-        ChimpLabel end_orelse;
 
-        if (!chimp_code_jump (code, &end_orelse)) {
-            return CHIMP_FALSE;
-        }
+        if (!chimp_code_jump (code, &end_orelse))
+            goto error;
 
-        if (!chimp_code_patch_jump_location (code, end_body)) {
-            return CHIMP_FALSE;
-        }
+        chimp_code_use_label (code, &end_body);
 
-        if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->if_.orelse)) {
-            return CHIMP_FALSE;
-        }
+        if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->if_.orelse))
+            goto error;
 
-        if (!chimp_code_patch_jump_location (code, end_orelse)) {
-            return CHIMP_FALSE;
-        }
+        chimp_code_use_label (code, &end_orelse);
     }
     else {
-        if (!chimp_code_patch_jump_location (code, end_body)) {
-            return CHIMP_FALSE;
-        }
+        chimp_code_use_label (code, &end_body);
     }
+
     return CHIMP_TRUE;
+
+error:
+    chimp_label_free (&end_body);
+    chimp_label_free (&end_orelse);
+    return CHIMP_FALSE;
 }
 
 static chimp_bool_t
@@ -1026,26 +992,28 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
         case CHIMP_BINOP_OR:
             {
                 /* short-circuited logical OR */
-                ChimpLabel right_label;
-                ChimpLabel end_label;
+                ChimpLabel right_label = CHIMP_LABEL_INIT;
+                ChimpLabel end_label = CHIMP_LABEL_INIT;
 
-                if (!chimp_code_jumpiffalse (code, &right_label)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_jump (code, &end_label)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_patch_jump_location (code, right_label)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_patch_jump_location (code, end_label)) {
-                    return CHIMP_FALSE;
-                }
+                if (!chimp_code_jumpiffalse (code, &right_label))
+                    goto or_error;
+
+                if (!chimp_code_jump (code, &end_label))
+                    goto or_error;
+
+                chimp_code_use_label (code, &right_label);
+
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right))
+                    goto or_error;
+
+                chimp_code_use_label (code, &end_label);
 
                 break;
+
+or_error:
+                chimp_label_free (&right_label);
+                chimp_label_free (&end_label);
+                return CHIMP_FALSE;
             }
         case CHIMP_BINOP_AND:
             {
@@ -1054,29 +1022,30 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
                 ChimpLabel right_label;
                 ChimpLabel end_label;
 
-                if (!chimp_code_jumpiftrue (code, &right_label)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_jump (code, &end_label)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_patch_jump_location (code, right_label)) {
-                    return CHIMP_FALSE;
-                }
+                if (!chimp_code_jumpiftrue (code, &right_label))
+                    goto and_error;
+
+                if (!chimp_code_jump (code, &end_label))
+                    goto and_error;
+
+                chimp_code_use_label (code, &right_label);
+
                 /* JUMPIFTRUE will pop the value on our behalf */
                 /*
                 if (!chimp_code_pop (code)) {
                     return NULL;
                 }
                 */
-                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right)) {
-                    return CHIMP_FALSE;
-                }
-                if (!chimp_code_patch_jump_location (code, end_label)) {
-                    return CHIMP_FALSE;
-                }
+                if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right))
+                    goto and_error;
+
+                chimp_code_use_label (code, &end_label);
 
                 break;
+and_error:
+                chimp_label_free (&right_label);
+                chimp_label_free (&end_label);
+                return CHIMP_FALSE;
             }
         case CHIMP_BINOP_ADD:
             {

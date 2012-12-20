@@ -6,6 +6,53 @@
 
 ChimpRef *chimp_code_class = NULL;
 
+void
+chimp_code_use_label (ChimpRef *self, ChimpLabel *label)
+{
+    if (!label->in_use) {
+        size_t i;
+        label->addr = CHIMP_CODE(self)->used;
+        label->in_use = CHIMP_TRUE;
+        for (i = 0; i < label->patchlist_size; i++) {
+            CHIMP_CODE(self)->bytecode[label->patchlist[i]] |=
+                                            (label->addr & 0xffffff);
+        }
+        chimp_label_free (label);
+    }
+    else {
+        chimp_bug (__FILE__, __LINE__, "Label is already in use\n");
+    }
+}
+
+void
+chimp_label_free (ChimpLabel *label)
+{
+    if (label->patchlist != NULL) {
+        free (label->patchlist);
+        label->patchlist = NULL;
+    }
+}
+
+static chimp_bool_t
+chimp_code_get_jump_addr (ChimpRef *self, ChimpLabel *label, size_t *dest_addr)
+{
+    if (label->in_use) {
+        *dest_addr = label->addr;
+    }
+    else {
+        const size_t size =
+            sizeof(*label->patchlist) * (label->patchlist_size + 1);
+        size_t *patchlist = realloc (label->patchlist, size);
+        if (patchlist == NULL) {
+            return CHIMP_FALSE;
+        }
+        label->patchlist = patchlist;
+        label->patchlist[label->patchlist_size++] = CHIMP_CODE(self)->used;
+        *dest_addr = 0;
+    }
+    return CHIMP_TRUE;
+}
+
 static void
 _chimp_code_dtor (ChimpRef *self)
 {
@@ -57,6 +104,17 @@ chimp_code_new (void)
 
 #define CHIMP_CURR_INSTR(co) CHIMP_CODE(co)->bytecode[CHIMP_CODE(co)->used]
 #define CHIMP_NEXT_INSTR(co) CHIMP_CODE(co)->bytecode[CHIMP_CODE(co)->used++]
+
+#define CHIMP_JUMP_INSTR(co, op, label) \
+    do { \
+        size_t jump_addr; \
+        if (!chimp_code_get_jump_addr ((co), (label), &jump_addr)) { \
+            chimp_label_free (label); \
+            return CHIMP_FALSE; \
+        } \
+        CHIMP_NEXT_INSTR(co) = \
+            CHIMP_MAKE_INSTR0(op) | (jump_addr & 0xffffff); \
+    } while (0)
 
 #define CHIMP_MAKE_INSTR0(op) \
     (((CHIMP_OPCODE_ ## op) & 0xff) << 24)
@@ -302,12 +360,7 @@ chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label)
         return CHIMP_FALSE;
     }
 
-    *label = CHIMP_CODE(self)->used;
-
-    /* the caller is expected to backpatch this later with a call to
-     * chimp_code_patch_jump_location.
-     */
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMPIFTRUE);
+    CHIMP_JUMP_INSTR(self, JUMPIFTRUE, label);
 
     return CHIMP_TRUE;
 }
@@ -324,12 +377,7 @@ chimp_code_jumpiffalse (ChimpRef *self, ChimpLabel *label)
         return CHIMP_FALSE;
     }
 
-    *label = CHIMP_CODE(self)->used;
-    
-    /* the caller is expected to backpatch this later with a call to
-     * chimp_code_patch_jump_location.
-     */
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMPIFFALSE);
+    CHIMP_JUMP_INSTR(self, JUMPIFFALSE, label);
 
     return CHIMP_TRUE;
 }
@@ -346,30 +394,7 @@ chimp_code_jump (ChimpRef *self, ChimpLabel *label)
         return CHIMP_FALSE;
     }
 
-    *label = CHIMP_CODE(self)->used;
-
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(JUMP);
-
-    return CHIMP_TRUE;
-}
-
-chimp_bool_t
-chimp_code_set_jump_location (ChimpRef *self, ChimpLabel label, size_t pos)
-{
-    CHIMP_CODE(self)->bytecode[label] |= (pos & 0x00ffffff);
-    return CHIMP_TRUE;
-}
-
-chimp_bool_t
-chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label)
-{
-    /* XXX limited to this by my current stupid choice of instr repr */
-    if (CHIMP_CODE(self)->used > 0x00ffffff) {
-        chimp_bug (__FILE__, __LINE__, "attempted to jump to an address > 24 bits");
-        return CHIMP_FALSE;
-    }
-
-    CHIMP_CODE(self)->bytecode[label] |= (CHIMP_CODE(self)->used & 0x00ffffff);
+    CHIMP_JUMP_INSTR(self, JUMP, label);
 
     return CHIMP_TRUE;
 }

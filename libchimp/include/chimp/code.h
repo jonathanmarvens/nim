@@ -71,8 +71,12 @@ typedef struct _ChimpCode {
     size_t    allocated;
 } ChimpCode;
 
-/* XXX we'll probably need to do something less stupid one day. */
-typedef size_t ChimpLabel;
+typedef struct _ChimpLabel {
+    size_t      *patchlist;
+    size_t       patchlist_size;
+    size_t       addr;
+    chimp_bool_t in_use;
+} ChimpLabel;
 
 chimp_bool_t
 chimp_code_class_bootstrap (void);
@@ -135,12 +139,6 @@ chimp_bool_t
 chimp_code_jump (ChimpRef *self, ChimpLabel *label);
 
 chimp_bool_t
-chimp_code_set_jump_location (ChimpRef *self, ChimpLabel label, size_t pos);
-
-chimp_bool_t
-chimp_code_patch_jump_location (ChimpRef *self, ChimpLabel label);
-
-chimp_bool_t
 chimp_code_eq (ChimpRef *self);
 
 chimp_bool_t
@@ -175,6 +173,14 @@ chimp_code_pop (ChimpRef *self);
 
 ChimpRef *
 chimp_code_dump (ChimpRef *self);
+
+void
+chimp_code_use_label (ChimpRef *self, ChimpLabel *label);
+
+void
+chimp_label_free (ChimpLabel *self);
+
+#define CHIMP_LABEL_INIT { NULL, 0, 0, CHIMP_FALSE }
 
 #define CHIMP_CODE(ref)  CHIMP_CHECK_CAST(ChimpCode, (ref), CHIMP_VALUE_TYPE_CODE)
 
