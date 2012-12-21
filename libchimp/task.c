@@ -23,7 +23,6 @@ enum {
     CHIMP_TASK_FLAG_READY       = 0x02,
     CHIMP_TASK_FLAG_DETACHED    = 0x04,
     CHIMP_TASK_FLAG_INBOX_FULL  = 0x08,
-    CHIMP_TASK_FLAG_OUTBOX_FULL = 0x10,
     CHIMP_TASK_FLAG_DONE        = 0x80,
 };
 
@@ -41,16 +40,11 @@ enum {
 
 #define CHIMP_TASK_IS_JOINABLE(task) \
     (!(CHIMP_TASK_IS_DETACHED(task) || \
-        CHIMP_TASK_IS_MAIN(task) || \
-        CHIMP_TASK_IS_DONE(task)))
+        CHIMP_TASK_IS_MAIN(task)))
 
 #define CHIMP_TASK_IS_INBOX_FULL(task) \
     ((((task)->flags) & CHIMP_TASK_FLAG_INBOX_FULL) \
         == CHIMP_TASK_FLAG_INBOX_FULL)
-
-#define CHIMP_TASK_IS_OUTBOX_FULL(task) \
-    ((((task)->flags) & CHIMP_TASK_FLAG_OUTBOX_FULL) \
-        == CHIMP_TASK_FLAG_OUTBOX_FULL)
 
 #define CHIMP_TASK_LOCK(task) \
     pthread_mutex_lock (&(task)->lock)
@@ -73,7 +67,6 @@ struct _ChimpTaskInternal {
     pthread_mutex_t    lock;
     int                refs;
     ChimpMsgInternal  *inbox;
-    ChimpMsgInternal  *outbox;
 };
 
 static void
@@ -154,6 +147,16 @@ chimp_task_thread_func (void *arg)
      * Bonus: this cleans up circular references & our 'self' ref.          *
      *                                                                      *
      ************************************************************************/
+
+    CHIMP_TASK_LOCK(task);
+    task->flags |= CHIMP_TASK_FLAG_DONE;
+    pthread_cond_broadcast (&task->flags_cond);
+    if (task->inbox != NULL) {
+        free (task->inbox);
+        task->inbox = NULL;
+    }
+    task->inbox = NULL;
+    CHIMP_TASK_UNLOCK(task);
 
     chimp_vm_delete (task->vm);
     task->vm = NULL;
@@ -350,22 +353,27 @@ chimp_task_send (ChimpRef *self, ChimpRef *value)
     }
 
     CHIMP_TASK_LOCK(task);
-    while ((CHIMP_TASK(self)->local && CHIMP_TASK_IS_OUTBOX_FULL(task)) ||
-            (!CHIMP_TASK(self)->local && CHIMP_TASK_IS_INBOX_FULL(task))) {
+
+    if (CHIMP_TASK(self)->local) {
+        chimp_bug (__FILE__, __LINE__, "cannot send using local task object");
+        CHIMP_FREE (msg);
+        return CHIMP_FALSE;
+    }
+    else if (CHIMP_TASK_IS_DONE(task)) {
+        /* this is *not* a bug: we can fail gracefully if recipient died */
+        CHIMP_FREE (msg);
+        return CHIMP_FALSE;
+    }
+
+    while (CHIMP_TASK_IS_INBOX_FULL(task)) {
         if (pthread_cond_wait (&task->flags_cond, &task->lock) != 0) {
             CHIMP_FREE(msg);
             CHIMP_TASK_UNLOCK(task);
             return CHIMP_FALSE;
         }
     }
-    if (!CHIMP_TASK(self)->local) {
-        task->inbox = msg;
-        task->flags |= CHIMP_TASK_FLAG_INBOX_FULL;
-    }
-    else {
-        task->outbox = msg;
-        task->flags |= CHIMP_TASK_FLAG_OUTBOX_FULL;
-    }
+    task->inbox = msg;
+    task->flags |= CHIMP_TASK_FLAG_INBOX_FULL;
     if (pthread_cond_broadcast (&task->flags_cond) != 0) {
         CHIMP_TASK_UNLOCK(task);
         return CHIMP_FALSE;
@@ -382,23 +390,31 @@ chimp_task_recv (ChimpRef *self)
     ChimpTaskInternal *task = CHIMP_TASK(self)->priv;
 
     CHIMP_TASK_LOCK(task);
-    while ((!CHIMP_TASK(self)->local && !CHIMP_TASK_IS_OUTBOX_FULL(task)) ||
-            (CHIMP_TASK(self)->local && !CHIMP_TASK_IS_INBOX_FULL(task))) {
+
+    if (!CHIMP_TASK(self)->local) {
+        chimp_bug (__FILE__, __LINE__,
+            "cannot recv from a non-local task object");
+        return NULL;
+    }
+    else if (CHIMP_TASK_IS_DONE(task)) {
+        chimp_bug (__FILE__, __LINE__,
+            "attempt to recv in a task marked DONE");
+        return NULL;
+    }
+
+    while (!CHIMP_TASK_IS_DONE(task) && !CHIMP_TASK_IS_INBOX_FULL(task)) {
         if (pthread_cond_wait (&task->flags_cond, &task->lock) != 0) {
             CHIMP_TASK_UNLOCK(task);
             return NULL;
         }
     }
-    if (CHIMP_TASK(self)->local) {
-        msg = task->inbox;
-        task->inbox = NULL;
-        task->flags &= ~CHIMP_TASK_FLAG_INBOX_FULL;
+    if (CHIMP_TASK_IS_DONE(task)) {
+        CHIMP_TASK_UNLOCK(task);
+        return NULL;
     }
-    else {
-        msg = task->outbox;
-        task->outbox = NULL;
-        task->flags &= ~CHIMP_TASK_FLAG_OUTBOX_FULL;
-    }
+    msg = task->inbox;
+    task->inbox = NULL;
+    task->flags &= ~CHIMP_TASK_FLAG_INBOX_FULL;
     if (pthread_cond_broadcast (&task->flags_cond) != 0) {
         CHIMP_FREE (msg);
         CHIMP_TASK_UNLOCK(task);
@@ -430,10 +446,6 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     if (task->inbox != NULL) {
         CHIMP_FREE (task->inbox);
         task->inbox = NULL;
-    }
-    if (task->outbox != NULL) {
-        CHIMP_FREE (task->outbox);
-        task->outbox = NULL;
     }
     pthread_cond_destroy (&task->flags_cond);
     pthread_mutex_destroy (&task->lock);
