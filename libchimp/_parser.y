@@ -205,7 +205,6 @@ pattern_test: simpler { $$ = $1; }
             | TOK_LBRACE opt_pattern_hash_elements TOK_RBRACE {
                 $$ = chimp_ast_expr_new_hash ($2, &@$);
             }
-            | TOK_ELSE { $$ = NULL; }
             ;
 
 opt_pattern_array_elements : pattern_array_elements { $$ = $1; }

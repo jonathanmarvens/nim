@@ -6,11 +6,13 @@ main argv {
       match receive {
         ["say", msg]: io.print(msg);
         "die": ret;
+        _: io.print("ignoring unknown message");
       }
     }
   };
 
   task.send(["say", "Hello from another thread"]);
+  task.send("asdkjaksd");
   task.send("die");
   task.join();
 }
