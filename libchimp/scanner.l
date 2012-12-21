@@ -64,7 +64,6 @@
 "="                         { CHIMP_TOKEN(TOK_ASSIGN) }
 "=="                        { CHIMP_TOKEN(TOK_EQ) }
 "!="                        { CHIMP_TOKEN(TOK_NEQ) }
-":"                         { CHIMP_TOKEN(TOK_COLON) }
 "{"                         { CHIMP_TOKEN(TOK_LBRACE) }
 "}"                         { CHIMP_TOKEN(TOK_RBRACE) }
 "<"                         { CHIMP_TOKEN(TOK_LT) }

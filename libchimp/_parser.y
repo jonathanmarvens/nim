@@ -53,13 +53,34 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 
 %expect 1
 
-%token TOK_TRUE TOK_FALSE TOK_NIL
-%token TOK_LBRACKET TOK_RBRACKET TOK_SEMICOLON TOK_COMMA TOK_COLON
-%token TOK_FULLSTOP
-%token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
-%token TOK_ASSIGN
-%token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
-%token TOK_SPAWN TOK_NOT TOK_RECEIVE TOK_MATCH TOK_UNDERSCORE
+%token TOK_TRUE "true"
+%token TOK_FALSE "false"
+%token TOK_NIL "nil"
+%token TOK_LBRACKET "("
+%token TOK_RBRACKET ")"
+%token TOK_SEMICOLON ";"
+%token TOK_COMMA ","
+%token TOK_COLON ":"
+%token TOK_FULLSTOP "."
+%token TOK_LSQBRACKET "["
+%token TOK_RSQBRACKET "]"
+%token TOK_LBRACE "{"
+%token TOK_RBRACE "}"
+%token TOK_PIPE "|"
+%token TOK_ASSIGN "="
+%token TOK_IF "if"
+%token TOK_ELSE "else"
+%token TOK_USE "use"
+%token TOK_RET "ret"
+%token TOK_PANIC "panic"
+%token TOK_FN "fn"
+%token TOK_VAR "var"
+%token TOK_WHILE "while"
+%token TOK_SPAWN "spawn"
+%token TOK_NOT "not"
+%token TOK_RECEIVE "receive"
+%token TOK_MATCH "match"
+%token TOK_UNDERSCORE "_"
 
 %right TOK_NOT
 %left TOK_OR TOK_AND
@@ -67,7 +88,9 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %left TOK_PLUS TOK_MINUS
 %left TOK_ASTERISK TOK_SLASH
 
-%token <ref> TOK_IDENT TOK_STR TOK_INT
+%token <ref> TOK_IDENT "identifier"
+%token <ref> TOK_STR "string literal"
+%token <ref> TOK_INT "integer literal"
 
 %type <ref> module
 %type <ref> stmt simple_stmt compound_stmt
