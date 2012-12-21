@@ -1,4 +1,3 @@
-* Finish pattern matching.
 * Add the `self` keyword.
 * Hash matching.
 * Error handling.
