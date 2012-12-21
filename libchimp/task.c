@@ -21,7 +21,6 @@ static pthread_once_t current_task_key_once = PTHREAD_ONCE_INIT;
 enum {
     CHIMP_TASK_FLAG_MAIN        = 0x01,
     CHIMP_TASK_FLAG_READY       = 0x02,
-    CHIMP_TASK_FLAG_DETACHED    = 0x04,
     CHIMP_TASK_FLAG_INBOX_FULL  = 0x08,
     CHIMP_TASK_FLAG_DONE        = 0x80,
 };
@@ -32,15 +31,8 @@ enum {
 #define CHIMP_TASK_IS_READY(task) \
     ((((task)->flags) & CHIMP_TASK_FLAG_READY) == CHIMP_TASK_FLAG_READY)
 
-#define CHIMP_TASK_IS_DETACHED(task) \
-    ((((task)->flags) & CHIMP_TASK_FLAG_DETACHED) == CHIMP_TASK_FLAG_DETACHED)
-
 #define CHIMP_TASK_IS_DONE(task) \
     ((((task)->flags) & CHIMP_TASK_FLAG_DONE) == CHIMP_TASK_FLAG_DONE)
-
-#define CHIMP_TASK_IS_JOINABLE(task) \
-    (!(CHIMP_TASK_IS_DETACHED(task) || \
-        CHIMP_TASK_IS_MAIN(task)))
 
 #define CHIMP_TASK_IS_INBOX_FULL(task) \
     ((((task)->flags) & CHIMP_TASK_FLAG_INBOX_FULL) \
@@ -123,16 +115,22 @@ chimp_task_thread_func (void *arg)
     task->flags |= CHIMP_TASK_FLAG_READY;
     pthread_cond_broadcast (&task->flags_cond);
 
+    /* take an extra ref to keep the task around after the GC dies */
+    task->refs++;
+
     if (task->method != NULL) {
         ChimpRef *args;
         ChimpRef *taskobj = chimp_task_new_local (task);
         if (taskobj == NULL) {
+            /* XXX we already have a lock, unref has its own locking code */
+            chimp_task_unref (task);
             return NULL;
         }
         task->self = taskobj;
         args = chimp_array_new ();
         CHIMP_TASK_UNLOCK(task);
         if (chimp_vm_invoke (task->vm, task->method, args) == NULL) {
+            chimp_task_unref (task);
             return NULL;
         }
     }
@@ -148,20 +146,31 @@ chimp_task_thread_func (void *arg)
      *                                                                      *
      ************************************************************************/
 
-    CHIMP_TASK_LOCK(task);
-    task->flags |= CHIMP_TASK_FLAG_DONE;
-    pthread_cond_broadcast (&task->flags_cond);
-    if (task->inbox != NULL) {
-        free (task->inbox);
-        task->inbox = NULL;
-    }
-    task->inbox = NULL;
-    CHIMP_TASK_UNLOCK(task);
-
     chimp_vm_delete (task->vm);
     task->vm = NULL;
     chimp_gc_delete (task->gc);
     task->gc = NULL;
+
+    CHIMP_TASK_LOCK(task);
+    if (task->inbox != NULL) {
+        CHIMP_FREE (task->inbox);
+        task->inbox = NULL;
+    }
+    task->inbox = NULL;
+
+    /* XXX pretty much a copy/paste of chimp_task_unref without locking crap */
+    if (task->refs > 0) {
+        task->refs--;
+        if (task->refs == 0) {
+            CHIMP_TASK_UNLOCK(task);
+            chimp_task_cleanup (task);
+            return NULL;
+        }
+    }
+
+    task->flags |= CHIMP_TASK_FLAG_DONE;
+    pthread_cond_broadcast (&task->flags_cond);
+    CHIMP_TASK_UNLOCK(task);
 
     return NULL;
 }
@@ -170,6 +179,7 @@ ChimpRef *
 chimp_task_new (ChimpRef *callable)
 {
     ChimpRef *taskobj;
+    pthread_attr_t attrs;
     ChimpTaskInternal *task = CHIMP_MALLOC(ChimpTaskInternal, sizeof(*task));
     if (task == NULL) {
         return NULL;
@@ -188,13 +198,27 @@ chimp_task_new (ChimpRef *callable)
         CHIMP_FREE (task);
         return NULL;
     }
+    if (pthread_attr_init (&attrs) != 0) {
+        pthread_cond_destroy (&task->flags_cond);
+        pthread_mutex_destroy (&task->lock);
+        return NULL;
+    }
+    if (pthread_attr_setdetachstate (&attrs, PTHREAD_CREATE_DETACHED) != 0) {
+        pthread_attr_destroy (&attrs);
+        pthread_cond_destroy (&task->flags_cond);
+        pthread_mutex_destroy (&task->lock);
+        return NULL;
+    }
     CHIMP_TASK_LOCK(task);
-    if (pthread_create (&task->thread, NULL, chimp_task_thread_func, task) != 0) {
+    if (pthread_create (&task->thread, &attrs, chimp_task_thread_func, task) != 0) {
+        pthread_attr_destroy (&attrs);
         pthread_cond_destroy (&task->flags_cond);
         pthread_mutex_destroy (&task->lock);
         CHIMP_FREE (task);
         return NULL;
     }
+    pthread_attr_destroy (&attrs);
+
     /* XXX error handling code is probably all kinds of wrong/unsafe from
      *     this point, but meh.
      */
@@ -333,6 +357,7 @@ chimp_task_unref (ChimpTaskInternal *task)
     if (task->refs > 0) {
         task->refs--;
         if (task->refs == 0) {
+            /* last ref: safe to unlock aggressively */
             CHIMP_TASK_UNLOCK(task);
             chimp_task_cleanup (task);
             return;
@@ -456,14 +481,15 @@ static void
 chimp_task_join (ChimpTaskInternal *task)
 {
     CHIMP_TASK_LOCK(task);
-    if (CHIMP_TASK_IS_JOINABLE(task)) {
-        CHIMP_TASK_UNLOCK(task);
-
-        pthread_join (task->thread, NULL);
+    if (!CHIMP_TASK_IS_MAIN(task)) {
+        while (!CHIMP_TASK_IS_DONE(task)) {
+            if (pthread_cond_wait (&task->flags_cond, &task->lock) != 0) {
+                CHIMP_TASK_UNLOCK(task);
+                return;
+            }
+        }
     }
-    else {
-        CHIMP_TASK_UNLOCK(task);
-    }
+    CHIMP_TASK_UNLOCK(task);
 }
 
 void
