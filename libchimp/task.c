@@ -551,12 +551,6 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
-_chimp_task_recv (ChimpRef *self, ChimpRef *args)
-{
-    return chimp_task_recv (self);
-}
-
-static ChimpRef *
 _chimp_task_join (ChimpRef *self, ChimpRef *args)
 {
     chimp_task_join (CHIMP_TASK(self)->priv);
@@ -583,7 +577,6 @@ chimp_task_class_bootstrap (void)
     CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
-    chimp_class_add_native_method (chimp_task_class, "recv", _chimp_task_recv);
     chimp_class_add_native_method (chimp_task_class, "join", _chimp_task_join);
     return CHIMP_TRUE;
 }
