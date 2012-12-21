@@ -581,6 +581,12 @@ chimp_compile_ast_stmt_hash_pattern_test (
                     realkey = chimp_nil;
                     break;
                 }
+            case CHIMP_AST_EXPR_WILDCARD:
+                {
+                    chimp_bug (__FILE__, __LINE__,
+                        "pattern matcher doesn't support wildcard in hash key");
+                    return CHIMP_FALSE;
+                }
             default:
                 chimp_bug (__FILE__, __LINE__,
                     "pattern matcher found unknown AST expr type in hash key");
