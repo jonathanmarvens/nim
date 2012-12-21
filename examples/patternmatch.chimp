@@ -1,0 +1,17 @@
+use io;
+
+main argv {
+  var task = spawn {
+    while true {
+      match receive {
+        ["say", msg]: io.print(msg);
+        "die": ret;
+      }
+    }
+  };
+
+  task.send(["say", "Hello from another thread"]);
+  task.send("die");
+  task.join();
+}
+
