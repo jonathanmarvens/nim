@@ -2892,6 +2892,10 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
+if test "x$PKG_CONFIG" = "x"; then :
+  as_fn_error $? "pkg-config not installed" "$LINENO" 5
+fi
+
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for valgrind" >&5
