@@ -258,25 +258,13 @@ chimp_code_getattr (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
-chimp_code_getitem (ChimpRef *self, size_t index)
+chimp_code_getitem (ChimpRef *self)
 {
-    int32_t arg;
-    ChimpRef *indexobj;
     if (!chimp_code_grow (self)) {
         return CHIMP_FALSE;
     }
 
-    indexobj = chimp_int_new (index);
-    if (indexobj == NULL) {
-        return CHIMP_FALSE;
-    }
-
-    arg = chimp_code_add_const (self, indexobj);
-    if (arg < 0) {
-        return CHIMP_FALSE;
-    }
-
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(GETITEM, arg);
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(GETITEM);
 
     return CHIMP_TRUE;
 }
@@ -587,7 +575,7 @@ chimp_code_opcode_str (ChimpOpcode op)
         case CHIMP_OPCODE_CMPLTE:
              return "CMP_LTE";
         case CHIMP_OPCODE_POP:
-             return "CMP_POP";
+             return "POP";
         case CHIMP_OPCODE_RET:
              return "RET";
         case CHIMP_OPCODE_ADD:
@@ -639,7 +627,7 @@ chimp_code_dump (ChimpRef *self)
                 return NULL;
             }
         }
-        else if (op == CHIMP_OPCODE_PUSHCONST || op == CHIMP_OPCODE_GETITEM) {
+        else if (op == CHIMP_OPCODE_PUSHCONST) {
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }

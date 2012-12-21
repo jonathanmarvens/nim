@@ -165,31 +165,6 @@ chimp_vm_getattr (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 }
 
 static chimp_bool_t
-chimp_vm_getitem (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
-{
-    ChimpRef *key;
-    ChimpRef *target;
-    ChimpRef *result;
-    
-    key = CHIMP_INSTR_CONST1 (code, pc);
-    if (key == NULL) {
-        return CHIMP_FALSE;
-    }
-    target = chimp_vm_pop (vm);
-    if (target == NULL) {
-        return CHIMP_FALSE;
-    }
-    result = chimp_object_getitem (target, key);
-    if (result == NULL) {
-        return CHIMP_FALSE;
-    }
-    if (!chimp_vm_push (vm, result)) {
-        return CHIMP_FALSE;
-    }
-    return CHIMP_TRUE;
-}
-
-static chimp_bool_t
 chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *args;
@@ -309,6 +284,7 @@ chimp_vm_cmp (ChimpVM *vm)
         chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
         return CHIMP_FALSE;
     }
+
     actual = chimp_object_cmp (left, right);
     if (actual == CHIMP_CMP_ERROR) {
         chimp_bug (__FILE__, __LINE__, "TODO raise an exception");
@@ -389,10 +365,33 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_GETITEM:
             {
-                if (!chimp_vm_getitem (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed");
+                ChimpRef *result;
+                ChimpRef *key;
+                ChimpRef *target;
+                
+                key = chimp_vm_pop (vm);
+                if (key == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 1");
                     return NULL;
                 }
+
+                target = chimp_vm_pop (vm);
+                if (target == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 2");
+                    return NULL;
+                }
+
+                result = chimp_object_getitem (target, key);
+                if (result == NULL) {
+                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 3");
+                    return NULL;
+                }
+
+                if (!chimp_vm_push (vm, result)) {
+                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 4");
+                    return NULL;
+                }
+
                 pc++;
                 break;
             }

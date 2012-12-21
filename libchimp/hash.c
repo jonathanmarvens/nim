@@ -97,6 +97,18 @@ _chimp_hash_get (ChimpRef *self, ChimpRef *args)
     return chimp_hash_get (self, CHIMP_ARRAY_ITEM(args, 0));
 }
 
+static ChimpRef *
+_chimp_hash_size (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_int_new (CHIMP_HASH_SIZE (self));
+}
+
+static ChimpRef *
+_chimp_hash_getitem (ChimpRef *self, ChimpRef *key)
+{
+    return chimp_hash_get (self, key);
+}
+
 static void
 _chimp_hash_dtor (ChimpRef *self)
 {
@@ -115,9 +127,11 @@ chimp_hash_class_bootstrap (void)
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
     CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
     CHIMP_CLASS(chimp_hash_class)->dtor = _chimp_hash_dtor;
+    CHIMP_CLASS(chimp_hash_class)->getitem = _chimp_hash_getitem;
     chimp_gc_make_root (NULL, chimp_hash_class);
     chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);
+    chimp_class_add_native_method (chimp_hash_class, "size", _chimp_hash_size);
     return CHIMP_TRUE;
 }
 

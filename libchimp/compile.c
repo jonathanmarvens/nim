@@ -95,6 +95,16 @@ typedef struct _ChimpBindVars {
         } \
         (stack)->items[(stack)->size-1].array_index = (i); \
     } while (0)
+#define CHIMP_BIND_PATH_HASH_KEY(stack, key) \
+    do { \
+        if ((stack)->size == 0) { \
+            chimp_bug (__FILE__, __LINE__, "hash key on empty bind path"); \
+        } \
+        if ((stack)->items[(stack)->size-1].type != CHIMP_BIND_PATH_ITEM_TYPE_HASH) { \
+            chimp_bug (__FILE__, __LINE__, "hash key on path item that is not a hash"); \
+        } \
+        (stack)->items[(stack)->size-1].hash_key = (key); \
+    } while (0)
 #define CHIMP_BIND_PATH_COPY(dest, src) memcpy ((dest), (src), sizeof(*dest));
 
 #define CHIMP_BIND_VARS_INIT(vars) memset ((vars), 0, sizeof(*(vars)))
@@ -437,7 +447,11 @@ chimp_compile_ast_stmt_array_pattern_test (
             return CHIMP_FALSE;
         }
 
-        if (!chimp_code_getitem (code, i)) {
+        if (!chimp_code_pushconst (code, chimp_int_new (i))) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_getitem (code)) {
             return CHIMP_FALSE;
         }
 
@@ -445,6 +459,150 @@ chimp_compile_ast_stmt_array_pattern_test (
 
         if (!chimp_compile_ast_stmt_pattern_test (
                     c, item, path, vars, next_label)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_pop (code)) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_hash_pattern_test (
+    ChimpCodeCompiler *c,
+    ChimpRef *hash,
+    ChimpBindPath *path,
+    ChimpBindVars *vars,
+    ChimpLabel *next_label
+)
+{
+    ChimpRef *size;
+    size_t i;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+    /* is the value a hash ? */
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getclass (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pushname (code, CHIMP_STR_NEW("hash"))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_eq (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, next_label)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getattr (code, CHIMP_STR_NEW("size"))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_call (code, 0)) {
+        return CHIMP_FALSE;
+    }
+
+    /* divide by two because we have an array repr of a hash:
+     * [key1, value1, key2, value2]
+     */
+    size = chimp_int_new (CHIMP_ARRAY_SIZE(hash) / 2);
+    if (size == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pushconst (code, size)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_eq (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, next_label)) {
+        return CHIMP_FALSE;
+    }
+
+    /* XXX hashes are encoded as arrays in the AST */
+    for (i = 0; i < CHIMP_ARRAY_SIZE(hash); i += 2) {
+        ChimpRef *key = CHIMP_ARRAY(hash)->items[i];
+        ChimpRef *value = CHIMP_ARRAY(hash)->items[i+1];
+        ChimpRef *realkey;
+
+        switch (CHIMP_AST_EXPR_TYPE(key)) {
+            case CHIMP_AST_EXPR_IDENT:
+                {
+                    chimp_bug (__FILE__, __LINE__,
+                        "pattern matcher does not support unpacking by key");
+                    return CHIMP_FALSE;
+                }
+            case CHIMP_AST_EXPR_ARRAY:
+                {
+                    chimp_bug (__FILE__, __LINE__,
+                        "pattern matcher does not support array keys");
+                    return CHIMP_FALSE;
+                }
+            case CHIMP_AST_EXPR_HASH:
+                {
+                    chimp_bug (__FILE__, __LINE__,
+                        "pattern matcher does not support hash keys");
+                    return CHIMP_FALSE;
+                }
+            case CHIMP_AST_EXPR_STR:
+                {
+                    realkey = CHIMP_AST_EXPR(key)->str.value;
+                    break;
+                }
+            case CHIMP_AST_EXPR_INT_:
+                {
+                    realkey = CHIMP_AST_EXPR(key)->int_.value;
+                    break;
+                }
+            case CHIMP_AST_EXPR_BOOL:
+                {
+                    realkey = CHIMP_AST_EXPR(key)->bool.value;
+                    break;
+                }
+            case CHIMP_AST_EXPR_NIL:
+                {
+                    realkey = chimp_nil;
+                    break;
+                }
+            default:
+                chimp_bug (__FILE__, __LINE__,
+                    "pattern matcher found unknown AST expr type in hash key");
+                return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_dup (code)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_pushconst (code, realkey)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_getitem (code)) {
+            return CHIMP_FALSE;
+        }
+
+        CHIMP_BIND_PATH_HASH_KEY(path, realkey);
+
+        if (!chimp_compile_ast_stmt_pattern_test (
+                    c, value, path, vars, next_label)) {
             return CHIMP_FALSE;
         }
 
@@ -588,8 +746,17 @@ chimp_compile_ast_stmt_pattern_test (
             }
         case CHIMP_AST_EXPR_HASH:
             {
-                /* TODO */
-                chimp_bug (__FILE__, __LINE__, "TODO");
+                ChimpRef *value = CHIMP_AST_EXPR(test)->hash.value;
+
+                CHIMP_BIND_PATH_PUSH_HASH(path);
+
+                if (!chimp_compile_ast_stmt_hash_pattern_test (
+                        c, value, path, vars, next_label)) {
+                    return CHIMP_FALSE;
+                }
+
+                CHIMP_BIND_PATH_POP(path);
+
                 break;
             }
         default:
@@ -643,13 +810,26 @@ chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
 
             for (k = 0; k < var_path->size; k++) {
                 if (var_path->items[k].type == CHIMP_BIND_PATH_ITEM_TYPE_ARRAY) {
-                    if (!chimp_code_getitem (code, var_path->items[k].array_index)) {
+                    size_t index = var_path->items[k].array_index;
+
+                    if (!chimp_code_pushconst (code, chimp_int_new (index))) {
+                        return CHIMP_FALSE;
+                    }
+
+                    if (!chimp_code_getitem (code)) {
                         return CHIMP_FALSE;
                     }
                 }
                 else if (var_path->items[k].type == CHIMP_BIND_PATH_ITEM_TYPE_HASH) {
-                    chimp_bug (__FILE__, __LINE__, "TODO");
-                    return CHIMP_FALSE;
+                    ChimpRef *key = var_path->items[k].hash_key;
+
+                    if (!chimp_code_pushconst (code, key)) {
+                        return CHIMP_FALSE;
+                    }
+
+                    if (!chimp_code_getitem (code)) {
+                        return CHIMP_FALSE;
+                    }
                 }
                 else {
                     /* simple binding: we're storing the matched value itself */
@@ -1215,8 +1395,8 @@ or_error:
             {
                 /* short-circuited logical AND */
 
-                ChimpLabel right_label;
-                ChimpLabel end_label;
+                ChimpLabel right_label = CHIMP_LABEL_INIT;
+                ChimpLabel end_label = CHIMP_LABEL_INIT;
 
                 if (!chimp_code_jumpiftrue (code, &right_label))
                     goto and_error;

@@ -84,6 +84,8 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %type <ref> pattern_array_elements opt_pattern_array_elements_tail
 %type <ref> opt_array_elements array_elements opt_array_elements_tail
 %type <ref> hash_elements opt_hash_elements_tail
+%type <ref> opt_pattern_hash_elements pattern_hash_elements
+%type <ref> opt_pattern_hash_elements_tail
 %type <ref> ident str array hash bool nil int
 %type <ref> ret panic
 
@@ -199,6 +201,9 @@ pattern_test: simpler { $$ = $1; }
             | TOK_LSQBRACKET opt_pattern_array_elements TOK_RSQBRACKET {
                 $$ = chimp_ast_expr_new_array ($2, &@$);
             }
+            | TOK_LBRACE opt_pattern_hash_elements TOK_RBRACE {
+                $$ = chimp_ast_expr_new_hash ($2, &@$);
+            }
             | TOK_ELSE { $$ = NULL; }
             ;
 
@@ -212,11 +217,30 @@ pattern_array_elements: pattern_test opt_pattern_array_elements_tail {
                       ;
 
 opt_pattern_array_elements_tail:
-                        TOK_COMMA pattern_test opt_pattern_array_elements_tail {
-                          $$ = $3; chimp_array_unshift ($$, $2);
-                        }
-                        | /* empty */ { $$ = chimp_array_new (); }
-                        ;
+            TOK_COMMA pattern_test opt_pattern_array_elements_tail {
+              $$ = $3; chimp_array_unshift ($$, $2);
+            }
+            | /* empty */ { $$ = chimp_array_new (); }
+            ;
+
+opt_pattern_hash_elements : pattern_hash_elements { $$ = $1; }
+                          | /* empty */ { $$ = chimp_array_new (); }
+                          ;
+
+pattern_hash_elements :
+    pattern_test TOK_COLON pattern_test opt_pattern_hash_elements_tail {
+        $$ = $4; chimp_array_unshift ($$, $3); chimp_array_unshift ($$, $1);
+    }
+    ;
+
+opt_pattern_hash_elements_tail :
+        TOK_COMMA pattern_test TOK_COLON pattern_test
+            opt_pattern_hash_elements_tail
+        {
+            $$ = $5; chimp_array_unshift ($$, $4); chimp_array_unshift ($$, $2);
+        }
+        | /* empty */ { $$ = chimp_array_new (); }
+        ;
 
 simple : simpler { $$ = $1; }
        | array { $$ = $1; }
