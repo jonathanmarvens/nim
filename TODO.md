@@ -1,16 +1,25 @@
 * Add the `self` keyword.
-* Hash matching.
-* Error handling.
+* getitem syntax.
+* Verify scoping rules using the symtable.
+  * Identifiers have function, module or 'builtin' scope.
+  * Identifiers should not be used/referenced before declared ('var' keyword)
+  * Ensure variables in the outer scope are not accessible inside spawn blocks
+  * If we can determine a variable has been used without being initialized,
+    complain.
+  * Scope rules for vars bound during pattern matching? Scoped to inner block?
+    Scoped to the function like other declared variables?
+  * How should we deal with duplicate declarations? Thinking errors ...
+* Error handling. Differentiate between runtime/compile errors & chimp bugs.
 * Unit testing API.
 * More tests.
+* Make it possible to use other chimp source modules.
+  (e.g. 'use foo' compiles & loads 'foo.chimp')
+* 'use foo.bar;'
 * Less semicolons.
 * Revisit the bytecode format.
   - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
 * The task API is sucky and inconsistent with the rest of the codebase
   (sometimes ChimpTaskInternal, sometimes ChimpTask)
-* inbox/outbox terminology for tasks.
-  (inbox/outbox is always from the perspective of the 'local' task, and
-   reversed for 'remote' tasks).
 * Syntax for structured data. (class definitions?)
 * Bitwise operators.
 * Modulo operator.
@@ -18,13 +27,13 @@
 * Unary operators ++, --
 * chimp_hash_get returning NULL and chimp\_nil completely sucks.
   Find a better way.
+* Array slices.
 * File I/O (part of the os module?)
 * External modules (e.g. "use foo;" should import foo.chimp at compile time).
 * Sockets
 * Expose methods on more classes.
 * Rubyish symbols?
 * Annotations?
-* Immutable values ...
 * Module definitions.
 * VM stacks are made roots on VM creation, but are not removed from the root
   set at destruction. Either figure out a way to let VMs mark themselves, or
