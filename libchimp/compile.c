@@ -1599,7 +1599,8 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
             if (!chimp_compile_ast_mod (&c, ast)) goto error;
             break;
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
+            chimp_bug (__FILE__, __LINE__,
+                "unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
             return NULL;
     };
 

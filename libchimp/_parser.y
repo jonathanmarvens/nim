@@ -343,8 +343,6 @@ ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2, &@$); }
 
 %%
 
-ChimpRef *chimp_source_file = NULL;
-
 void
 yyerror (const ChimpAstNodeLocation *loc, ChimpRef *filename, ChimpRef **mod, const char *format, ...)
 {

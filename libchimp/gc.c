@@ -534,9 +534,6 @@ chimp_gc_sweep (ChimpGC *gc)
     return freed;
 }
 
-extern chimp_bool_t chimp_parsing;
-extern ChimpRef *chimp_source_file;
-
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
@@ -561,7 +558,6 @@ chimp_gc_collect (ChimpGC *gc)
     }
 
     chimp_task_mark (gc, CHIMP_CURRENT_TASK);
-    chimp_gc_mark_ref (gc, chimp_source_file);
 
     if (gc->stack_start != NULL) {
         void *ref_p = &base;
