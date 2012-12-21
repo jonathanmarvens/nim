@@ -70,6 +70,9 @@ ChimpRef *
 chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 
 ChimpRef *
+chimp_object_getitem (ChimpRef *self, ChimpRef *key);
+
+ChimpRef *
 chimp_object_getattr_str (ChimpRef *self, const char *name);
 
 chimp_bool_t

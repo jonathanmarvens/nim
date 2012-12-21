@@ -32,6 +32,7 @@ typedef struct _ChimpClass {
     ChimpRef *(*div)(ChimpRef *, ChimpRef *);
     ChimpRef *(*call)(ChimpRef *, ChimpRef *);
     ChimpRef *(*getattr)(ChimpRef *, ChimpRef *);
+    ChimpRef *(*getitem)(ChimpRef *, ChimpRef *);
     struct _ChimpLWHash *methods;
 } ChimpClass;
 

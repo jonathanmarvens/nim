@@ -141,6 +141,20 @@ chimp_object_getattr (ChimpRef *self, ChimpRef *name)
 }
 
 ChimpRef *
+chimp_object_getitem (ChimpRef *self, ChimpRef *key)
+{
+    ChimpRef *klass = CHIMP_ANY_CLASS(self);
+
+    while (klass != NULL) {
+        if (CHIMP_CLASS(klass)->getitem != NULL) {
+            return CHIMP_CLASS(klass)->getitem (self, key);
+        }
+        klass = CHIMP_CLASS(klass)->super;
+    }
+    return NULL;
+}
+
+ChimpRef *
 chimp_object_getattr_str (ChimpRef *self, const char *name)
 {
     return chimp_object_getattr (self, chimp_str_new (name, strlen (name)));

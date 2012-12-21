@@ -485,6 +485,19 @@ chimp_symtable_visit_stmt_pattern_test (ChimpRef *self, ChimpRef *test)
 
                 break;
             }
+        case CHIMP_AST_EXPR_ARRAY:
+            {
+                ChimpRef *array = CHIMP_AST_EXPR(test)->array.value;
+                size_t i;
+                for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
+                    ChimpRef *item = CHIMP_ARRAY_ITEM(array, i);
+                    if (!chimp_symtable_visit_stmt_pattern_test (self, item)) {
+                        return CHIMP_FALSE;
+                    }
+                }
+
+                break;
+            }
         default:
             break;
     };

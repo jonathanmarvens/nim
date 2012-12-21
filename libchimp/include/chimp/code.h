@@ -17,6 +17,7 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_PUSHNAME,
     CHIMP_OPCODE_PUSHNIL,
     CHIMP_OPCODE_GETATTR,
+    CHIMP_OPCODE_GETITEM,
     CHIMP_OPCODE_CALL,
     CHIMP_OPCODE_MAKEARRAY,
     CHIMP_OPCODE_MAKEHASH,
@@ -101,6 +102,9 @@ chimp_code_getclass (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_getattr (ChimpRef *self, ChimpRef *id);
+
+chimp_bool_t
+chimp_code_getitem (ChimpRef *self, size_t index);
 
 chimp_bool_t
 chimp_code_call (ChimpRef *self, uint8_t nargs);

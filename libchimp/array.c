@@ -186,6 +186,23 @@ chimp_array_str (ChimpRef *self)
     return chimp_str_new_take (data, total_len-1);
 }
 
+static ChimpRef *
+_chimp_array_size (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_int_new (CHIMP_ARRAY_SIZE(self));
+}
+
+static ChimpRef *
+_chimp_array_getitem (ChimpRef *self, ChimpRef *key)
+{
+    if (CHIMP_ANY_CLASS(key) != chimp_int_class) {
+        chimp_bug (__FILE__, __LINE__, "bad argument type for array.__getattr__");
+        return NULL;
+    }
+
+    return CHIMP_ARRAY_ITEM(self, (size_t)CHIMP_INT(key)->value);
+}
+
 static void
 _chimp_array_dtor (ChimpRef *self)
 {
@@ -203,6 +220,7 @@ chimp_array_class_bootstrap (void)
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
     CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
     CHIMP_CLASS(chimp_array_class)->dtor = _chimp_array_dtor;
+    CHIMP_CLASS(chimp_array_class)->getitem = _chimp_array_getitem;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
@@ -210,6 +228,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
     chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
     chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
+    chimp_class_add_native_method (chimp_array_class, "size", _chimp_array_size);
     return CHIMP_TRUE;
 }
 

@@ -31,6 +31,88 @@ typedef struct _ChimpCodeCompiler {
     ChimpRef      *symtable;
 } ChimpCodeCompiler;
 
+/* the ChimpBind* structures are used for pattern matching */
+
+typedef struct _ChimpBindPathItem {
+    enum {
+        CHIMP_BIND_PATH_ITEM_TYPE_SIMPLE,
+        CHIMP_BIND_PATH_ITEM_TYPE_ARRAY,
+        CHIMP_BIND_PATH_ITEM_TYPE_HASH
+    } type;
+    union {
+        size_t    array_index;
+        ChimpRef *hash_key;
+    };
+} ChimpBindPathItem;
+
+#define MAX_BIND_PATH_SIZE 16
+
+typedef struct _ChimpBindPath {
+    ChimpBindPathItem items[16];
+    size_t            size;
+} ChimpBindPath;
+
+typedef struct _ChimpBindVar {
+    ChimpRef      *id;
+    ChimpBindPath  path;
+} ChimpBindVar;
+
+#define MAX_BIND_VARS_SIZE 16
+
+typedef struct _ChimpBindVars {
+    ChimpBindVar    items[MAX_BIND_VARS_SIZE];
+    size_t          size;
+} ChimpBindVars;
+
+#define CHIMP_BIND_PATH_ITEM_ARRAY(index) { CHIMP_BIND_PATH_ARRAY, (index) }
+#define CHIMP_BIND_PATH_ITEM_HASH(key)    { CHIMP_BIND_PATH_HASH, (key) }
+
+#define CHIMP_BIND_PATH_INIT(stack) memset ((stack), 0, sizeof(*(stack)))
+#define CHIMP_BIND_PATH_PUSH_ARRAY(stack) \
+    do { \
+        if ((stack)->size >= MAX_BIND_PATH_SIZE) \
+            chimp_bug (__FILE__, __LINE__, "bindpath limit reached"); \
+        (stack)->items[(stack)->size].type = CHIMP_BIND_PATH_ITEM_TYPE_ARRAY; \
+        (stack)->items[(stack)->size].array_index = 0; \
+        (stack)->size++; \
+    } while (0)
+#define CHIMP_BIND_PATH_PUSH_HASH(stack) \
+    do { \
+        if ((stack)->size >= MAX_BIND_PATH_SIZE) \
+            chimp_bug (__FILE__, __LINE__, "bindpath limit reached"); \
+        (stack)->items[(stack)->size].type = CHIMP_BIND_PATH_ITEM_TYPE_HASH; \
+        (stack)->items[(stack)->size].hash_key = NULL; \
+        (stack)->size++; \
+    } while (0)
+#define CHIMP_BIND_PATH_POP(stack) (stack)->size--
+#define CHIMP_BIND_PATH_ARRAY_INDEX(stack, i) \
+    do { \
+        if ((stack)->size == 0) { \
+            chimp_bug (__FILE__, __LINE__, "array index on empty bind path"); \
+        } \
+        if ((stack)->items[(stack)->size-1].type != CHIMP_BIND_PATH_ITEM_TYPE_ARRAY) { \
+            chimp_bug (__FILE__, __LINE__, "array index on path item that is not an array"); \
+        } \
+        (stack)->items[(stack)->size-1].array_index = (i); \
+    } while (0)
+#define CHIMP_BIND_PATH_COPY(dest, src) memcpy ((dest), (src), sizeof(*dest));
+
+#define CHIMP_BIND_VARS_INIT(vars) memset ((vars), 0, sizeof(*(vars)))
+#define CHIMP_BIND_VARS_ADD(vars, id, p) \
+    do { \
+        if ((vars)->size >= MAX_BIND_VARS_SIZE) \
+            chimp_bug (__FILE__, __LINE__, "bindvar limit reached"); \
+        (vars)->items[(vars)->size].id = id; \
+        memcpy (&(vars)->items[(vars)->size].path, (p), sizeof(*p)); \
+        /* XXX HACK path of zero elements means a top-level binding */ \
+        if ((p)->size == 0) { \
+            (vars)->items[(vars)->size].path.size++; \
+            (vars)->items[(vars)->size].path.items[0].type = \
+                CHIMP_BIND_PATH_ITEM_TYPE_SIMPLE; \
+        } \
+        (vars)->size++; \
+    } while (0)
+
 #define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
 #define CHIMP_COMPILER_MODULE(c) ((c)->current_unit)->module
 #define CHIMP_COMPILER_SCOPE(c) ((c)->current_unit)->value
@@ -86,6 +168,15 @@ chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *binop);
+
+static chimp_bool_t
+chimp_compile_ast_stmt_pattern_test (
+    ChimpCodeCompiler *c,
+    ChimpRef *test,
+    ChimpBindPath *path,
+    ChimpBindVars *vars,
+    ChimpLabel *next_label
+);
 
 static ChimpRef *
 chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRef *scope)
@@ -276,13 +367,101 @@ error:
     return CHIMP_FALSE;
 }
 
-/* XXX interface to this is ugly as hell. revisit after visiting labels. */
 static chimp_bool_t
-chimp_compile_ast_simple_pattern_test (
+chimp_compile_ast_stmt_array_pattern_test (
+    ChimpCodeCompiler *c,
+    ChimpRef *array,
+    ChimpBindPath *path,
+    ChimpBindVars *vars,
+    ChimpLabel *next_label
+)
+{
+    ChimpRef *size;
+    size_t i;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+    /* is the value an array ? */
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getclass (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pushname (code, CHIMP_STR_NEW("array"))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_eq (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, next_label)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getattr (code, CHIMP_STR_NEW("size"))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_call (code, 0)) {
+        return CHIMP_FALSE;
+    }
+
+    size = chimp_int_new (CHIMP_ARRAY_SIZE(array));
+    if (size == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pushconst (code, size)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_eq (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jumpiffalse (code, next_label)) {
+        return CHIMP_FALSE;
+    }
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(array); i++) {
+        ChimpRef *item = CHIMP_ARRAY_ITEM(array, i);
+
+        if (!chimp_code_dup (code)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_getitem (code, i)) {
+            return CHIMP_FALSE;
+        }
+
+        CHIMP_BIND_PATH_ARRAY_INDEX(path, i);
+
+        if (!chimp_compile_ast_stmt_pattern_test (
+                    c, item, path, vars, next_label)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_pop (code)) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_stmt_simple_pattern_test (
     ChimpCodeCompiler *c,
     const char *class_name,
     ChimpRef *value,
-    ChimpLabel *label
+    ChimpLabel *next_label
 )
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
@@ -307,7 +486,7 @@ chimp_compile_ast_simple_pattern_test (
         return CHIMP_FALSE;
     }
 
-    if (!chimp_code_jumpiffalse (code, label)) {
+    if (!chimp_code_jumpiffalse (code, next_label)) {
         return CHIMP_FALSE;
     }
 
@@ -327,7 +506,7 @@ chimp_compile_ast_simple_pattern_test (
             return CHIMP_FALSE;
         }
 
-        if (!chimp_code_jumpiffalse (code, label)) {
+        if (!chimp_code_jumpiffalse (code, next_label)) {
             return CHIMP_FALSE;
         }
     }
@@ -336,49 +515,20 @@ chimp_compile_ast_simple_pattern_test (
 }
 
 static chimp_bool_t
-chimp_compile_ast_stmt_simple_pattern (
+chimp_compile_ast_stmt_pattern_test (
     ChimpCodeCompiler *c,
-    ChimpRef *pattern,
-    const char *class_name,
-    ChimpRef *value,
-    ChimpLabel *next_step
+    ChimpRef *test,
+    ChimpBindPath *path,
+    ChimpBindVars *vars,
+    ChimpLabel *next_label
 )
 {
-    ChimpLabel label = CHIMP_LABEL_INIT;
-    ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
-
-    if (!chimp_compile_ast_simple_pattern_test (c, class_name, value, &label)) {
-        return CHIMP_FALSE;
-    }
-
-    /* sweet! evaluate the body & jump to the end of the 'match' block. */
-    if (!chimp_compile_ast_stmts (c, body)) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_code_jump (code, next_step)) {
-        return CHIMP_FALSE;
-    }
-
-    chimp_code_use_label (code, &label);
-
-    return CHIMP_TRUE;
-}
-
-static chimp_bool_t
-chimp_compile_ast_stmt_pattern (
-    ChimpCodeCompiler *c, ChimpRef *pattern, ChimpLabel *label)
-{
-    ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test;
-
     switch (CHIMP_AST_EXPR(test)->type) {
         case CHIMP_AST_EXPR_INT_:
             {
                 ChimpRef *value = CHIMP_AST_EXPR(test)->int_.value;
-                if (!chimp_compile_ast_stmt_simple_pattern (
-                        c, pattern, "int", value, label)) {
+                if (!chimp_compile_ast_stmt_simple_pattern_test (
+                        c, "int", value, next_label)) {
                     return CHIMP_FALSE;
                 }
 
@@ -387,8 +537,8 @@ chimp_compile_ast_stmt_pattern (
         case CHIMP_AST_EXPR_STR:
             {
                 ChimpRef *value = CHIMP_AST_EXPR(test)->str.value;
-                if (!chimp_compile_ast_stmt_simple_pattern (
-                        c, pattern, "str", value, label)) {
+                if (!chimp_compile_ast_stmt_simple_pattern_test (
+                        c, "str", value, next_label)) {
                     return CHIMP_FALSE;
                 }
 
@@ -397,8 +547,8 @@ chimp_compile_ast_stmt_pattern (
         case CHIMP_AST_EXPR_BOOL:
             {
                 ChimpRef *value = CHIMP_AST_EXPR(test)->bool.value;
-                if (!chimp_compile_ast_stmt_simple_pattern (
-                        c, pattern, "bool", value, label)) {
+                if (!chimp_compile_ast_stmt_simple_pattern_test (
+                        c, "bool", value, next_label)) {
                     return CHIMP_FALSE;
                 }
 
@@ -406,8 +556,8 @@ chimp_compile_ast_stmt_pattern (
             }
         case CHIMP_AST_EXPR_NIL:
             {
-                if (!chimp_compile_ast_stmt_simple_pattern (
-                        c, pattern, "nil", NULL, label)) {
+                if (!chimp_compile_ast_stmt_simple_pattern_test (
+                        c, "nil", NULL, next_label)) {
                     return CHIMP_FALSE;
                 }
 
@@ -416,26 +566,24 @@ chimp_compile_ast_stmt_pattern (
         case CHIMP_AST_EXPR_IDENT:
             {
                 ChimpRef *id = CHIMP_AST_EXPR(test)->ident.id;
-                ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
 
-                if (!chimp_code_storename (code, id)) {
-                    return CHIMP_FALSE;
-                }
-
-                if (!chimp_compile_ast_stmts (c, body)) {
-                    return CHIMP_FALSE;
-                }
-
-                if (!chimp_code_jump (code, label)) {
-                    return CHIMP_FALSE;
-                }
+                CHIMP_BIND_VARS_ADD(vars, id, path);
 
                 break;
             }
         case CHIMP_AST_EXPR_ARRAY:
             {
-                /* TODO */
-                chimp_bug (__FILE__, __LINE__, "TODO");
+                ChimpRef *value = CHIMP_AST_EXPR(test)->array.value;
+
+                CHIMP_BIND_PATH_PUSH_ARRAY(path);
+
+                if (!chimp_compile_ast_stmt_array_pattern_test (
+                        c, value, path, vars, next_label)) {
+                    return CHIMP_FALSE;
+                }
+
+                CHIMP_BIND_PATH_POP(path);
+
                 break;
             }
         case CHIMP_AST_EXPR_HASH:
@@ -468,12 +616,60 @@ chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
     }
 
     for (i = 0; i < size; i++) {
+        ChimpLabel next_label = CHIMP_LABEL_INIT;
         ChimpRef *pattern = CHIMP_ARRAY_ITEM(patterns, i);
+        ChimpRef *test = CHIMP_AST_STMT(pattern)->pattern.test;
+        ChimpRef *body = CHIMP_AST_STMT(pattern)->pattern.body;
+        size_t j, k;
+        ChimpBindPath path;
+        ChimpBindVars bound;
 
-        if (!chimp_compile_ast_stmt_pattern (c, pattern, &end_label)) {
+        CHIMP_BIND_PATH_INIT(&path);
+        CHIMP_BIND_VARS_INIT(&bound);
+
+        /* try to match the value against this test. if we fail, jump to next_label */
+        if (!chimp_compile_ast_stmt_pattern_test (c, test, &path, &bound, &next_label)) {
             chimp_label_free (&end_label);
             return CHIMP_FALSE;
         }
+
+        /* bind pattern vars (if any) */
+        for (j = 0; j < bound.size; j++) {
+            const ChimpBindPath *var_path = &bound.items[j].path;
+
+            if (!chimp_code_dup (code)) {
+                return CHIMP_FALSE;
+            }
+
+            for (k = 0; k < var_path->size; k++) {
+                if (var_path->items[k].type == CHIMP_BIND_PATH_ITEM_TYPE_ARRAY) {
+                    if (!chimp_code_getitem (code, var_path->items[k].array_index)) {
+                        return CHIMP_FALSE;
+                    }
+                }
+                else if (var_path->items[k].type == CHIMP_BIND_PATH_ITEM_TYPE_HASH) {
+                    chimp_bug (__FILE__, __LINE__, "TODO");
+                    return CHIMP_FALSE;
+                }
+                else {
+                    /* simple binding: we're storing the matched value itself */
+                }
+            }
+            if (!chimp_code_storename (code, bound.items[j].id)) {
+                return CHIMP_FALSE;
+            }
+        }
+
+        /* successful match: execute the body */
+        if (!chimp_compile_ast_stmts (c, body)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_code_jump (code, &end_label)) {
+            return CHIMP_FALSE;
+        }
+
+        chimp_code_use_label (code, &next_label);
     }
 
     chimp_code_use_label (code, &end_label);

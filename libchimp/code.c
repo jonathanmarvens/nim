@@ -258,6 +258,30 @@ chimp_code_getattr (ChimpRef *self, ChimpRef *id)
 }
 
 chimp_bool_t
+chimp_code_getitem (ChimpRef *self, size_t index)
+{
+    int32_t arg;
+    ChimpRef *indexobj;
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+
+    indexobj = chimp_int_new (index);
+    if (indexobj == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    arg = chimp_code_add_const (self, indexobj);
+    if (arg < 0) {
+        return CHIMP_FALSE;
+    }
+
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR1(GETITEM, arg);
+
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_call (ChimpRef *self, uint8_t nargs)
 {
     if (!chimp_code_grow (self)) {
@@ -542,6 +566,8 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "PANIC";
         case CHIMP_OPCODE_GETATTR:
              return "GETATTR";
+        case CHIMP_OPCODE_GETITEM:
+             return "GETITEM";
         case CHIMP_OPCODE_CALL:
              return "CALL";
         case CHIMP_OPCODE_MAKEARRAY:
@@ -613,7 +639,7 @@ chimp_code_dump (ChimpRef *self)
                 return NULL;
             }
         }
-        else if (op == CHIMP_OPCODE_PUSHCONST) {
+        else if (op == CHIMP_OPCODE_PUSHCONST || op == CHIMP_OPCODE_GETITEM) {
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
