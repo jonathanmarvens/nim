@@ -759,6 +759,10 @@ chimp_compile_ast_stmt_pattern_test (
 
                 break;
             }
+        case CHIMP_AST_EXPR_WILDCARD:
+            {
+                break;
+            }
         default:
             chimp_bug (__FILE__, __LINE__, "TODO");
             return CHIMP_FALSE;
@@ -1158,6 +1162,12 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_receive (c, expr);
         case CHIMP_AST_EXPR_NOT:
             return chimp_compile_ast_expr_not (c, expr);
+        case CHIMP_AST_EXPR_WILDCARD:
+            {
+                chimp_bug (__FILE__, __LINE__,
+                        "wildcard can't be used outside of a match statement");
+                return CHIMP_FALSE;
+            }
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;

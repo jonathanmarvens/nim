@@ -52,6 +52,7 @@
 "match"                     { CHIMP_TOKEN(TOK_MATCH) }
 [ \t\r]                     { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
+"_"                         { CHIMP_TOKEN(TOK_UNDERSCORE) }
 "("                         { CHIMP_TOKEN(TOK_LBRACKET) }
 ")"                         { CHIMP_TOKEN(TOK_RBRACKET) }
 ";"                         { CHIMP_TOKEN(TOK_SEMICOLON) }

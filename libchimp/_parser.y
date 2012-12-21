@@ -59,7 +59,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_LSQBRACKET TOK_RSQBRACKET TOK_LBRACE TOK_RBRACE TOK_PIPE
 %token TOK_ASSIGN
 %token TOK_IF TOK_ELSE TOK_USE TOK_RET TOK_PANIC TOK_FN TOK_VAR TOK_WHILE
-%token TOK_SPAWN TOK_NOT TOK_RECEIVE TOK_MATCH
+%token TOK_SPAWN TOK_NOT TOK_RECEIVE TOK_MATCH TOK_UNDERSCORE
 
 %right TOK_NOT
 %left TOK_OR TOK_AND
@@ -198,6 +198,7 @@ pattern: pattern_test TOK_COLON block { $$ = chimp_ast_stmt_new_pattern ($1, $3,
        ;
 
 pattern_test: simpler { $$ = $1; }
+            | TOK_UNDERSCORE { $$ = chimp_ast_expr_new_wildcard (&@$); }
             | TOK_LSQBRACKET opt_pattern_array_elements TOK_RSQBRACKET {
                 $$ = chimp_ast_expr_new_array ($2, &@$);
             }

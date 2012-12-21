@@ -45,6 +45,7 @@ AST_DESCRIPTOR = [
             ['value', 'int']],
         ['ident',
             ['id', 'str']],
+        ['wildcard'],
         ['nil'],
         ['fn',
             ['args', 'array'],
