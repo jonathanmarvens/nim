@@ -427,6 +427,14 @@ chimp_task_cleanup (ChimpTaskInternal *task)
         chimp_gc_delete (task->gc);
         task->gc = NULL;
     }
+    if (task->inbox != NULL) {
+        CHIMP_FREE (task->inbox);
+        task->inbox = NULL;
+    }
+    if (task->outbox != NULL) {
+        CHIMP_FREE (task->outbox);
+        task->outbox = NULL;
+    }
     pthread_cond_destroy (&task->flags_cond);
     pthread_mutex_destroy (&task->lock);
     CHIMP_FREE (task);
