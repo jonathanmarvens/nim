@@ -2,17 +2,7 @@
 
 use io;
 
-readname {
-  io.print ("What's your name?");
-  ret io.readline();
-}
-
-ohai name {
-  io.print (str("hello, ", name));
-}
-
 main argv {
-  var name = readname ();
-  ohai (name);
+  io.print ("Hello, World");
 }
 
