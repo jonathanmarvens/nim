@@ -16,9 +16,10 @@ autom4te.cache
 /libchimp/ast.c
 /libchimp/include/chimp/ast.h
 /libchimp/_parser.c
+/libchimp/_parser.output
 /libchimp/include/chimp/_parser.h
 /libchimp/scanner.c
-/tags
+tags
 TAGS
 /test/_test_main.c
 /test/all-native
