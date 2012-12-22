@@ -88,5 +88,12 @@ main argv {
 
   var h = {"foo": "bar"};
   io.print(h["foo"]);
+
+  var lookup = {
+    "a": fn { |x| io.print(x); },
+    "b": fn { |x| io.print(x * 2); }
+  };
+  lookup["a"](5);
+  lookup["b"](5);
 }
 
