@@ -261,6 +261,18 @@ chimp_symtable_visit_expr_getattr (ChimpRef *self, ChimpRef *expr)
 }
 
 static chimp_bool_t
+chimp_symtable_visit_expr_getitem (ChimpRef *self, ChimpRef *expr)
+{
+    ChimpRef *target = CHIMP_AST_EXPR(expr)->getitem.target;
+
+    if (!chimp_symtable_visit_expr (self, target)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_symtable_visit_expr_array (ChimpRef *self, ChimpRef *expr)
 {
     size_t i;
@@ -384,6 +396,8 @@ chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
             return chimp_symtable_visit_expr_call (self, expr);
         case CHIMP_AST_EXPR_GETATTR:
             return chimp_symtable_visit_expr_getattr (self, expr);
+        case CHIMP_AST_EXPR_GETITEM:
+            return chimp_symtable_visit_expr_getitem (self, expr);
         case CHIMP_AST_EXPR_ARRAY:
             return chimp_symtable_visit_expr_array (self, expr);
         case CHIMP_AST_EXPR_HASH:

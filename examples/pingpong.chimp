@@ -6,13 +6,13 @@ pong {
   io.print(str("ponger got pinger: ", pinger));
   while true {
     match receive {
-      "ping": {
+      "ping" {
         io.print("ping");
         io.print("ponger sending");
         pinger.send("pong");
         io.print("ponger waiting");
       }
-      "finished": {
+      "finished" {
         ret;
       }
     }

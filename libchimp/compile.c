@@ -177,6 +177,9 @@ static chimp_bool_t
 chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
+chimp_compile_ast_expr_getitem (ChimpCodeCompiler *c, ChimpRef *expr);
+
+static chimp_bool_t
 chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *binop);
 
 static chimp_bool_t
@@ -1144,6 +1147,8 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_call (c, expr);
         case CHIMP_AST_EXPR_GETATTR:
             return chimp_compile_ast_expr_getattr (c, expr);
+        case CHIMP_AST_EXPR_GETITEM:
+            return chimp_compile_ast_expr_getitem (c, expr);
         case CHIMP_AST_EXPR_ARRAY:
             return chimp_compile_ast_expr_array (c, expr);
         case CHIMP_AST_EXPR_HASH:
@@ -1225,6 +1230,34 @@ chimp_compile_ast_expr_getattr (ChimpCodeCompiler *c, ChimpRef *expr)
     }
 
     if (!chimp_code_getattr (code, attr)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_expr_getitem (ChimpCodeCompiler *c, ChimpRef *expr)
+{
+    ChimpRef *target;
+    ChimpRef *key;
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+
+    target = CHIMP_AST_EXPR(expr)->getitem.target;
+    if (!chimp_compile_ast_expr (c, target)) {
+        return CHIMP_FALSE;
+    }
+
+    key = CHIMP_AST_EXPR(expr)->getitem.key;
+    if (key == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_compile_ast_expr (c, key)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getitem (code)) {
         return CHIMP_FALSE;
     }
 
