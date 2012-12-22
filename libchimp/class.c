@@ -17,7 +17,7 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
     
     /* XXX having two code paths here is probably wrong/begging for trouble */
     if (self == chimp_class_class) {
-        ref = chimp_class_new (CHIMP_ARRAY_ITEM(args, 0), CHIMP_ARRAY_ITEM(args, 1));
+        ref = CHIMP_ANY_CLASS(CHIMP_ARRAY_ITEM(args, 0));
     }
     else {
         ref = chimp_gc_new_object (NULL);
@@ -193,6 +193,32 @@ chimp_class_dtor (ChimpRef *self)
     chimp_lwhash_delete (CHIMP_CLASS(self)->methods);
 }
 
+static ChimpRef *
+chimp_class_getattr (ChimpRef *self, ChimpRef *attr)
+{
+    if (strcmp (CHIMP_STR_DATA(attr), "name") == 0) {
+        return CHIMP_CLASS(self)->name;
+    }
+    else if (strcmp (CHIMP_STR_DATA(attr), "superclass") == 0) {
+        if (CHIMP_CLASS(self)->super == NULL) {
+            return chimp_nil;
+        }
+        else {
+            return CHIMP_CLASS(self)->super;
+        }
+    }
+    else {
+        return NULL;
+    }
+}
+
+static ChimpRef *
+chimp_class_str (ChimpRef *self)
+{
+    return chimp_str_new_concat (
+        "<class '", CHIMP_STR_DATA(CHIMP_CLASS(self)->name), "'>", NULL);
+}
+
 chimp_bool_t
 _chimp_bootstrap_L3 (void)
 {
@@ -200,6 +226,8 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_class_class)->inst_type = CHIMP_VALUE_TYPE_CLASS;
     CHIMP_CLASS(chimp_class_class)->dtor = chimp_class_dtor;
+    CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
+    CHIMP_CLASS(chimp_class_class)->str = chimp_class_str;
 
     CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_object_class)->call = chimp_class_call;

@@ -95,5 +95,8 @@ main argv {
   };
   lookup["a"](5);
   lookup["b"](5);
+
+  io.print(class(lookup));
+  io.print(class(lookup).superclass);
 }
 
