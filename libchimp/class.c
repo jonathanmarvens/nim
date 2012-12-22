@@ -199,7 +199,7 @@ chimp_class_getattr (ChimpRef *self, ChimpRef *attr)
     if (strcmp (CHIMP_STR_DATA(attr), "name") == 0) {
         return CHIMP_CLASS(self)->name;
     }
-    else if (strcmp (CHIMP_STR_DATA(attr), "superclass") == 0) {
+    else if (strcmp (CHIMP_STR_DATA(attr), "super") == 0) {
         if (CHIMP_CLASS(self)->super == NULL) {
             return chimp_nil;
         }
