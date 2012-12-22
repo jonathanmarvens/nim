@@ -9,7 +9,9 @@ EXTRA_DIST = \
 
 CLEANFILES = $(BUILT_SOURCES) include/chimp/ast.h include/chimp/_parser.h
 
-AM_YFLAGS = --defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
+AM_YFLAGS = --report=all \
+			--report-file=$(abs_top_srcdir)/libchimp/_parser.output \
+			--defines=$(abs_top_srcdir)/libchimp/include/chimp/_parser.h
 
 lib_LTLIBRARIES = libchimp.la
 
