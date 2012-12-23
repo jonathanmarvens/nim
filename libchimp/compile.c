@@ -220,6 +220,22 @@ chimp_compile_ast_stmt_pattern_test (
     ChimpLabel *next_label
 );
 
+static void
+chimp_code_compiler_cleanup (ChimpCodeCompiler *c)
+{
+    while (c->current_unit != NULL) {
+        ChimpCodeUnit *unit = c->current_unit;
+        ChimpCodeUnit *next = unit->next;
+        CHIMP_FREE (unit);
+        unit = next;
+        c->current_unit = NULL;
+    }
+    if (c->loop_stack.items != NULL) {
+        free (c->loop_stack.items);
+        c->loop_stack.items = NULL;
+    }
+}
+
 static ChimpLabel *
 chimp_code_compiler_begin_loop (ChimpCodeCompiler *c)
 {
@@ -1806,7 +1822,6 @@ chimp_compile_ast_expr_not (ChimpCodeCompiler *c, ChimpRef *expr)
 ChimpRef *
 chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
 {
-    ChimpCodeUnit *unit;
     ChimpRef *module;
     ChimpCodeCompiler c;
     ChimpRef *filename_obj;
@@ -1842,25 +1857,12 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
         goto error;
     }
 
-    if (c.loop_stack.items != NULL) {
-        free (c.loop_stack.items);
-        c.loop_stack.items = NULL;
-    }
+    chimp_code_compiler_cleanup (&c);
 
     return module;
 
 error:
-    /* XXX we probably want a chimp_code_compiler_cleanup function */
-    unit = c.current_unit;
-    while (unit != NULL) {
-        ChimpCodeUnit *next = unit->next;
-        CHIMP_FREE (unit);
-        unit = next;
-    }
-    if (c.loop_stack.items != NULL) {
-        free (c.loop_stack.items);
-        c.loop_stack.items = NULL;
-    }
+    chimp_code_compiler_cleanup (&c);
     return NULL;
 }
 
