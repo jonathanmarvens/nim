@@ -116,7 +116,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %type <ref> opt_decls opt_uses
 %type <ref> use
 %type <ref> func_decl class_decl func_ident
-%type <ref> opt_extends opt_class_decls
+%type <ref> opt_extends type_name opt_class_decls
 %type <ref> opt_params opt_params_tail param
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_patterns pattern pattern_test opt_pattern_array_elements
@@ -155,11 +155,16 @@ class_decl : TOK_CLASS ident opt_extends TOK_LBRACE opt_class_decls TOK_RBRACE {
            }
            ;
 
-opt_extends : TOK_COLON ident {
-                $$ = chimp_array_new_var (CHIMP_AST_EXPR($2)->ident.id, NULL);
-            }
+opt_extends : TOK_COLON type_name { $$ = $2; }
             | /* empty */ { $$ = chimp_array_new (); }
             ;
+
+type_name : ident TOK_FULLSTOP type_name {
+            $$ = $3;
+            chimp_array_unshift ($$, CHIMP_AST_EXPR($1)->ident.id);
+          }
+          | ident { $$ = chimp_array_new_var (CHIMP_AST_EXPR($1)->ident.id, NULL); }
+          ;
 
 func_decl : func_ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
             $$ = chimp_ast_decl_new_func (CHIMP_AST_EXPR($1)->ident.id, $2, $4, &@$);
