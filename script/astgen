@@ -70,6 +70,7 @@ AST_DESCRIPTOR = [
         ['while',
             ['expr', 'expr'],
             ['body', 'array']],
+        ['break'],
         ['ret',
             ['expr', 'expr']],
         ['match',
@@ -137,7 +138,7 @@ def node_type_params(t):
 
 def kind_params(k):
     name = k[0]
-    if name in ('if', 'int', 'while'):
+    if name in ('if', 'int', 'while', 'break'):
         name += "_";
     return {
         "kind": name,

@@ -667,6 +667,8 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt)
             return chimp_symtable_visit_stmt_ret (self, stmt);
         case CHIMP_AST_STMT_PANIC:
             return chimp_symtable_visit_stmt_panic (self, stmt);
+        case CHIMP_AST_STMT_BREAK_:
+            return CHIMP_TRUE;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return CHIMP_FALSE;

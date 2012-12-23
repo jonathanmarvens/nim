@@ -77,6 +77,7 @@
 "if"                        { CHIMP_TOKEN(TOK_IF) }
 "else"                      { CHIMP_TOKEN(TOK_ELSE) }
 "while"                     { CHIMP_TOKEN(TOK_WHILE) }
+"break"                     { CHIMP_TOKEN(TOK_BREAK) }
 ["][^"]*["]                 { CHIMP_REF_TOKEN(TOK_STR, chimp_str_new (yytext + 1, yyleng - 2)) }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (yytext, yyleng)) }
 [0-9]+                      { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }

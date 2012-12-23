@@ -47,9 +47,18 @@ typedef struct _ChimpCodeUnit {
     ChimpRef              *ste;
 } ChimpCodeUnit;
 
+/* track (possibly nested) loops so we can compute jumps for 'break' */
+
+typedef struct _ChimpLoopStack {
+    ChimpLabel *items;
+    size_t      size;
+    size_t      capacity;
+} ChimpLoopStack;
+
 typedef struct _ChimpCodeCompiler {
-    ChimpCodeUnit *current_unit;
-    ChimpRef      *symtable;
+    ChimpCodeUnit  *current_unit;
+    ChimpLoopStack  loop_stack;
+    ChimpRef       *symtable;
 } ChimpCodeCompiler;
 
 /* the ChimpBind* structures are used for pattern matching */
@@ -210,6 +219,51 @@ chimp_compile_ast_stmt_pattern_test (
     ChimpBindVars *vars,
     ChimpLabel *next_label
 );
+
+static ChimpLabel *
+chimp_code_compiler_begin_loop (ChimpCodeCompiler *c)
+{
+    ChimpLoopStack *stack = &c->loop_stack;
+    if (stack->capacity < stack->size + 1) {
+        const size_t new_capacity =
+            (stack->capacity == 0 ? 8 : stack->capacity * 2);
+        ChimpLabel *labels = realloc (
+            stack->items, new_capacity * sizeof(*stack->items));
+        if (labels == NULL) {
+            return NULL;
+        }
+        stack->items = labels;
+        stack->capacity = new_capacity;
+    }
+    /* TODO CHIMP_LABEL_INIT (rename macro to CHIMP_LABEL_INIT_STATIC) */
+    memset (stack->items + stack->size, 0, sizeof(*stack->items));
+    stack->size++;
+    return stack->items + (stack->size - 1);
+}
+
+static void
+chimp_code_compiler_end_loop (ChimpCodeCompiler *c)
+{
+    ChimpLoopStack *stack = &c->loop_stack;
+    if (stack->size == 0) {
+        chimp_bug (__FILE__, __LINE__, "end_loop with zero stack size");
+        return;
+    }
+    /* TODO ensure we're in a code block */
+    stack->size--;
+    chimp_code_use_label (CHIMP_COMPILER_CODE(c), stack->items + stack->size);
+}
+
+static ChimpLabel *
+chimp_code_compiler_get_loop_label (ChimpCodeCompiler *c)
+{
+    ChimpLoopStack *stack = &c->loop_stack;
+    if (stack->size == 0) {
+        chimp_bug (__FILE__, __LINE__, "get_loop_label with zero stack size");
+        return NULL;
+    }
+    return &stack->items[stack->size-1];
+}
 
 static ChimpRef *
 chimp_code_compiler_push_unit (
@@ -389,15 +443,17 @@ static chimp_bool_t
 chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpLabel end_body = CHIMP_LABEL_INIT;
     ChimpLabel start_body = CHIMP_LABEL_INIT;
-
+    ChimpLabel *end_body = NULL;
+    
     chimp_code_use_label (code, &start_body);
 
     if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->while_.expr))
         goto error;
 
-    if (!chimp_code_jumpiffalse (code, &end_body))
+    end_body = chimp_code_compiler_begin_loop (c);
+
+    if (!chimp_code_jumpiffalse (code, end_body))
         goto error;
 
     if (!chimp_compile_ast_stmts (c, CHIMP_AST_STMT(stmt)->while_.body))
@@ -406,13 +462,15 @@ chimp_compile_ast_stmt_while_ (ChimpCodeCompiler *c, ChimpRef *stmt)
     if (!chimp_code_jump (code, &start_body))
         goto error;
 
-    chimp_code_use_label (code, &end_body);
+    chimp_code_compiler_end_loop (c);
 
     return CHIMP_TRUE;
 
 error:
     chimp_label_free (&start_body);
-    chimp_label_free (&end_body);
+    if (end_body != NULL) {
+        chimp_code_compiler_end_loop (c);
+    }
     return CHIMP_FALSE;
 }
 
@@ -988,6 +1046,22 @@ chimp_compile_ast_stmt_panic (ChimpCodeCompiler *c, ChimpRef *stmt)
     return CHIMP_TRUE;
 }
 
+static chimp_bool_t
+chimp_compile_ast_stmt_break_ (ChimpCodeCompiler *c, ChimpRef *stmt)
+{
+    ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpLabel *label = chimp_code_compiler_get_loop_label (c);
+    if (label == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jump (code, label)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
 static ChimpRef *
 chimp_compile_get_nearest_unit_with_type (
         ChimpCodeCompiler *c, ChimpUnitType type)
@@ -1272,6 +1346,8 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
             return chimp_compile_ast_stmt_ret (c, stmt);
         case CHIMP_AST_STMT_PANIC:
             return chimp_compile_ast_stmt_panic (c, stmt);
+        case CHIMP_AST_STMT_BREAK_:
+            return chimp_compile_ast_stmt_break_ (c, stmt);
         default:
             chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return CHIMP_FALSE;
@@ -1743,12 +1819,12 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
 
     c.symtable = chimp_symtable_new_from_ast (filename_obj, ast);
     if (c.symtable == NULL) {
-        return NULL;
+        goto error;
     }
 
     module = chimp_code_compiler_push_module_unit (&c, ast);
     if (module == NULL) {
-        return NULL;
+        goto error;
     }
     CHIMP_MODULE(module)->name = name;
 
@@ -1759,20 +1835,31 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
         default:
             chimp_bug (__FILE__, __LINE__,
                 "unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
-            return NULL;
+            goto error;
     };
 
     if (!chimp_code_compiler_pop_unit (&c, CHIMP_UNIT_TYPE_MODULE)) {
-        return NULL;
+        goto error;
     }
+
+    if (c.loop_stack.items != NULL) {
+        free (c.loop_stack.items);
+        c.loop_stack.items = NULL;
+    }
+
     return module;
 
 error:
+    /* XXX we probably want a chimp_code_compiler_cleanup function */
     unit = c.current_unit;
     while (unit != NULL) {
         ChimpCodeUnit *next = unit->next;
         CHIMP_FREE (unit);
         unit = next;
+    }
+    if (c.loop_stack.items != NULL) {
+        free (c.loop_stack.items);
+        c.loop_stack.items = NULL;
     }
     return NULL;
 }
