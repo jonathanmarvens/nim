@@ -643,7 +643,7 @@ chimp_code_dump (ChimpRef *self)
                 return NULL;
             }
         }
-        else if (op == CHIMP_OPCODE_MAKEARRAY || op == CHIMP_OPCODE_MAKEHASH) {
+        else if (op == CHIMP_OPCODE_MAKEARRAY || op == CHIMP_OPCODE_MAKEHASH || op == CHIMP_OPCODE_CALL) {
             if (!chimp_str_append_str (str, " ")) {
                 return NULL;
             }
