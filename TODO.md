@@ -1,4 +1,5 @@
 * Add the `self` keyword.
+* Fix broken examples."
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.
   * Identifiers should not be used/referenced before declared ('var' keyword)
