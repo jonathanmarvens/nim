@@ -1,5 +1,4 @@
 * Add the `self` keyword.
-* getitem syntax.
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.
   * Identifiers should not be used/referenced before declared ('var' keyword)
@@ -20,7 +19,6 @@
   - Variable length instructions? 8-bit args are limited (also, 24-bit jumps :()
 * The task API is sucky and inconsistent with the rest of the codebase
   (sometimes ChimpTaskInternal, sometimes ChimpTask)
-* Syntax for structured data. (class definitions?)
 * Bitwise operators.
 * Modulo operator.
 * In-place operators for integers: +=, -=, /=, \*=, etc.
