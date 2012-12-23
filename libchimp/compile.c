@@ -12,14 +12,17 @@
 
 typedef enum _ChimpUnitType {
     CHIMP_UNIT_TYPE_CODE,
-    CHIMP_UNIT_TYPE_MODULE
+    CHIMP_UNIT_TYPE_MODULE,
+    CHIMP_UNIT_TYPE_CLASS
 } ChimpUnitType;
 
 typedef struct _ChimpCodeUnit {
     ChimpUnitType type;
+    /* XXX not entirely sure why I made this a union. */
     union {
         ChimpRef *code;
         ChimpRef *module;
+        ChimpRef *class;
         ChimpRef *value;
     };
     struct _ChimpCodeUnit *next;
@@ -125,10 +128,12 @@ typedef struct _ChimpBindVars {
 
 #define CHIMP_COMPILER_CODE(c) ((c)->current_unit)->code
 #define CHIMP_COMPILER_MODULE(c) ((c)->current_unit)->module
+#define CHIMP_COMPILER_CLASS(c) ((c)->current_unit)->class
 #define CHIMP_COMPILER_SCOPE(c) ((c)->current_unit)->value
 
 #define CHIMP_COMPILER_IN_MODULE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_MODULE)
 #define CHIMP_COMPILER_IN_CODE(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_CODE)
+#define CHIMP_COMPILER_IN_CLASS(c) (((c)->current_unit)->type == CHIMP_UNIT_TYPE_CLASS)
 #define CHIMP_COMPILER_SYMTABLE_ENTRY(c) (((c)->current_unit))->ste
 
 static chimp_bool_t
@@ -192,7 +197,8 @@ chimp_compile_ast_stmt_pattern_test (
 );
 
 static ChimpRef *
-chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRef *scope)
+chimp_code_compiler_push_unit (
+    ChimpCodeCompiler *c, ChimpUnitType type, ChimpRef *scope, ChimpRef *value)
 {
     ChimpCodeUnit *unit = CHIMP_MALLOC(ChimpCodeUnit, sizeof(*unit));
     if (unit == NULL) {
@@ -204,8 +210,11 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRe
             unit->code = chimp_code_new ();
             break;
         case CHIMP_UNIT_TYPE_MODULE:
-            /* XXX name hard-coded */
             unit->module = chimp_module_new (chimp_nil, NULL);
+            break;
+        case CHIMP_UNIT_TYPE_CLASS:
+            /* XXX the value parameter is a total hack */
+            unit->class = value;
             break;
         default:
             chimp_bug (__FILE__, __LINE__, "unknown unit type: %d", type);
@@ -236,13 +245,19 @@ chimp_code_compiler_push_unit (ChimpCodeCompiler *c, ChimpUnitType type, ChimpRe
 inline static ChimpRef *
 chimp_code_compiler_push_code_unit (ChimpCodeCompiler *c, ChimpRef *scope)
 {
-    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CODE, scope);
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CODE, scope, NULL);
 }
 
 inline static ChimpRef *
 chimp_code_compiler_push_module_unit (ChimpCodeCompiler *c, ChimpRef *scope)
 {
-    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_MODULE, scope);
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_MODULE, scope, NULL);
+}
+
+inline static ChimpRef *
+chimp_code_compiler_push_class_unit (ChimpCodeCompiler *c, ChimpRef *scope, ChimpRef *klass)
+{
+    return chimp_code_compiler_push_unit (c, CHIMP_UNIT_TYPE_CLASS, scope, klass);
 }
 
 static ChimpRef *
@@ -277,6 +292,12 @@ inline static ChimpRef *
 chimp_code_compiler_pop_module_unit (ChimpCodeCompiler *c)
 {
     return chimp_code_compiler_pop_unit (c, CHIMP_UNIT_TYPE_MODULE);
+}
+
+inline static ChimpRef *
+chimp_code_compiler_pop_class_unit (ChimpCodeCompiler *c)
+{
+    return chimp_code_compiler_pop_unit (c, CHIMP_UNIT_TYPE_CLASS);
 }
 
 static chimp_bool_t
@@ -953,23 +974,38 @@ chimp_compile_ast_stmt_panic (ChimpCodeCompiler *c, ChimpRef *stmt)
 }
 
 static ChimpRef *
-chimp_compile_get_current_module (ChimpCodeCompiler *c)
+chimp_compile_get_nearest_unit_with_type (
+        ChimpCodeCompiler *c, ChimpUnitType type)
 {
-    if (CHIMP_COMPILER_IN_MODULE(c)) {
-        return CHIMP_COMPILER_MODULE(c);
+    if (c->current_unit->type == type) {
+        return CHIMP_COMPILER_SCOPE(c);
     }
     else {
         ChimpCodeUnit *unit = c->current_unit;
         if (unit == NULL) return NULL;
         unit = unit->next;
         while (unit != NULL) {
-            if (unit->type == CHIMP_UNIT_TYPE_MODULE) {
-                return unit->module;
+            if (unit->type == type) {
+                return unit->value;
             }
             unit = unit->next;
         }
         return NULL;
     }
+}
+
+static ChimpRef *
+chimp_compile_get_current_class (ChimpCodeCompiler *c)
+{
+    return chimp_compile_get_nearest_unit_with_type (
+            c, CHIMP_UNIT_TYPE_CLASS);
+}
+
+static ChimpRef *
+chimp_compile_get_current_module (ChimpCodeCompiler *c)
+{
+    return chimp_compile_get_nearest_unit_with_type (
+            c, CHIMP_UNIT_TYPE_MODULE);
 }
 
 static ChimpRef *
@@ -1040,14 +1076,100 @@ chimp_compile_ast_decl_func (ChimpCodeCompiler *c, ChimpRef *decl)
             return CHIMP_FALSE;
         }
     }
-    else {
-        mod = chimp_compile_get_current_module (c);
+    else if (CHIMP_COMPILER_IN_CLASS(c)) {
         ChimpRef *name = CHIMP_AST_DECL(decl)->func.name;
+        mod = chimp_compile_get_current_class (c);
+        if (!chimp_class_add_method (mod, name, method)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else {
+        ChimpRef *name = CHIMP_AST_DECL(decl)->func.name;
+        mod = chimp_compile_get_current_module (c);
         if (!chimp_module_add_local (mod, name, method)) {
             return CHIMP_FALSE;
         }
     }
 
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
+{
+    ChimpRef *mod;
+    ChimpRef *name = CHIMP_AST_DECL(decl)->class.name;
+    ChimpRef *base = CHIMP_AST_DECL(decl)->class.base;
+    ChimpRef *body = CHIMP_AST_DECL(decl)->class.body;
+    ChimpRef *base_ref = NULL;
+    ChimpRef *klass;
+    size_t i;
+
+    if (CHIMP_COMPILER_IN_CODE(c)) {
+        chimp_bug (__FILE__, __LINE__, "Cannot declare classes inside functions");
+        return CHIMP_FALSE;
+    }
+    else if (CHIMP_COMPILER_IN_CLASS(c)) {
+        chimp_bug (__FILE__, __LINE__, "Cannot declare nested classes");
+    }
+
+    mod = chimp_compile_get_current_module (c);
+    if (mod == NULL) {
+        chimp_bug (__FILE__, __LINE__, "get_current_module failed");
+        return CHIMP_FALSE;
+    }
+
+    /* resolve the base class */
+    /* XXX this feels kind of hacky */
+    if (CHIMP_ARRAY_SIZE(base) > 0) {
+        if (chimp_is_builtin (chimp_array_first (base))) {
+            base_ref = chimp_hash_get (
+                    chimp_builtins, chimp_array_first (base));
+        }
+        else {
+            base_ref = mod;
+            for (i = 0; i < CHIMP_ARRAY_SIZE(base); i++) {
+                ChimpRef *child;
+                if (i != CHIMP_ARRAY_SIZE(base)-1 && 
+                    CHIMP_ANY_TYPE(base_ref) != CHIMP_VALUE_TYPE_MODULE) {
+                    chimp_bug (__FILE__, __LINE__,
+                        "Cannot resolve class on non-module type: %s",
+                        CHIMP_STR_DATA(name));
+                    return CHIMP_FALSE;
+                }
+                child = chimp_hash_get (
+                    CHIMP_MODULE_LOCALS(base_ref),
+                    CHIMP_ARRAY_ITEM(base, i));
+                if (base_ref == NULL || base_ref == chimp_nil) {
+                    chimp_bug (__FILE__, __LINE__,
+                        "Module does not expose `%s`",
+                        CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(base_ref, i)));
+                    return CHIMP_FALSE;
+                }
+                base_ref = child;
+            }
+        }
+    }
+
+    klass = chimp_class_new (name, base_ref);
+    if (klass == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_compiler_push_class_unit (c, decl, klass)) {
+        return CHIMP_FALSE;
+    }
+    if (!chimp_compile_ast_decls (c, body)) {
+        return CHIMP_FALSE;
+    }
+    if (!chimp_code_compiler_pop_class_unit (c)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_module_add_local (mod, name, klass)) {
+        chimp_bug (__FILE__, __LINE__, "Failed to add new class to module");
+        return CHIMP_FALSE;
+    }
     return CHIMP_TRUE;
 }
 
@@ -1105,6 +1227,8 @@ chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl)
     switch (CHIMP_AST_DECL_TYPE(decl)) {
         case CHIMP_AST_DECL_FUNC:
             return chimp_compile_ast_decl_func (c, decl);
+        case CHIMP_AST_DECL_CLASS:
+            return chimp_compile_ast_decl_class (c, decl);
         case CHIMP_AST_DECL_USE:
             return chimp_compile_ast_decl_use (c, decl);
         case CHIMP_AST_DECL_VAR:

@@ -181,6 +181,38 @@ chimp_symtable_visit_decl_func (ChimpRef *self, ChimpRef *decl)
 }
 
 static chimp_bool_t
+chimp_symtable_visit_decl_class (ChimpRef *self, ChimpRef *decl)
+{
+    ChimpRef *name = CHIMP_AST_DECL(decl)->class.name;
+    ChimpRef *base = CHIMP_AST_DECL(decl)->class.base;
+    ChimpRef *body = CHIMP_AST_DECL(decl)->class.body;
+
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_enter_scope (self, decl)) {
+        return CHIMP_FALSE;
+    }
+
+    if (base != NULL) {
+        if (!chimp_symtable_add (self, chimp_array_first (base), 0)) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    if (!chimp_symtable_visit_decls (self, body)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_symtable_leave_scope (self)) {
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_symtable_visit_decl_use (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->use.name;
@@ -217,6 +249,8 @@ chimp_symtable_visit_decl (ChimpRef *self, ChimpRef *decl)
     switch (CHIMP_AST_DECL_TYPE(decl)) {
         case CHIMP_AST_DECL_FUNC:
             return chimp_symtable_visit_decl_func (self, decl);
+        case CHIMP_AST_DECL_CLASS:
+            return chimp_symtable_visit_decl_class (self, decl);
         case CHIMP_AST_DECL_USE:
             return chimp_symtable_visit_decl_use (self, decl);
         case CHIMP_AST_DECL_VAR:

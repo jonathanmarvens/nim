@@ -38,8 +38,8 @@ chimp_module_add_method_str (
 );
 
 #define CHIMP_MODULE(ref) CHIMP_CHECK_CAST(ChimpModule, (ref), CHIMP_VALUE_TYPE_MODULE)
-#define CHIMP_MODULE_NAME(ref) (CHIMP_METHOD(ref)->name)
-#define CHIMP_MODULE_LOCALS(ref) (CHIMP_METHOD(ref)->locals)
+#define CHIMP_MODULE_NAME(ref) (CHIMP_MODULE(ref)->name)
+#define CHIMP_MODULE_LOCALS(ref) (CHIMP_MODULE(ref)->locals)
 
 CHIMP_EXTERN_CLASS(module);
 

@@ -50,6 +50,7 @@
 "spawn"                     { CHIMP_TOKEN(TOK_SPAWN) }
 "receive"                   { CHIMP_TOKEN(TOK_RECEIVE) }
 "match"                     { CHIMP_TOKEN(TOK_MATCH) }
+"class"                     { CHIMP_TOKEN(TOK_CLASS) }
 [ \t\r]                     { /* do nothing */ }
 "."                         { CHIMP_TOKEN(TOK_FULLSTOP) }
 "_"                         { CHIMP_TOKEN(TOK_UNDERSCORE) }

@@ -549,7 +549,7 @@ chimp_task_add_module (ChimpTaskInternal *task, ChimpRef *module)
 ChimpRef *
 chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name)
 {
-    /* XXX total waste of time. modules are not really per-task atm. */
+    /* XXX modules are not really per-task atm. */
 
     ChimpRef *ref = chimp_hash_get (main_task->modules, name);
     if (ref == chimp_nil) {

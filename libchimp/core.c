@@ -154,30 +154,52 @@ static ChimpRef *
 _chimp_object_getattr (ChimpRef *self, ChimpRef *name)
 {
     /* TODO check CHIMP_ANY(self)->attributes ? */
-    ChimpLWHash *methods = CHIMP_CLASS(CHIMP_ANY_CLASS(self))->methods;
-    ChimpRef *method;
-    if (!chimp_lwhash_get (methods, name, &method)) {
-        return NULL;
+    ChimpRef *class = CHIMP_ANY_CLASS(self);
+    while (class != NULL) {
+        ChimpLWHash *methods = CHIMP_CLASS(class)->methods;
+        ChimpRef *method;
+        if (chimp_lwhash_get (methods, name, &method)) {
+            if (method == NULL) {
+                class = CHIMP_CLASS(class)->super;
+                continue;
+            }
+            /* XXX binding on every access is probably dumb/slow */
+            return chimp_method_new_bound (method, self);
+        }
+        else break;
     }
-    if (method == NULL) {
-        return NULL;
-    }
-    /* XXX binding on every call is probably dumb/slow */
-    return chimp_method_new_bound (method, self);
+    return NULL;
 }
 
 static ChimpRef *
 chimp_class_getattr (ChimpRef *self, ChimpRef *name)
 {
-    ChimpLWHash *methods = CHIMP_CLASS(self)->methods;
-    ChimpRef *method;
-    if (!chimp_lwhash_get (methods, name, &method)) {
+    if (strcmp (CHIMP_STR_DATA(name), "name") == 0) {
+        return CHIMP_CLASS(self)->name;
+    }
+    else if (strcmp (CHIMP_STR_DATA(name), "super") == 0) {
+        if (CHIMP_CLASS(self)->super == NULL) {
+            return chimp_nil;
+        }
+        else {
+            return CHIMP_CLASS(self)->super;
+        }
+    }
+    else {
+        while (self != NULL) {
+            ChimpLWHash *methods = CHIMP_CLASS(self)->methods;
+            ChimpRef *method;
+            if (chimp_lwhash_get (methods, name, &method)) {
+                if (method == NULL) {
+                    self = CHIMP_CLASS(self)->super;
+                    continue;
+                }
+                return method;
+            }
+            else break;
+        }
         return NULL;
     }
-    if (method == NULL) {
-        return NULL;
-    }
-    return method;
 }
 
 static ChimpRef *

@@ -35,8 +35,9 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
         else {
             ctor = chimp_object_getattr_str (ref, "init");
             if (ctor != NULL && ctor != chimp_nil) {
-                ref = chimp_object_call (ctor, args);
-                if (ref == NULL) {
+                ChimpRef *newref;
+                newref = chimp_object_call (ctor, args);
+                if (newref == NULL) {
                     return NULL;
                 }
             }
@@ -194,25 +195,6 @@ chimp_class_dtor (ChimpRef *self)
 }
 
 static ChimpRef *
-chimp_class_getattr (ChimpRef *self, ChimpRef *attr)
-{
-    if (strcmp (CHIMP_STR_DATA(attr), "name") == 0) {
-        return CHIMP_CLASS(self)->name;
-    }
-    else if (strcmp (CHIMP_STR_DATA(attr), "super") == 0) {
-        if (CHIMP_CLASS(self)->super == NULL) {
-            return chimp_nil;
-        }
-        else {
-            return CHIMP_CLASS(self)->super;
-        }
-    }
-    else {
-        return NULL;
-    }
-}
-
-static ChimpRef *
 chimp_class_str (ChimpRef *self)
 {
     return chimp_str_new_concat (
@@ -226,7 +208,6 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_class_class)->inst_type = CHIMP_VALUE_TYPE_CLASS;
     CHIMP_CLASS(chimp_class_class)->dtor = chimp_class_dtor;
-    CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
     CHIMP_CLASS(chimp_class_class)->str = chimp_class_str;
 
     CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();

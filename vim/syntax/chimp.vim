@@ -9,14 +9,14 @@ if exists("b:current_syntax")
 endif
 
 syn keyword chimpKeyword nil use ret var and or panic fn spawn while not _
-syn keyword chimpKeyword receive match
+syn keyword chimpKeyword receive match class this
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
-syn keyword chimpType str int hash class object array
+syn keyword chimpType str int hash object array
+syn keyword chimpSpecial init
 syn match chimpString '"[^"]*"'
 syn match chimpComment '#.*$'
 syn match chimpInt '[0-9][0-9]*'
-syn match chimpIdent '[a-zA-Z_][a-zA-Z0-9_]*'
 syn match chimpFunction '^[a-zA-Z_][a-zA-Z0-9_]*'
 
 let b:current_syntax = "chimp"
@@ -29,5 +29,5 @@ hi def link chimpComment Comment
 hi def link chimpFunction Function
 hi def link chimpBoolean Boolean
 hi def link chimpInt Number
-" hi def link chimpIdent Identifier
+hi def link chimpSpecial Identifier
 

@@ -6,6 +6,19 @@
 use io;
 use os;
 
+class animal {
+}
+
+class dog : animal {
+  init {
+    io.print("dog initialized");
+  }
+
+  bark {
+    io.print("woof!");
+  }
+}
+
 main argv {
   var x = "hello";
   var y = ["foo"];
@@ -97,6 +110,10 @@ main argv {
   lookup["b"](5);
 
   io.print(class(lookup));
-  io.print(class(lookup).superclass);
+  io.print(class(lookup).super);
+
+  var d = dog();
+  d.bark();
+  io.print(str(d));
 }
 

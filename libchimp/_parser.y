@@ -94,6 +94,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_MINUS "-"
 %token TOK_ASTERISK "*"
 %token TOK_SLASH "/"
+%token TOK_CLASS "class"
 
 %token <ref> TOK_IDENT "identifier"
 %token <ref> TOK_STR "string literal"
@@ -114,7 +115,8 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %type <ref> simple_tail
 %type <ref> opt_decls opt_uses
 %type <ref> use
-%type <ref> func_decl
+%type <ref> func_decl class_decl func_ident
+%type <ref> opt_extends opt_class_decls
 %type <ref> opt_params opt_params_tail param
 %type <ref> opt_args args opt_args_tail
 %type <ref> opt_patterns pattern pattern_test opt_pattern_array_elements
@@ -139,10 +141,27 @@ use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use (CHIMP_AST_EXPR(
     ;
 
 opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
+          | class_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (); }
           ;
 
-func_decl : ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
+opt_class_decls : func_decl opt_class_decls { $$ = $2; chimp_array_unshift ($$, $1); }
+                | /* empty */ { $$ = chimp_array_new (); }
+                ;
+
+class_decl : TOK_CLASS ident opt_extends TOK_LBRACE opt_class_decls TOK_RBRACE {
+            $$ = chimp_ast_decl_new_class (
+                CHIMP_AST_EXPR($2)->ident.id, $3, $5, &@$);
+           }
+           ;
+
+opt_extends : TOK_COLON ident {
+                $$ = chimp_array_new_var (CHIMP_AST_EXPR($2)->ident.id, NULL);
+            }
+            | /* empty */ { $$ = chimp_array_new (); }
+            ;
+
+func_decl : func_ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
             $$ = chimp_ast_decl_new_func (CHIMP_AST_EXPR($1)->ident.id, $2, $4, &@$);
           }
           ;
@@ -317,7 +336,11 @@ opt_args_tail : TOK_COMMA expr opt_args_tail { $$ = $3; chimp_array_unshift ($$,
               | /* empty */ { $$ = chimp_array_new (); }
               ;
 
+func_ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1, &@$); }
+           ;
+
 ident : TOK_IDENT { $$ = chimp_ast_expr_new_ident ($1, &@$); }
+      | TOK_CLASS { $$ = chimp_ast_expr_new_ident (CHIMP_STR_NEW("class"), &@$); }
       ;
 
 str : TOK_STR { $$ = chimp_ast_expr_new_str ($1, &@$); }
