@@ -72,7 +72,6 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_ELSE "else"
 %token TOK_USE "use"
 %token TOK_RET "ret"
-%token TOK_PANIC "panic"
 %token TOK_FN "fn"
 %token TOK_VAR "var"
 %token TOK_WHILE "while"
@@ -126,7 +125,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %type <ref> opt_pattern_hash_elements pattern_hash_elements
 %type <ref> opt_pattern_hash_elements_tail
 %type <ref> ident str array hash bool nil int
-%type <ref> ret panic break;
+%type <ref> ret break
 
 %%
 
@@ -197,7 +196,6 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1, &@$); }
             | var_decl { $$ = $1; }
             | assign { $$ = $1; }
             | ret { $$ = $1; }
-            | panic { $$ = $1; }
             | break { $$ = $1; }
             ;
 
@@ -391,9 +389,6 @@ opt_expr : expr { $$ = $1; }
          ;
 
 break : TOK_BREAK { $$ = chimp_ast_stmt_new_break_ (&@$); }
-      ;
-
-panic : TOK_PANIC opt_expr { $$ = chimp_ast_stmt_new_panic ($2, &@$); }
       ;
 
 ret : TOK_RET opt_expr { $$ = chimp_ast_stmt_new_ret ($2, &@$); }

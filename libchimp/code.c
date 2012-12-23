@@ -308,16 +308,6 @@ chimp_code_ret (ChimpRef *self)
 }
 
 chimp_bool_t
-chimp_code_panic (ChimpRef *self)
-{
-    if (!chimp_code_grow (self)) {
-        return CHIMP_FALSE;
-    }
-    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(PANIC);
-    return CHIMP_TRUE;
-}
-
-chimp_bool_t
 chimp_code_spawn (ChimpRef *self)
 {
     if (!chimp_code_grow (self)) {
@@ -558,8 +548,6 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "PUSHNAME";
         case CHIMP_OPCODE_PUSHNIL:
              return "PUSHNIL";
-        case CHIMP_OPCODE_PANIC:
-             return "PANIC";
         case CHIMP_OPCODE_GETATTR:
              return "GETATTR";
         case CHIMP_OPCODE_GETITEM:

@@ -1042,27 +1042,6 @@ chimp_compile_ast_stmt_ret (ChimpCodeCompiler *c, ChimpRef *stmt)
 }
 
 static chimp_bool_t
-chimp_compile_ast_stmt_panic (ChimpCodeCompiler *c, ChimpRef *stmt)
-{
-    ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    ChimpRef *expr = CHIMP_AST_STMT(stmt)->panic.expr;
-    if (expr != NULL) {
-        if (!chimp_compile_ast_expr (c, expr)) {
-            return CHIMP_FALSE;
-        }
-    }
-    else if (!chimp_code_pushnil (code)) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_code_panic (code)) {
-        return CHIMP_FALSE;
-    }
-
-    return CHIMP_TRUE;
-}
-
-static chimp_bool_t
 chimp_compile_ast_stmt_break_ (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
@@ -1360,8 +1339,6 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
             return chimp_compile_ast_stmt_match (c, stmt);
         case CHIMP_AST_STMT_RET:
             return chimp_compile_ast_stmt_ret (c, stmt);
-        case CHIMP_AST_STMT_PANIC:
-            return chimp_compile_ast_stmt_panic (c, stmt);
         case CHIMP_AST_STMT_BREAK_:
             return chimp_compile_ast_stmt_break_ (c, stmt);
         default:

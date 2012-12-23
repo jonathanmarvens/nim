@@ -39,7 +39,8 @@ main argv {
   num_array.each(io.print);
 
   if ["a", "b", "c"].filter(fn { |x| ret x != "b"; }).contains("b") {
-    panic "array should not contain 'b'";
+    io.print("error!!! array should not contain 'b'");
+    ret;
   }
 
   var some_bool = false;

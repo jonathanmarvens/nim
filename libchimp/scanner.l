@@ -43,7 +43,6 @@
 "and"                       { CHIMP_TOKEN(TOK_AND) }
 "use"                       { CHIMP_TOKEN(TOK_USE) }
 "ret"                       { CHIMP_TOKEN(TOK_RET) }
-"panic"                     { CHIMP_TOKEN(TOK_PANIC) }
 "fn"                        { CHIMP_TOKEN(TOK_FN) }
 "var"                       { CHIMP_TOKEN(TOK_VAR) }
 "not"                       { CHIMP_TOKEN(TOK_NOT) }

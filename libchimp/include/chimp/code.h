@@ -53,7 +53,6 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_POP,
 
     CHIMP_OPCODE_RET,
-    CHIMP_OPCODE_PANIC,
     CHIMP_OPCODE_SPAWN,
 
     CHIMP_OPCODE_ADD,
@@ -128,9 +127,6 @@ chimp_code_call (ChimpRef *self, uint8_t nargs);
 
 chimp_bool_t
 chimp_code_ret (ChimpRef *self);
-
-chimp_bool_t
-chimp_code_panic (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_not (ChimpRef *self);

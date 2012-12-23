@@ -35,14 +35,7 @@ _chimp_assert_equal (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
     if (r != CHIMP_CMP_EQ) {
-        chimp_vm_panic (
-            NULL,
-            chimp_str_new_format (
-                NULL,
-                "expected %s to be not equal to %s",
-                CHIMP_STR_DATA(left),
-                CHIMP_STR_DATA(right))
-        );
+        /* TODO complain */
         return NULL;
     }
     else {
@@ -63,14 +56,7 @@ _chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
     if (r == CHIMP_CMP_EQ) {
-        chimp_vm_panic (
-            NULL,
-            chimp_str_new_format (
-                NULL,
-                "expected %s to be not equal to %s",
-                CHIMP_STR_DATA(left),
-                CHIMP_STR_DATA(right))
-        );
+        /* TODO complain */
         return NULL;
     }
     else {

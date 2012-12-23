@@ -638,18 +638,6 @@ chimp_symtable_visit_stmt_ret (ChimpRef *self, ChimpRef *stmt)
 }
 
 static chimp_bool_t
-chimp_symtable_visit_stmt_panic (ChimpRef *self, ChimpRef *stmt)
-{
-    ChimpRef *expr = CHIMP_AST_STMT(stmt)->panic.expr;
-    if (expr != NULL) {
-        if (!chimp_symtable_visit_expr (self, expr)) {
-            return CHIMP_FALSE;
-        }
-    }
-    return CHIMP_TRUE;
-}
-
-static chimp_bool_t
 chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt)
 {
     switch (CHIMP_AST_STMT_TYPE(stmt)) {
@@ -665,8 +653,6 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt)
             return chimp_symtable_visit_stmt_match (self, stmt);
         case CHIMP_AST_STMT_RET:
             return chimp_symtable_visit_stmt_ret (self, stmt);
-        case CHIMP_AST_STMT_PANIC:
-            return chimp_symtable_visit_stmt_panic (self, stmt);
         case CHIMP_AST_STMT_BREAK_:
             return CHIMP_TRUE;
         default:
