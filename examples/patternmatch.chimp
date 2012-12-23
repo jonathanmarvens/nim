@@ -4,9 +4,15 @@ main argv {
   var task = spawn {
     while true {
       match receive {
-        ["say", msg]: io.print(msg);
-        "die": ret;
-        _: io.print("ignoring unknown message");
+        ["say", msg] {
+          io.print(msg);
+        }
+        "die" {
+          ret;
+        }
+        _ {
+          io.print("ignoring unknown message");
+        }
       }
     }
   };
