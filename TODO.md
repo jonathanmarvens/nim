@@ -1,5 +1,6 @@
 * Add the `self` keyword.
-* Fix broken examples."
+* chimp_hash_get returning NULL and chimp\_nil completely sucks.
+* Fix broken examples.
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.
   * Identifiers should not be used/referenced before declared ('var' keyword)
@@ -24,7 +25,6 @@
 * Modulo operator.
 * In-place operators for integers: +=, -=, /=, \*=, etc.
 * Unary operators ++, --
-* chimp_hash_get returning NULL and chimp\_nil completely sucks.
   Find a better way.
 * Array slices.
 * File I/O (part of the os module?)
