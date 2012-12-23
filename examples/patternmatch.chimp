@@ -3,7 +3,7 @@ use io;
 main argv {
   var task = spawn {
     while true {
-      match receive {
+      match recv() {
         ["say", msg] {
           io.print(msg);
         }

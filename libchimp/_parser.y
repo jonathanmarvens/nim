@@ -78,7 +78,6 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, ChimpRef *filename, ChimpRef **
 %token TOK_WHILE "while"
 %token TOK_SPAWN "spawn"
 %token TOK_NOT "not"
-%token TOK_RECEIVE "receive"
 %token TOK_MATCH "match"
 %token TOK_UNDERSCORE "_"
 
@@ -251,7 +250,6 @@ expr3: TOK_NOT expr2 { $$ = chimp_ast_expr_new_not ($2, &@$); }
      | TOK_SPAWN TOK_LBRACE opt_stmts TOK_RBRACE {
         $$ = chimp_ast_expr_new_spawn (chimp_array_new (), $3, &@$);
      }
-     | TOK_RECEIVE { $$ = chimp_ast_expr_new_receive (&@$); }
      | expr4 { $$ = $1; };
      ;
 

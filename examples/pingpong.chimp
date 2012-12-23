@@ -2,10 +2,10 @@ use io;
 
 pong {
   io.print(str("ponger starts"));
-  var pinger = receive;
+  var pinger = recv();
   io.print(str("ponger got pinger: ", pinger));
   while true {
-    match receive {
+    match recv() {
       "ping" {
         io.print("ping");
         io.print("ponger sending");
@@ -21,14 +21,14 @@ pong {
 
 ping {
   io.print(str("pinger starts"));
-  var ponger = receive;
+  var ponger = recv();
   io.print(str("pinger got ponger: ", ponger));
   var i = 0;
   while i < 3 {
     io.print("pinger sending");
     ponger.send("ping");
     io.print("pinger waiting");
-    io.print(receive);
+    io.print(recv());
     i = i + 1;
   }
   ponger.send("finished");

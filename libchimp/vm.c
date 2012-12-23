@@ -454,18 +454,6 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 pc++;
                 break;
             }
-            case CHIMP_OPCODE_RECEIVE:
-            {
-                ChimpRef *task = chimp_task_get_self (CHIMP_CURRENT_TASK);
-                ChimpRef *value = chimp_task_recv (task);
-
-                if (!chimp_vm_push (vm, value)) {
-                    return CHIMP_FALSE;
-                }
-
-                pc++;
-                break;
-            }
             case CHIMP_OPCODE_DUP:
             {
                 ChimpRef *top = chimp_vm_top (vm);

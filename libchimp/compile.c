@@ -191,9 +191,6 @@ static chimp_bool_t
 chimp_compile_ast_expr_spawn (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
-chimp_compile_ast_expr_receive (ChimpCodeCompiler *c, ChimpRef *expr);
-
-static chimp_bool_t
 chimp_compile_ast_expr_not (ChimpCodeCompiler *c, ChimpRef *expr);
 
 static chimp_bool_t
@@ -1311,8 +1308,6 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_fn (c, expr);
         case CHIMP_AST_EXPR_SPAWN:
             return chimp_compile_ast_expr_spawn (c, expr);
-        case CHIMP_AST_EXPR_RECEIVE:
-            return chimp_compile_ast_expr_receive (c, expr);
         case CHIMP_AST_EXPR_NOT:
             return chimp_compile_ast_expr_not (c, expr);
         case CHIMP_AST_EXPR_WILDCARD:
@@ -1711,18 +1706,6 @@ chimp_compile_ast_expr_spawn (ChimpCodeCompiler *c, ChimpRef *expr)
     }
 
     if (!chimp_code_spawn (code)) {
-        return CHIMP_FALSE;
-    }
-
-    return CHIMP_TRUE;
-}
-
-static chimp_bool_t
-chimp_compile_ast_expr_receive (ChimpCodeCompiler *c, ChimpRef *expr)
-{
-    ChimpRef *code = CHIMP_COMPILER_CODE(c);
-
-    if (!chimp_code_receive (code)) {
         return CHIMP_FALSE;
     }
 
