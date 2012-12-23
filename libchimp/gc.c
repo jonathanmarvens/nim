@@ -427,7 +427,6 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                     chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->bytecode.code);
                 }
                 chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->module);
-                /* TODO mark code object ? */
                 break;
             }
         case CHIMP_VALUE_TYPE_AST_MOD:
