@@ -46,8 +46,11 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
     ChimpRef *klass;
     /* XXX this check is needed because getattr is called by the class ctor */
     if (CHIMP_MODULE(self)->locals != NULL) {
-        ChimpRef *result = chimp_hash_get (CHIMP_MODULE(self)->locals, name);
-        if (result != NULL) {
+        ChimpRef *result;
+        int rc;
+        
+        rc = chimp_hash_get (CHIMP_MODULE(self)->locals, name, &result);
+        if (rc != 0) {
             /* XXX the VM relies on chimp_hash_get returning nil */
 #if 0
             if (result == chimp_nil) {
@@ -59,6 +62,9 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
                 return NULL;
             }
 #endif
+            return result;
+        }
+        else if (rc == 0) {
             return result;
         }
     }

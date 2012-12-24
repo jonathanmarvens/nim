@@ -569,8 +569,11 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name)
 {
     /* XXX modules are not really per-task atm. */
 
-    ChimpRef *ref = chimp_hash_get (main_task->modules, name);
-    if (ref == chimp_nil) {
+    ChimpRef *ref;
+    int rc;
+
+    rc = chimp_hash_get (main_task->modules, name, &ref);
+    if (rc < 0) {
         return NULL;
     }
     return ref;

@@ -112,7 +112,17 @@ _chimp_hash_put (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_hash_get (ChimpRef *self, ChimpRef *args)
 {
-    return chimp_hash_get (self, CHIMP_ARRAY_ITEM(args, 0));
+    ChimpRef *value;
+    int rc = chimp_hash_get (self, CHIMP_ARRAY_ITEM(args, 0), &value);
+    if (rc > 0) {
+        return chimp_nil;
+    }
+    else if (rc < 0) {
+        return NULL;
+    }
+    else {
+        return value;
+    }
 }
 
 static ChimpRef *
@@ -124,7 +134,14 @@ _chimp_hash_size (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_hash_getitem (ChimpRef *self, ChimpRef *key)
 {
-    return chimp_hash_get (self, key);
+    int rc;    
+    ChimpRef *value;
+
+    rc = chimp_hash_get (self, key, &value);
+    if (rc < 0) {
+        return NULL;
+    }
+    return value;
 }
 
 static void
@@ -207,18 +224,29 @@ chimp_hash_put_str (ChimpRef *self, const char *key, ChimpRef *value)
     return chimp_hash_put (self, chimp_str_new (key, strlen(key)), value);
 }
 
-ChimpRef *
-chimp_hash_get (ChimpRef *self, ChimpRef *key)
+int
+chimp_hash_get (ChimpRef *self, ChimpRef *key, ChimpRef **value)
 {
     size_t i;
     for (i = 0; i < CHIMP_HASH_SIZE(self); i++) {
         ChimpCmpResult r = chimp_object_cmp (CHIMP_HASH(self)->keys[i], key);
-        if (r == CHIMP_CMP_ERROR) return NULL;
+        if (r == CHIMP_CMP_ERROR) {
+            if (value != NULL) {
+                *value = NULL;
+            }
+            return -1;
+        }
         else if (r == CHIMP_CMP_EQ) {
-            return CHIMP_HASH(self)->values[i];
+            if (value != NULL) {
+                *value = CHIMP_HASH(self)->values[i];
+            }
+            return 0;
         }
     }
-    return chimp_nil;
+    if (value != NULL) {
+        *value = chimp_nil;
+    }
+    return 1;
 }
 
 ChimpRef *

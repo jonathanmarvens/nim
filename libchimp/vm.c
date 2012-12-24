@@ -111,6 +111,7 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     ChimpRef *value;
     ChimpRef *frame;
     ChimpRef *module;
+    int rc;
     ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
     if (name == NULL) {
         int n = CHIMP_INSTR_ARG1(code, pc);
@@ -123,11 +124,11 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     if (frame == NULL) {
         return CHIMP_FALSE;
     }
-    value = chimp_hash_get (CHIMP_FRAME(frame)->locals, name);
-    if (value == NULL) {
+    rc = chimp_hash_get (CHIMP_FRAME(frame)->locals, name, &value);
+    if (rc < 0) {
         return CHIMP_FALSE;
     }
-    else if (value != chimp_nil) {
+    else if (rc == 0) {
         return chimp_vm_push (vm, value);
     }
 
@@ -145,11 +146,11 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     }
 
     /* 3. check builtins */
-    value = chimp_hash_get (chimp_builtins, name);
-    if (value == NULL) {
+    rc = chimp_hash_get (chimp_builtins, name, &value);
+    if (rc < 0) {
         return CHIMP_FALSE;
     }
-    else if (value != chimp_nil) {
+    else if (rc == 0) {
         return chimp_vm_push (vm, value);
     }
 

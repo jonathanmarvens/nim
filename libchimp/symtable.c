@@ -734,7 +734,19 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
 ChimpRef *
 chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope)
 {
-    return chimp_hash_get (CHIMP_SYMTABLE(self)->lookup, scope);
+    ChimpRef *sym;
+    int rc = chimp_hash_get (CHIMP_SYMTABLE(self)->lookup, scope, &sym);
+    if (rc < 0) {
+        chimp_bug (__FILE__, __LINE__,
+                    "Error looking up symtable entry for scope %p", scope);
+        return NULL;
+    }
+    else if (rc > 0) {
+        chimp_bug (__FILE__, __LINE__,
+                    "No symtable entry for scope %p", scope);
+        return NULL;
+    }
+    return sym;
 }
 
 chimp_bool_t
@@ -743,8 +755,11 @@ chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
     ChimpRef *ste = self;
     while (ste != NULL) {
         ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
-        ChimpRef *ref = chimp_hash_get (symbols, name);
-        if (ref != chimp_nil) {
+        ChimpRef *ref;
+        int rc;
+        
+        rc = chimp_hash_get (symbols, name, &ref);
+        if (rc == 0) {
             *flags = CHIMP_INT(ref)->value;
             return CHIMP_TRUE;
         }

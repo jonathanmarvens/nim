@@ -1207,13 +1207,22 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
     /* XXX this feels kind of hacky */
     if (CHIMP_ARRAY_SIZE(base) > 0) {
         if (chimp_is_builtin (chimp_array_first (base))) {
-            base_ref = chimp_hash_get (
-                    chimp_builtins, chimp_array_first (base));
+            int rc = chimp_hash_get (
+                        chimp_builtins, chimp_array_first (base), &base_ref);
+            if (rc < 0) {
+                chimp_bug (__FILE__, __LINE__, "is_builtin/hash_get failed");
+                return CHIMP_FALSE;
+            }
+            else if (rc > 0) {
+                return CHIMP_FALSE;
+            }
         }
         else {
             base_ref = mod;
             for (i = 0; i < CHIMP_ARRAY_SIZE(base); i++) {
+                int rc;
                 ChimpRef *child;
+                ChimpRef *name;
                 if (i != CHIMP_ARRAY_SIZE(base)-1 && 
                     CHIMP_ANY_TYPE(base_ref) != CHIMP_VALUE_TYPE_MODULE) {
                     chimp_bug (__FILE__, __LINE__,
@@ -1221,10 +1230,14 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
                         CHIMP_STR_DATA(name));
                     return CHIMP_FALSE;
                 }
-                child = chimp_hash_get (
-                    CHIMP_MODULE_LOCALS(base_ref),
-                    CHIMP_ARRAY_ITEM(base, i));
-                if (base_ref == NULL || base_ref == chimp_nil) {
+                name = CHIMP_ARRAY_ITEM(base, i);
+                rc = chimp_hash_get (
+                        CHIMP_MODULE_LOCALS(base_ref), name, &child);
+                if (rc < 0) {
+                    chimp_bug (__FILE__, __LINE__, "Error");
+                    return CHIMP_FALSE;
+                }
+                else if (rc > 0) {
                     chimp_bug (__FILE__, __LINE__,
                         "Module does not expose `%s`",
                         CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(base_ref, i)));

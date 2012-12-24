@@ -382,14 +382,16 @@ chimp_bug (const char *filename, int lineno, const char *format, ...)
 chimp_bool_t
 chimp_is_builtin (ChimpRef *name)
 {
-    ChimpRef *value = chimp_hash_get (chimp_builtins, name);
-    if (value == NULL) {
+    int rc;
+    
+    rc = chimp_hash_get (chimp_builtins, name, NULL);
+    if (rc < 0) {
         chimp_bug (__FILE__, __LINE__,
                     "could not determine if %s is a builtin",
                     CHIMP_STR_DATA(name));
         return CHIMP_FALSE;
     }
-    else if (value == chimp_nil) {
+    else if (rc > 0) {
         return CHIMP_FALSE;
     }
     else {
