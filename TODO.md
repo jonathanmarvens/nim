@@ -1,6 +1,4 @@
 * Add the `self` keyword.
-* libchimp/module.c:54 -- XXX hack RE: the VM & hash\_get can be fixed with
-  the new API.
 * Fix broken examples.
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.

@@ -137,10 +137,7 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     if (module != NULL) { /* builtins have no module */
         value = chimp_object_getattr (module, name);
         /* TODO discern between 'no-such-attr' and other errors */
-        if (value == NULL) {
-            return CHIMP_FALSE;
-        }
-        else if (value != chimp_nil) {
+        if (value != NULL) {
             return chimp_vm_push (vm, value);
         }
     }

@@ -50,21 +50,7 @@ chimp_module_getattr (ChimpRef *self, ChimpRef *name)
         int rc;
         
         rc = chimp_hash_get (CHIMP_MODULE(self)->locals, name, &result);
-        if (rc != 0) {
-            /* XXX the VM relies on chimp_hash_get returning nil */
-#if 0
-            if (result == chimp_nil) {
-                chimp_bug (__FILE__, __LINE__,
-                        "unknown attribute `%s` on module `%s`",
-                        CHIMP_STR_DATA(name),
-                        CHIMP_STR_DATA(CHIMP_MODULE(self)->name)
-                );
-                return NULL;
-            }
-#endif
-            return result;
-        }
-        else if (rc == 0) {
+        if (rc == 0) {
             return result;
         }
     }
