@@ -233,6 +233,12 @@ chimp_label_free (ChimpLabel *self);
 #define CHIMP_CODE_CONSTANTS(ref) CHIMP_CODE(ref)->constants
 #define CHIMP_CODE_NAMES(ref) CHIMP_CODE(ref)->names
 
+#define CHIMP_DEBUG_CLASS_NAME(klass) \
+    CHIMP_STR_DATA(CHIMP_CLASS(klass)->name)
+
+#define CHIMP_DEBUG_SUPERCLASS_NAME(klass) \
+    CHIMP_DEBUG_CLASS_NAME(CHIMP_CLASS(klass)->super)
+
 CHIMP_EXTERN_CLASS(code);
 
 #ifdef __cplusplus
