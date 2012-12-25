@@ -1,4 +1,4 @@
-* Add the `self` keyword.
+* Add the `self` builtin.
 * Fix broken examples.
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.
@@ -9,6 +9,14 @@
   * Scope rules for vars bound during pattern matching? Scoped to inner block?
     Scoped to the function like other declared variables?
   * How should we deal with duplicate declarations? Thinking errors ...
+* Implementing OOP functionality properly:
+  * PUSHTHIS opcode.
+  * setattr support.
+  * chaining methods/constructors (e.g. "super" or "inner" from chimp,
+macro from C?)
+  * "super" keyword?
+  * chain existing methods/constructors.
+  * symtable entry types (e.g. 'this variable was declared in a function')
 * Error handling. Differentiate between runtime/compile errors & chimp bugs.
 * Unit testing API.
 * More tests.
@@ -24,7 +32,6 @@
 * Modulo operator.
 * In-place operators for integers: +=, -=, /=, \*=, etc.
 * Unary operators ++, --
-  Find a better way.
 * Array slices.
 * File I/O (part of the os module?)
 * External modules (e.g. "use foo;" should import foo.chimp at compile time).
