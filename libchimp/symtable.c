@@ -30,6 +30,15 @@
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_SYMTABLE_ENTRY; \
     CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
 
+#define CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, t) \
+    ((CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK) == (t))
+
+#define CHIMP_SYMTABLE_ENTRY_IS_MODULE(ste) \
+    CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, CHIMP_SYM_MODULE)
+
+#define CHIMP_SYMTABLE_ENTRY_IS_SPAWN(ste) \
+    CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, CHIMP_SYM_SPAWN)
+
 ChimpRef *chimp_symtable_class = NULL;
 ChimpRef *chimp_symtable_entry_class = NULL;
 
@@ -70,13 +79,15 @@ chimp_symtable_entry_class_bootstrap (void)
 }
 
 static ChimpRef *
-chimp_symtable_entry_new (ChimpRef *symtable, ChimpRef *parent, ChimpRef *scope)
+chimp_symtable_entry_new (
+    ChimpRef *symtable, ChimpRef *parent, ChimpRef *scope, int flags)
 {
     ChimpRef *ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
     CHIMP_SYMTABLE_ENTRY_INIT(ref);
+    CHIMP_SYMTABLE_ENTRY(ref)->flags = flags;
     CHIMP_SYMTABLE_ENTRY(ref)->symtable = symtable;
     CHIMP_SYMTABLE_ENTRY(ref)->scope = scope;
     CHIMP_SYMTABLE_ENTRY(ref)->parent = parent;
@@ -96,10 +107,10 @@ chimp_symtable_entry_new (ChimpRef *symtable, ChimpRef *parent, ChimpRef *scope)
 }
 
 static chimp_bool_t
-chimp_symtable_enter_scope (ChimpRef *self, ChimpRef *scope)
+chimp_symtable_enter_scope (ChimpRef *self, ChimpRef *scope, int flags)
 {
     ChimpRef *current = CHIMP_SYMTABLE(self)->current;
-    ChimpRef *ste = chimp_symtable_entry_new (self, current, scope);
+    ChimpRef *ste = chimp_symtable_entry_new (self, current, scope, flags);
     if (ste == NULL) {
         return CHIMP_FALSE;
     }
@@ -179,7 +190,7 @@ chimp_symtable_visit_decl_func (ChimpRef *self, ChimpRef *decl)
         return CHIMP_FALSE;
     }
 
-    if (!chimp_symtable_enter_scope (self, decl)) {
+    if (!chimp_symtable_enter_scope (self, decl, CHIMP_SYM_FUNC)) {
         return CHIMP_FALSE;
     }
 
@@ -209,7 +220,7 @@ chimp_symtable_visit_decl_class (ChimpRef *self, ChimpRef *decl)
         return CHIMP_FALSE;
     }
 
-    if (!chimp_symtable_enter_scope (self, decl)) {
+    if (!chimp_symtable_enter_scope (self, decl, CHIMP_SYM_CLASS)) {
         return CHIMP_FALSE;
     }
 
@@ -390,7 +401,7 @@ chimp_symtable_visit_expr_fn (ChimpRef *self, ChimpRef *expr)
     ChimpRef *args = CHIMP_AST_EXPR(expr)->fn.args;
     ChimpRef *body = CHIMP_AST_EXPR(expr)->fn.body;
 
-    if (!chimp_symtable_enter_scope (self, expr)) {
+    if (!chimp_symtable_enter_scope (self, expr, CHIMP_SYM_FUNC)) {
         return CHIMP_FALSE;
     }
 
@@ -415,7 +426,7 @@ chimp_symtable_visit_expr_spawn (ChimpRef *self, ChimpRef *expr)
     ChimpRef *args = CHIMP_AST_EXPR(expr)->spawn.args;
     ChimpRef *body = CHIMP_AST_EXPR(expr)->spawn.body;
 
-    if (!chimp_symtable_enter_scope (self, expr)) {
+    if (!chimp_symtable_enter_scope (self, expr, CHIMP_SYM_SPAWN)) {
         return CHIMP_FALSE;
     }
 
@@ -681,7 +692,7 @@ chimp_symtable_visit_mod (ChimpRef *self, ChimpRef *mod)
     ChimpRef *uses = CHIMP_AST_MOD(mod)->root.uses;
     ChimpRef *body = CHIMP_AST_MOD(mod)->root.body;
 
-    if (!chimp_symtable_enter_scope (self, mod)) {
+    if (!chimp_symtable_enter_scope (self, mod, CHIMP_SYM_MODULE)) {
         return CHIMP_FALSE;
     }
 
@@ -753,6 +764,7 @@ chimp_bool_t
 chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
 {
     ChimpRef *ste = self;
+    chimp_bool_t crossed_spawn_boundary = CHIMP_FALSE;
     while (ste != NULL) {
         ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
         ChimpRef *ref;
@@ -760,8 +772,26 @@ chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
         
         rc = chimp_hash_get (symbols, name, &ref);
         if (rc == 0) {
-            *flags = CHIMP_INT(ref)->value;
+            if (crossed_spawn_boundary &&
+                    !CHIMP_SYMTABLE_ENTRY_IS_MODULE(ste)) {
+                /* If we cross a 'spawn' while trying to find this symbol,
+                 * the only thing we can legitimately reference is something at
+                 * the (immutable) module level.
+                 *
+                 * Anything else is probably owned by another task & thus not safe.
+                 */
+                chimp_bug (__FILE__, __LINE__,
+                        "cannot refer to `%s` from another task",
+                        CHIMP_STR_DATA(name));
+                return CHIMP_FALSE;
+            }
+            if (flags != NULL) {
+                *flags = CHIMP_INT(ref)->value;
+            }
             return CHIMP_TRUE;
+        }
+        if (!crossed_spawn_boundary) {
+            crossed_spawn_boundary = CHIMP_SYMTABLE_ENTRY_IS_SPAWN(ste);
         }
         ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
     }
@@ -771,14 +801,6 @@ chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
 chimp_bool_t
 chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name)
 {
-    ChimpRef *ste = self;
-    while (ste != NULL) {
-        ChimpRef *varnames = CHIMP_SYMTABLE_ENTRY(ste)->varnames;
-        if (chimp_array_find (varnames, name) != -1) {
-            return CHIMP_TRUE;
-        }
-        ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
-    }
-    return CHIMP_FALSE;
+    return chimp_symtable_entry_sym_flags (self, name, NULL);
 }
 
