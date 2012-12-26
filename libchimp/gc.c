@@ -415,7 +415,8 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->super);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->name);
-                chimp_lwhash_foreach (CHIMP_FAST_CLASS(ref)->methods, chimp_gc_mark_lwhash_items, gc);
+                chimp_lwhash_foreach (CHIMP_FAST_CLASS(ref)->methods,
+                                        chimp_gc_mark_lwhash_items, gc);
                 break;
             }
         case CHIMP_VALUE_TYPE_MODULE:
@@ -487,7 +488,7 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->filename);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->lookup);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->stack);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->current);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->ste);
                 break;
             }
         case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
@@ -495,7 +496,6 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symtable);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->scope);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symbols);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->varnames);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->parent);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
                 break;

@@ -41,7 +41,7 @@ typedef struct _ChimpSymtable {
     ChimpRef *filename;
     ChimpRef *lookup;
     ChimpRef *stack;
-    ChimpRef *current;
+    ChimpRef *ste;
 } ChimpSymtable;
 
 typedef struct _ChimpSymtableEntry {
@@ -68,7 +68,8 @@ ChimpRef *
 chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope);
 
 chimp_bool_t
-chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags);
+chimp_symtable_entry_sym_flags (
+    ChimpRef *self, ChimpRef *name, int64_t *flags);
 
 chimp_bool_t
 chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name);
@@ -80,6 +81,7 @@ chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name);
     CHIMP_CHECK_CAST( \
         ChimpSymtableEntry, (ref), CHIMP_VALUE_TYPE_SYMTABLE_ENTRY)
 
+#define CHIMP_SYMTABLE_ENTRY_CHILDREN(ref) CHIMP_SYMTABLE_ENTRY(ref)->children
 
 CHIMP_EXTERN_CLASS(symtable);
 CHIMP_EXTERN_CLASS(symtable_entry);

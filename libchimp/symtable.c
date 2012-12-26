@@ -30,6 +30,8 @@
     CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_SYMTABLE_ENTRY; \
     CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
 
+#define CHIMP_SYMTABLE_GET_CURRENT_ENTRY(ref) CHIMP_SYMTABLE(ref)->ste
+
 #define CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, t) \
     ((CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK) == (t))
 
@@ -95,10 +97,6 @@ chimp_symtable_entry_new (
     if (CHIMP_SYMTABLE_ENTRY(ref)->symbols == NULL) {
         return NULL;
     }
-    CHIMP_SYMTABLE_ENTRY(ref)->varnames = chimp_array_new ();
-    if (CHIMP_SYMTABLE_ENTRY(ref)->varnames == NULL) {
-        return NULL;
-    }
     CHIMP_SYMTABLE_ENTRY(ref)->children = chimp_array_new ();
     if (CHIMP_SYMTABLE_ENTRY(ref)->children == NULL) {
         return NULL;
@@ -109,24 +107,23 @@ chimp_symtable_entry_new (
 static chimp_bool_t
 chimp_symtable_enter_scope (ChimpRef *self, ChimpRef *scope, int flags)
 {
-    ChimpRef *current = CHIMP_SYMTABLE(self)->current;
-    ChimpRef *ste = chimp_symtable_entry_new (self, current, scope, flags);
-    if (ste == NULL) {
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    ChimpRef *new_ste = chimp_symtable_entry_new (self, ste, scope, flags);
+    if (new_ste == NULL) {
         return CHIMP_FALSE;
     }
-    if (!chimp_hash_put (CHIMP_SYMTABLE(self)->lookup, scope, ste)) {
+    if (!chimp_hash_put (CHIMP_SYMTABLE(self)->lookup, scope, new_ste)) {
         return CHIMP_FALSE;
     }
-    if (current != NULL) {
-        if (!chimp_array_push (CHIMP_SYMTABLE(self)->stack, current)) {
+    if (ste != NULL) {
+        if (!chimp_array_push (CHIMP_SYMTABLE(self)->stack, ste)) {
             return CHIMP_FALSE;
         }
-        if (!chimp_array_push (
-                CHIMP_SYMTABLE_ENTRY(current)->children, ste)) {
+        if (!chimp_array_push (CHIMP_SYMTABLE_ENTRY_CHILDREN(ste), new_ste)) {
             return CHIMP_FALSE;
         }
     }
-    CHIMP_SYMTABLE(self)->current = ste;
+    CHIMP_SYMTABLE(self)->ste = new_ste;
     return CHIMP_TRUE;
 }
 
@@ -135,25 +132,21 @@ chimp_symtable_leave_scope (ChimpRef *self)
 {
     ChimpRef *stack = CHIMP_SYMTABLE(self)->stack;
     if (CHIMP_ARRAY_SIZE(stack) > 0) {
-        CHIMP_SYMTABLE(self)->current = chimp_array_pop (stack);
+        CHIMP_SYMTABLE(self)->ste = chimp_array_pop (stack);
     }
-    return CHIMP_SYMTABLE(self)->current != NULL;
+    return CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self) != NULL;
 }
 
 static chimp_bool_t
 chimp_symtable_add (ChimpRef *self, ChimpRef *name, int64_t flags)
 {
-    ChimpRef *current = CHIMP_SYMTABLE(self)->current;
-    ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(current)->symbols;
-    ChimpRef *varnames = CHIMP_SYMTABLE_ENTRY(current)->varnames;
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
     ChimpRef *fl = chimp_int_new (flags);
     if (fl == NULL) {
         return CHIMP_FALSE;
     }
     if (!chimp_hash_put (symbols, name, fl)) {
-        return CHIMP_FALSE;
-    }
-    if (!chimp_array_push (varnames, name)) {
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -165,15 +158,20 @@ chimp_symtable_visit_stmts_or_decls (ChimpRef *self, ChimpRef *arr)
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
-        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(arr, i)) == CHIMP_VALUE_TYPE_AST_STMT) {
-            if (!chimp_symtable_visit_stmt (self, CHIMP_ARRAY_ITEM(arr, i))) {
+        ChimpRef *item = CHIMP_ARRAY_ITEM(arr, i);
+        if (CHIMP_ANY_TYPE(item) == CHIMP_VALUE_TYPE_AST_STMT) {
+            if (!chimp_symtable_visit_stmt (self, item)) {
                 return CHIMP_FALSE;
             }
         }
-        else if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(arr, i)) == CHIMP_VALUE_TYPE_AST_DECL) {
-            if (!chimp_symtable_visit_decl (self, CHIMP_ARRAY_ITEM(arr, i))) {
+        else if (CHIMP_ANY_TYPE(item) == CHIMP_VALUE_TYPE_AST_DECL) {
+            if (!chimp_symtable_visit_decl (self, item)) {
                 return CHIMP_FALSE;
             }
+        }
+        else {
+            CHIMP_BUG ("dude");
+            return CHIMP_FALSE;
         }
     }
     return CHIMP_TRUE;
@@ -185,8 +183,10 @@ chimp_symtable_visit_decl_func (ChimpRef *self, ChimpRef *decl)
     ChimpRef *name = CHIMP_AST_DECL(decl)->func.name;
     ChimpRef *args = CHIMP_AST_DECL(decl)->func.args;
     ChimpRef *body = CHIMP_AST_DECL(decl)->func.body;
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    int type = CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK;
 
-    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL | type)) {
         return CHIMP_FALSE;
     }
 
@@ -215,8 +215,10 @@ chimp_symtable_visit_decl_class (ChimpRef *self, ChimpRef *decl)
     ChimpRef *name = CHIMP_AST_DECL(decl)->class.name;
     ChimpRef *base = CHIMP_AST_DECL(decl)->class.base;
     ChimpRef *body = CHIMP_AST_DECL(decl)->class.body;
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    int type = CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK;
 
-    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL | type)) {
         return CHIMP_FALSE;
     }
 
@@ -225,6 +227,7 @@ chimp_symtable_visit_decl_class (ChimpRef *self, ChimpRef *decl)
     }
 
     if (base != NULL) {
+        /* XXX this sucks. */
         if (!chimp_symtable_add (self, chimp_array_first (base), 0)) {
             return CHIMP_FALSE;
         }
@@ -245,8 +248,10 @@ static chimp_bool_t
 chimp_symtable_visit_decl_use (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->use.name;
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    int type = CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK;
 
-    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL | type)) {
         return CHIMP_FALSE;
     }
 
@@ -258,8 +263,10 @@ chimp_symtable_visit_decl_var (ChimpRef *self, ChimpRef *decl)
 {
     ChimpRef *name = CHIMP_AST_DECL(decl)->var.name;
     ChimpRef *value = CHIMP_AST_DECL(decl)->var.value;
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+    int type = CHIMP_SYMTABLE_ENTRY(ste)->flags & CHIMP_SYM_TYPE_MASK;
 
-    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL)) {
+    if (!chimp_symtable_add (self, name, CHIMP_SYM_DECL | type)) {
         return CHIMP_FALSE;
     }
 
@@ -302,7 +309,8 @@ chimp_symtable_visit_expr_call (ChimpRef *self, ChimpRef *expr)
     }
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
-        if (!chimp_symtable_visit_expr (self, CHIMP_ARRAY_ITEM(args, i))) {
+        ChimpRef *item = CHIMP_ARRAY_ITEM(args, i);
+        if (!chimp_symtable_visit_expr (self, item)) {
             return CHIMP_FALSE;
         }
     }
@@ -340,7 +348,8 @@ chimp_symtable_visit_expr_array (ChimpRef *self, ChimpRef *expr)
     size_t i;
     ChimpRef *arr = CHIMP_AST_EXPR(expr)->array.value;
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
-        if (!chimp_symtable_visit_expr (self, CHIMP_ARRAY_ITEM(arr, i))) {
+        ChimpRef *item = CHIMP_ARRAY_ITEM(arr, i);
+        if (!chimp_symtable_visit_expr (self, item)) {
             return CHIMP_FALSE;
         }
     }
@@ -353,7 +362,8 @@ chimp_symtable_visit_expr_hash (ChimpRef *self, ChimpRef *expr)
     size_t i;
     ChimpRef *arr = CHIMP_AST_EXPR(expr)->hash.value;
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
-        if (!chimp_symtable_visit_expr (self, CHIMP_ARRAY_ITEM(arr, i))) {
+        ChimpRef *item = CHIMP_ARRAY_ITEM(arr, i);
+        if (!chimp_symtable_visit_expr (self, item)) {
             return CHIMP_FALSE;
         }
     }
@@ -363,13 +373,15 @@ chimp_symtable_visit_expr_hash (ChimpRef *self, ChimpRef *expr)
 static chimp_bool_t
 chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
 {
+    ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
     ChimpRef *name = CHIMP_AST_EXPR(expr)->ident.id;
     int64_t fl;
 
-    if (!chimp_symtable_entry_sym_flags (CHIMP_SYMTABLE(self)->current, name, &fl)) {
+    if (!chimp_symtable_entry_sym_flags (ste, name, &fl)) {
         if (chimp_is_builtin (name)) {
             return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
         }
+        /* TODO search the symtable stack */
         else {
             CHIMP_BUG ("unknown symbol: %s", CHIMP_STR_DATA(name));
             return CHIMP_FALSE;
@@ -552,7 +564,10 @@ chimp_symtable_visit_stmt_pattern_test (ChimpRef *self, ChimpRef *test)
         case CHIMP_AST_EXPR_IDENT:
             {
                 ChimpRef *id = CHIMP_AST_EXPR(test)->ident.id;
-                if (!chimp_symtable_add (self, id, CHIMP_SYM_DECL)) {
+                ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
+                int type = CHIMP_SYMTABLE_ENTRY(ste)->flags &
+                            CHIMP_SYM_TYPE_MASK;
+                if (!chimp_symtable_add (self, id, CHIMP_SYM_DECL | type)) {
                     return CHIMP_FALSE;
                 }
 
@@ -733,7 +748,8 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
                 return NULL;
             break;
         default:
-            CHIMP_BUG ("unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
+            CHIMP_BUG ("unknown top-level AST node type: %d",
+                        CHIMP_ANY_TYPE(ast));
             return NULL;
     }
 
@@ -757,7 +773,8 @@ chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope)
 }
 
 chimp_bool_t
-chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
+chimp_symtable_entry_sym_flags (
+    ChimpRef *self, ChimpRef *name, int64_t *flags)
 {
     ChimpRef *ste = self;
     chimp_bool_t crossed_spawn_boundary = CHIMP_FALSE;
@@ -774,7 +791,8 @@ chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
                  * the only thing we can legitimately reference is something at
                  * the (immutable) module level.
                  *
-                 * Anything else is probably owned by another task & thus not safe.
+                 * Anything else is probably owned by another task & thus not
+                 * safe.
                  */
                 CHIMP_BUG ("cannot refer to `%s` from another task",
                         CHIMP_STR_DATA(name));
