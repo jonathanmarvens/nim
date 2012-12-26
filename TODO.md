@@ -2,7 +2,7 @@
 * MAKECLOSURE opcode + free vars for code/method objects.
   (captures lexical environment based upon free vars)
   PUSHCONST some\_method
-  MAKECLOSURE            # returns a bound copy of some\_method
+  MAKECLOSURE            # returns a new, bound copy of some\_method
   Also: free vars should probably be an array of ChimpRef\*\*.
 * Fix broken examples.
 * Verify scoping rules using the symtable.
@@ -14,14 +14,16 @@
   * Scope rules for vars bound during pattern matching? Scoped to inner block?
     Scoped to the function like other declared variables?
   * How should we deal with duplicate declarations? Thinking errors ...
-* Implementing OOP functionality properly:
+* Implementing OOP (specifically: user classes) properly:
+  * (meta: drop user classes for now?)
   * PUSHTHIS opcode.
-  * setattr support.
+  * setattr support (useful even if we ditch user classes)
   * chaining methods/constructors (e.g. "super" or "inner" from chimp,
-macro from C?)
-  * "super" keyword?
+macro from C?) -- we *should* be doing this already.
+  * "super" keyword? "inner" keyword?
   * chain existing methods/constructors.
-  * symtable entry types (e.g. 'this variable was declared in a function')
+* setitem opcode for hash/array element mutation syntax (arr[1] = 10)
+* slice syntax for arrays (arr[1:2])
 * Error handling. Differentiate between runtime/compile errors & chimp bugs.
 * Unit testing API.
 * More tests.
