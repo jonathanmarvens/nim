@@ -1,4 +1,9 @@
 * Add the `self` builtin.
+* MAKECLOSURE opcode + free vars for code/method objects.
+  (captures lexical environment based upon free vars)
+  PUSHCONST some\_method
+  MAKECLOSURE            # returns a bound copy of some\_method
+  Also: free vars should probably be an array of ChimpRef\*\*.
 * Fix broken examples.
 * Verify scoping rules using the symtable.
   * Identifiers have function, module or 'builtin' scope.
