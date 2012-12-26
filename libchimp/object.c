@@ -62,7 +62,7 @@ chimp_object_str (ChimpRef *self)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "cannot convert type to string. probably a bug.");
+    CHIMP_BUG ("cannot convert type to string. probably a bug.");
     return NULL;
 }
 
@@ -78,7 +78,8 @@ chimp_object_add (ChimpRef *left, ChimpRef *right)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "`%s` type does not support the '+' operator", CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(left))->name));
+    CHIMP_BUG ("`%s` type does not support the '+' operator",
+            CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(left))->name));
     return NULL;
 }
 
@@ -94,7 +95,7 @@ chimp_object_sub (ChimpRef *left, ChimpRef *right)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "type does not support the '-' operator");
+    CHIMP_BUG ("type does not support the '-' operator");
     return NULL;
 }
 
@@ -110,7 +111,7 @@ chimp_object_mul (ChimpRef *left, ChimpRef *right)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "type does not support the '*' operator");
+    CHIMP_BUG ("type does not support the '*' operator");
     return NULL;
 }
 
@@ -126,7 +127,7 @@ chimp_object_div (ChimpRef *left, ChimpRef *right)
         klass = CHIMP_CLASS(klass)->super;
     }
 
-    chimp_bug (__FILE__, __LINE__, "type does not support the '/' operator");
+    CHIMP_BUG ("type does not support the '/' operator");
     return NULL;
 }
 

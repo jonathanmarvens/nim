@@ -49,6 +49,9 @@ chimp_bug (const char *filename, int lineno, const char *format, ...);
 chimp_bool_t
 chimp_is_builtin (struct _ChimpRef *name);
 
+#define CHIMP_BUG(fmt, ...) \
+    chimp_bug (__FILE__, __LINE__, (fmt), ## __VA_ARGS__)
+
 #define CHIMP_MALLOC(type, size) ((type *) malloc (size))
 #define CHIMP_REALLOC(type, ptr, size) ((type *) realloc ((ptr), (size)))
 #define CHIMP_FREE(ptr) \

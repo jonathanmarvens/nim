@@ -282,7 +282,8 @@ static void
 chimp_gc_value_dtor (ChimpGC *gc, ChimpRef *ref)
 {
     if (!chimp_heap_contains (&gc->heap, ref)) {
-        chimp_bug (__FILE__, __LINE__, "destructor called on value that belongs to another GC: %s", CHIMP_STR(chimp_object_str (ref))->data);
+        CHIMP_BUG ("destructor called on value that belongs to another GC: %s",
+                CHIMP_STR(chimp_object_str (ref))->data);
         return;
     }
 
@@ -364,7 +365,8 @@ ChimpValue *
 chimp_gc_ref_check_cast (ChimpRef *ref, ChimpValueType type)
 {
     if (ref == NULL) {
-        chimp_bug (__FILE__, __LINE__, "expected ref type '%s', but got a null ref", type_name (type));
+        CHIMP_BUG ("expected ref type '%s', but got a null ref",
+                    type_name (type));
         return NULL;
     }
 
@@ -373,7 +375,8 @@ chimp_gc_ref_check_cast (ChimpRef *ref, ChimpValueType type)
     }
 
     if (ref->value.any.type != type) {
-        chimp_bug (__FILE__, __LINE__, "expected ref type '%s', but got '%s'", type_name (type), type_name (ref->value.any.type));
+        CHIMP_BUG ("expected ref type '%s', but got '%s'",
+                type_name (type), type_name (ref->value.any.type));
         return NULL;
     }
 
@@ -503,7 +506,8 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
         case CHIMP_VALUE_TYPE_INT:
             break;
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown ref type '%s'", type_name (ref->value.any.type));
+            CHIMP_BUG ("unknown ref type '%s'",
+                        type_name (ref->value.any.type));
     };
 }
 

@@ -398,7 +398,7 @@ chimp_task_send (ChimpRef *self, ChimpRef *value)
     CHIMP_TASK_LOCK(task);
 
     if (CHIMP_TASK(self)->local) {
-        chimp_bug (__FILE__, __LINE__, "cannot send using local task object");
+        CHIMP_BUG ("cannot send using local task object");
         CHIMP_FREE (msg);
         return CHIMP_FALSE;
     }
@@ -435,13 +435,11 @@ chimp_task_recv (ChimpRef *self)
     CHIMP_TASK_LOCK(task);
 
     if (!CHIMP_TASK(self)->local) {
-        chimp_bug (__FILE__, __LINE__,
-            "cannot recv from a non-local task object");
+        CHIMP_BUG ("cannot recv from a non-local task object");
         return NULL;
     }
     else if (CHIMP_TASK_IS_DONE(task)) {
-        chimp_bug (__FILE__, __LINE__,
-            "attempt to recv in a task marked DONE");
+        CHIMP_BUG ("attempt to recv in a task marked DONE");
         return NULL;
     }
 

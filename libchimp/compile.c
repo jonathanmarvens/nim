@@ -101,7 +101,7 @@ typedef struct _ChimpBindVars {
 #define CHIMP_BIND_PATH_PUSH_ARRAY(stack) \
     do { \
         if ((stack)->size >= MAX_BIND_PATH_SIZE) \
-            chimp_bug (__FILE__, __LINE__, "bindpath limit reached"); \
+            CHIMP_BUG ("bindpath limit reached"); \
         (stack)->items[(stack)->size].type = CHIMP_BIND_PATH_ITEM_TYPE_ARRAY; \
         (stack)->items[(stack)->size].array_index = 0; \
         (stack)->size++; \
@@ -109,7 +109,7 @@ typedef struct _ChimpBindVars {
 #define CHIMP_BIND_PATH_PUSH_HASH(stack) \
     do { \
         if ((stack)->size >= MAX_BIND_PATH_SIZE) \
-            chimp_bug (__FILE__, __LINE__, "bindpath limit reached"); \
+            CHIMP_BUG ("bindpath limit reached"); \
         (stack)->items[(stack)->size].type = CHIMP_BIND_PATH_ITEM_TYPE_HASH; \
         (stack)->items[(stack)->size].hash_key = NULL; \
         (stack)->size++; \
@@ -118,20 +118,20 @@ typedef struct _ChimpBindVars {
 #define CHIMP_BIND_PATH_ARRAY_INDEX(stack, i) \
     do { \
         if ((stack)->size == 0) { \
-            chimp_bug (__FILE__, __LINE__, "array index on empty bind path"); \
+            CHIMP_BUG ("array index on empty bind path"); \
         } \
         if ((stack)->items[(stack)->size-1].type != CHIMP_BIND_PATH_ITEM_TYPE_ARRAY) { \
-            chimp_bug (__FILE__, __LINE__, "array index on path item that is not an array"); \
+            CHIMP_BUG ("array index on path item that is not an array"); \
         } \
         (stack)->items[(stack)->size-1].array_index = (i); \
     } while (0)
 #define CHIMP_BIND_PATH_HASH_KEY(stack, key) \
     do { \
         if ((stack)->size == 0) { \
-            chimp_bug (__FILE__, __LINE__, "hash key on empty bind path"); \
+            CHIMP_BUG ("hash key on empty bind path"); \
         } \
         if ((stack)->items[(stack)->size-1].type != CHIMP_BIND_PATH_ITEM_TYPE_HASH) { \
-            chimp_bug (__FILE__, __LINE__, "hash key on path item that is not a hash"); \
+            CHIMP_BUG ("hash key on path item that is not a hash"); \
         } \
         (stack)->items[(stack)->size-1].hash_key = (key); \
     } while (0)
@@ -141,7 +141,7 @@ typedef struct _ChimpBindVars {
 #define CHIMP_BIND_VARS_ADD(vars, id, p) \
     do { \
         if ((vars)->size >= MAX_BIND_VARS_SIZE) \
-            chimp_bug (__FILE__, __LINE__, "bindvar limit reached"); \
+            CHIMP_BUG ("bindvar limit reached"); \
         (vars)->items[(vars)->size].id = id; \
         memcpy (&(vars)->items[(vars)->size].path, (p), sizeof(*p)); \
         /* XXX HACK path of zero elements means a top-level binding */ \
@@ -262,7 +262,7 @@ chimp_code_compiler_end_loop (ChimpCodeCompiler *c)
 {
     ChimpLoopStack *stack = &c->loop_stack;
     if (stack->size == 0) {
-        chimp_bug (__FILE__, __LINE__, "end_loop with zero stack size");
+        CHIMP_BUG ("end_loop with zero stack size");
         return;
     }
     /* TODO ensure we're in a code block */
@@ -275,7 +275,7 @@ chimp_code_compiler_get_loop_label (ChimpCodeCompiler *c)
 {
     ChimpLoopStack *stack = &c->loop_stack;
     if (stack->size == 0) {
-        chimp_bug (__FILE__, __LINE__, "get_loop_label with zero stack size");
+        CHIMP_BUG ("get_loop_label with zero stack size");
         return NULL;
     }
     return &stack->items[stack->size-1];
@@ -302,7 +302,7 @@ chimp_code_compiler_push_unit (
             unit->class = value;
             break;
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown unit type: %d", type);
+            CHIMP_BUG ("unknown unit type: %d", type);
             CHIMP_FREE (unit);
             return NULL;
     };
@@ -315,12 +315,12 @@ chimp_code_compiler_push_unit (
     unit->ste = chimp_symtable_lookup (c->symtable, scope);
     if (unit->ste == NULL) {
         CHIMP_FREE (unit);
-        chimp_bug (__FILE__, __LINE__, "symtable lookup error for scope %p", scope);
+        CHIMP_BUG ("symtable lookup error for scope %p", scope);
         return NULL;
     }
     if (unit->ste == chimp_nil) {
         CHIMP_FREE (unit);
-        chimp_bug (__FILE__, __LINE__, "symtable lookup failed for scope %p", scope);
+        CHIMP_BUG ("symtable lookup failed for scope %p", scope);
         return NULL;
     }
     c->current_unit = unit;
@@ -350,11 +350,11 @@ chimp_code_compiler_pop_unit (ChimpCodeCompiler *c, ChimpUnitType expected)
 {
     ChimpCodeUnit *unit = c->current_unit;
     if (unit == NULL) {
-        chimp_bug (__FILE__, __LINE__, "NULL code unit?");
+        CHIMP_BUG ("NULL code unit?");
         return NULL;
     }
     if (unit->type != expected) {
-        chimp_bug (__FILE__, __LINE__, "unexpected unit type!");
+        CHIMP_BUG ("unexpected unit type!");
         return NULL;
     }
     c->current_unit = unit->next;
@@ -658,20 +658,18 @@ chimp_compile_ast_stmt_hash_pattern_test (
         switch (CHIMP_AST_EXPR_TYPE(key)) {
             case CHIMP_AST_EXPR_IDENT:
                 {
-                    chimp_bug (__FILE__, __LINE__,
+                    CHIMP_BUG (
                         "pattern matcher does not support unpacking by key");
                     return CHIMP_FALSE;
                 }
             case CHIMP_AST_EXPR_ARRAY:
                 {
-                    chimp_bug (__FILE__, __LINE__,
-                        "pattern matcher does not support array keys");
+                    CHIMP_BUG ("pattern matcher does not support array keys");
                     return CHIMP_FALSE;
                 }
             case CHIMP_AST_EXPR_HASH:
                 {
-                    chimp_bug (__FILE__, __LINE__,
-                        "pattern matcher does not support hash keys");
+                    CHIMP_BUG ("pattern matcher does not support hash keys");
                     return CHIMP_FALSE;
                 }
             case CHIMP_AST_EXPR_STR:
@@ -696,12 +694,12 @@ chimp_compile_ast_stmt_hash_pattern_test (
                 }
             case CHIMP_AST_EXPR_WILDCARD:
                 {
-                    chimp_bug (__FILE__, __LINE__,
+                    CHIMP_BUG (
                         "pattern matcher doesn't support wildcard in hash key");
                     return CHIMP_FALSE;
                 }
             default:
-                chimp_bug (__FILE__, __LINE__,
+                CHIMP_BUG (
                     "pattern matcher found unknown AST expr type in hash key");
                 return CHIMP_FALSE;
         }
@@ -883,7 +881,7 @@ chimp_compile_ast_stmt_pattern_test (
                 break;
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "TODO");
+            CHIMP_BUG ("TODO");
             return CHIMP_FALSE;
     };
 
@@ -1190,16 +1188,16 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
     size_t i;
 
     if (CHIMP_COMPILER_IN_CODE(c)) {
-        chimp_bug (__FILE__, __LINE__, "Cannot declare classes inside functions");
+        CHIMP_BUG ("Cannot declare classes inside functions");
         return CHIMP_FALSE;
     }
     else if (CHIMP_COMPILER_IN_CLASS(c)) {
-        chimp_bug (__FILE__, __LINE__, "Cannot declare nested classes");
+        CHIMP_BUG ("Cannot declare nested classes");
     }
 
     mod = chimp_compile_get_current_module (c);
     if (mod == NULL) {
-        chimp_bug (__FILE__, __LINE__, "get_current_module failed");
+        CHIMP_BUG ("get_current_module failed");
         return CHIMP_FALSE;
     }
 
@@ -1210,7 +1208,7 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
             int rc = chimp_hash_get (
                         chimp_builtins, chimp_array_first (base), &base_ref);
             if (rc < 0) {
-                chimp_bug (__FILE__, __LINE__, "is_builtin/hash_get failed");
+                CHIMP_BUG ("is_builtin/hash_get failed");
                 return CHIMP_FALSE;
             }
             else if (rc > 0) {
@@ -1225,8 +1223,7 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
                 ChimpRef *name;
                 if (i != CHIMP_ARRAY_SIZE(base)-1 && 
                     CHIMP_ANY_TYPE(base_ref) != CHIMP_VALUE_TYPE_MODULE) {
-                    chimp_bug (__FILE__, __LINE__,
-                        "Cannot resolve class on non-module type: %s",
+                    CHIMP_BUG ("Cannot resolve class on non-module type: %s",
                         CHIMP_STR_DATA(name));
                     return CHIMP_FALSE;
                 }
@@ -1234,12 +1231,11 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
                 rc = chimp_hash_get (
                         CHIMP_MODULE_LOCALS(base_ref), name, &child);
                 if (rc < 0) {
-                    chimp_bug (__FILE__, __LINE__, "Error");
+                    CHIMP_BUG ("Error");
                     return CHIMP_FALSE;
                 }
                 else if (rc > 0) {
-                    chimp_bug (__FILE__, __LINE__,
-                        "Module does not expose `%s`",
+                    CHIMP_BUG ("Module does not expose `%s`",
                         CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(base_ref, i)));
                     return CHIMP_FALSE;
                 }
@@ -1264,7 +1260,7 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
     }
 
     if (!chimp_module_add_local (mod, name, klass)) {
-        chimp_bug (__FILE__, __LINE__, "Failed to add new class to module");
+        CHIMP_BUG ("Failed to add new class to module");
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -1331,7 +1327,7 @@ chimp_compile_ast_decl (ChimpCodeCompiler *c, ChimpRef *decl)
         case CHIMP_AST_DECL_VAR:
             return chimp_compile_ast_decl_var (c, decl);
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_DECL_TYPE(decl));
+            CHIMP_BUG ("unknown AST stmt type: %d", CHIMP_AST_DECL_TYPE(decl));
             return CHIMP_FALSE;
     }
 }
@@ -1355,7 +1351,7 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
         case CHIMP_AST_STMT_BREAK_:
             return chimp_compile_ast_stmt_break_ (c, stmt);
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
+            CHIMP_BUG ("unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return CHIMP_FALSE;
     };
 }
@@ -1394,12 +1390,12 @@ chimp_compile_ast_expr (ChimpCodeCompiler *c, ChimpRef *expr)
             return chimp_compile_ast_expr_not (c, expr);
         case CHIMP_AST_EXPR_WILDCARD:
             {
-                chimp_bug (__FILE__, __LINE__,
-                        "wildcard can't be used outside of a match statement");
+                CHIMP_BUG (
+                    "wildcard can't be used outside of a match statement");
                 return CHIMP_FALSE;
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
+            CHIMP_BUG ("unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;
     };
 }
@@ -1741,7 +1737,7 @@ and_error:
                 break;
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown binop type: %d", CHIMP_AST_EXPR(expr)->binop.op);
+            CHIMP_BUG ("unknown binop type: %d", CHIMP_AST_EXPR(expr)->binop.op);
             return CHIMP_FALSE;
     }
 
@@ -1838,8 +1834,8 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
             if (!chimp_compile_ast_mod (&c, ast)) goto error;
             break;
         default:
-            chimp_bug (__FILE__, __LINE__,
-                "unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
+            CHIMP_BUG ("unknown top-level AST node type: %d",
+                        CHIMP_ANY_TYPE(ast));
             goto error;
     };
 

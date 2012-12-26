@@ -386,8 +386,7 @@ chimp_is_builtin (ChimpRef *name)
     
     rc = chimp_hash_get (chimp_builtins, name, NULL);
     if (rc < 0) {
-        chimp_bug (__FILE__, __LINE__,
-                    "could not determine if %s is a builtin",
+        CHIMP_BUG ("could not determine if %s is a builtin",
                     CHIMP_STR_DATA(name));
         return CHIMP_FALSE;
     }

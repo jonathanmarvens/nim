@@ -43,7 +43,8 @@ chimp_int_str (ChimpRef *self)
         return NULL;
     }
     else if (len > sizeof(buf)) {
-        chimp_bug (__FILE__, __LINE__, "chimp_int_str output truncated: %" PRId64, CHIMP_INT(self)->value);
+        CHIMP_BUG ("chimp_int_str output truncated: %" PRId64,
+                    CHIMP_INT(self)->value);
         return NULL;
     }
 

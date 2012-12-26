@@ -38,7 +38,7 @@ chimp_code_use_label (ChimpRef *self, ChimpLabel *label)
         chimp_label_free (label);
     }
     else {
-        chimp_bug (__FILE__, __LINE__, "Label is already in use\n");
+        CHIMP_BUG ("Label is already in use\n");
     }
 }
 
@@ -102,13 +102,13 @@ chimp_code_new (void)
     CHIMP_ANY(ref)->klass = chimp_code_class;
     temp = chimp_array_new ();
     if (temp == NULL) {
-        chimp_bug (__FILE__, __LINE__, "wtf");
+        CHIMP_BUG ("wtf");
         return NULL;
     }
     CHIMP_CODE(ref)->constants = temp;
     temp = chimp_array_new ();
     if (temp == NULL) {
-        chimp_bug (__FILE__, __LINE__, "wtf");
+        CHIMP_BUG ("wtf");
         return NULL;
     }
     CHIMP_CODE(ref)->names = temp;
@@ -362,7 +362,7 @@ chimp_bool_t
 chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label)
 {
     if (label == NULL) {
-        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        CHIMP_BUG ("jump labels can't be null, fool.");
         return CHIMP_FALSE;
     }
 
@@ -379,7 +379,7 @@ chimp_bool_t
 chimp_code_jumpiffalse (ChimpRef *self, ChimpLabel *label)
 {
     if (label == NULL) {
-        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        CHIMP_BUG ("jump labels can't be null, fool.");
         return CHIMP_FALSE;
     }
 
@@ -396,7 +396,7 @@ chimp_bool_t
 chimp_code_jump (ChimpRef *self, ChimpLabel *label)
 {
     if (label == NULL) {
-        chimp_bug (__FILE__, __LINE__, "jump labels can't be null, fool.");
+        CHIMP_BUG ("jump labels can't be null, fool.");
         return CHIMP_FALSE;
     }
 

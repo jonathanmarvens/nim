@@ -78,11 +78,11 @@ chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *value = CHIMP_INSTR_CONST1(code, pc);
     if (value == NULL) {
-        chimp_bug (__FILE__, __LINE__, "unknown or missing const at pc=%d", pc);
+        CHIMP_BUG ("unknown or missing const at pc=%d", pc);
         return CHIMP_FALSE;
     }
     if (!chimp_vm_push(vm, value)) {
-        chimp_bug (__FILE__, __LINE__, "failed to push value at pc=%d", pc);
+        CHIMP_BUG ("failed to push value at pc=%d", pc);
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -94,12 +94,12 @@ chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     ChimpRef *value;
     ChimpRef *target = CHIMP_INSTR_NAME1(code, pc);
     if (target == NULL) {
-        chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", pc);
+        CHIMP_BUG ("unknown or missing name #%d at pc=%d", pc);
         return CHIMP_FALSE;
     }
     value = chimp_vm_pop (vm);
     if (value == NULL) {
-        chimp_bug (__FILE__, __LINE__, "empty stack during assignment to %s", CHIMP_STR_DATA(target));
+        CHIMP_BUG ("empty stack during assignment to %s", CHIMP_STR_DATA(target));
         return CHIMP_FALSE;
     }
     return chimp_hash_put (locals, target, value);
@@ -115,7 +115,7 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
     if (name == NULL) {
         int n = CHIMP_INSTR_ARG1(code, pc);
-        chimp_bug (__FILE__, __LINE__, "unknown or missing name #%d at pc=%d", n, pc);
+        CHIMP_BUG ("unknown or missing name #%d at pc=%d", n, pc);
         return CHIMP_FALSE;
     }
 
@@ -151,7 +151,7 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return chimp_vm_push (vm, value);
     }
 
-    chimp_bug (__FILE__, __LINE__, "unknown name: %s", CHIMP_STR_DATA(name));
+    CHIMP_BUG ("unknown name: %s", CHIMP_STR_DATA(name));
     return CHIMP_FALSE;
 }
 
@@ -203,7 +203,7 @@ chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     }
     result = chimp_object_call (target, args);
     if (result == NULL) {
-        chimp_bug (__FILE__, __LINE__, "target is not callable");
+        CHIMP_BUG ("target is not callable");
         return CHIMP_FALSE;
     }
     if (!chimp_vm_push (vm, result)) {
@@ -297,13 +297,13 @@ chimp_vm_cmp (ChimpVM *vm)
     ChimpRef *left = chimp_vm_pop (vm);
     ChimpCmpResult actual;
     if (left == NULL || right == NULL) {
-        chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+        CHIMP_BUG ("NULL value on the stack");
         return CHIMP_FALSE;
     }
 
     actual = chimp_object_cmp (left, right);
     if (actual == CHIMP_CMP_ERROR) {
-        chimp_bug (__FILE__, __LINE__, "TODO raise an exception");
+        CHIMP_BUG ("TODO raise an exception");
     }
     return actual;
 }
@@ -324,7 +324,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHCONST:
             {
                 if (!chimp_vm_pushconst (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "PUSHCONST instruction failed");
+                    CHIMP_BUG ("PUSHCONST instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -333,7 +333,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_STORENAME:
             {
                 if (!chimp_vm_storename (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "STORENAME instruction failed");
+                    CHIMP_BUG ("STORENAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -342,7 +342,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNAME:
             {
                 if (!chimp_vm_pushname (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "PUSHNAME instruction failed");
+                    CHIMP_BUG ("PUSHNAME instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -351,7 +351,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_PUSHNIL:
             {
                 if (!chimp_vm_push (vm, chimp_nil)) {
-                    chimp_bug (__FILE__, __LINE__, "PUSHNIL instruction failed");
+                    CHIMP_BUG ("PUSHNIL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -361,7 +361,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 ChimpRef *value = chimp_vm_pop (vm);
                 if (value == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "GETCLASS instruction failed");
+                    CHIMP_BUG ("GETCLASS instruction failed");
                     return NULL;
                 }
                 if (!chimp_vm_push (vm, CHIMP_ANY_CLASS(value))) {
@@ -373,7 +373,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_GETATTR:
             {
                 if (!chimp_vm_getattr (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "GETATTR instruction failed");
+                    CHIMP_BUG ("GETATTR instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -387,24 +387,24 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 
                 key = chimp_vm_pop (vm);
                 if (key == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 1");
+                    CHIMP_BUG ("GETITEM instruction failed 1");
                     return NULL;
                 }
 
                 target = chimp_vm_pop (vm);
                 if (target == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 2");
+                    CHIMP_BUG ("GETITEM instruction failed 2");
                     return NULL;
                 }
 
                 result = chimp_object_getitem (target, key);
                 if (result == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 3");
+                    CHIMP_BUG ("GETITEM instruction failed 3");
                     return NULL;
                 }
 
                 if (!chimp_vm_push (vm, result)) {
-                    chimp_bug (__FILE__, __LINE__, "GETITEM instruction failed 4");
+                    CHIMP_BUG ("GETITEM instruction failed 4");
                     return NULL;
                 }
 
@@ -414,7 +414,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_CALL:
             {
                 if (!chimp_vm_call (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "CALL instruction failed");
+                    CHIMP_BUG ("CALL instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -482,7 +482,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEARRAY:
             {
                 if (!chimp_vm_makearray (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "MAKEARRAY instruction failed");
+                    CHIMP_BUG ("MAKEARRAY instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -491,7 +491,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_MAKEHASH:
             {
                 if (!chimp_vm_makehash (vm, code, locals, pc)) {
-                    chimp_bug (__FILE__, __LINE__, "MAKEHASH instruction failed");
+                    CHIMP_BUG ("MAKEHASH instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -501,7 +501,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 ChimpRef *value = chimp_vm_pop (vm);
                 if (value == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+                    CHIMP_BUG ("NULL value on the stack");
                     return NULL;
                 }
                 if (chimp_vm_truthy (value)) {
@@ -516,7 +516,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 ChimpRef *value = chimp_vm_pop (vm);
                 if (value == NULL) {
-                    chimp_bug (__FILE__, __LINE__, "NULL value on the stack");
+                    CHIMP_BUG ("NULL value on the stack");
                     return NULL;
                 }
                 /* TODO test for non-truthiness */
@@ -749,7 +749,7 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             default:
             {
-                chimp_bug (__FILE__, __LINE__, "unknown opcode: %d", CHIMP_INSTR_OP(code, pc));
+                CHIMP_BUG ("unknown opcode: %d", CHIMP_INSTR_OP(code, pc));
                 return NULL;
             }
         };
@@ -769,7 +769,7 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
         vm = CHIMP_CURRENT_VM;
     }
     if (code == NULL) {
-        chimp_bug (__FILE__, __LINE__, "NULL code object passed to chimp_vm_eval");
+        CHIMP_BUG ("NULL code object passed to chimp_vm_eval");
         return NULL;
     }
     frame = chimp_frame_new (NULL, code, locals);
@@ -800,23 +800,20 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     stack_size = CHIMP_ARRAY_SIZE(vm->stack);
 
     if (!CHIMP_IS_BYTECODE_METHOD(method)) {
-        chimp_bug (__FILE__, __LINE__,
-            "chimp_vm_invoke called on a non-method (or native method)");
+        CHIMP_BUG ("chimp_vm_invoke called on a non-method (or native method)");
         return NULL;
     }
 
     frame = chimp_frame_new (method);
     if (frame == NULL) {
-        chimp_bug (__FILE__, __LINE__,
-            "chimp_vm_invoke failed to create a new execution frame");
+        CHIMP_BUG ("chimp_vm_invoke failed to create a new execution frame");
         return NULL;
     }
 
     /* push args */
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         if (!chimp_vm_push (vm, CHIMP_ARRAY_ITEM(args, i))) {
-            chimp_bug (__FILE__, __LINE__,
-                "chimp_vm_invoke failed to append array item");
+            CHIMP_BUG ("chimp_vm_invoke failed to append array item");
             return NULL;
         }
     }

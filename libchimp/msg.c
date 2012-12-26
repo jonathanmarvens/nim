@@ -76,7 +76,8 @@ chimp_msg_value_cell_size (ChimpRef *ref)
                 return chimp_msg_task_cell_size (ref);
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "unsupported message type in array encode: %s", CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+            CHIMP_BUG ("unsupported message type in array encode: %s",
+                    CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
             return 0;
     };
 }
@@ -175,7 +176,8 @@ chimp_msg_value_cell_encode (char **buf_ptr, ChimpRef *ref)
                 break;
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "unsupported message type in encode: %s", CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+            CHIMP_BUG ("unsupported message type in encode: %s",
+                    CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
             return CHIMP_FALSE;
     };
     return CHIMP_TRUE;
@@ -299,7 +301,8 @@ chimp_msg_value_cell_decode (char **buf_ptr, ChimpRef **ref)
                 break;
             }
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown message cell type in decode: %d\n", cell->type);
+            CHIMP_BUG ("unknown message cell type in decode: %d\n",
+                        cell->type);
             return CHIMP_FALSE;
     };
     return CHIMP_TRUE;

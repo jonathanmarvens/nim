@@ -214,7 +214,7 @@ static ChimpRef *
 _chimp_array_getitem (ChimpRef *self, ChimpRef *key)
 {
     if (CHIMP_ANY_CLASS(key) != chimp_int_class) {
-        chimp_bug (__FILE__, __LINE__, "bad argument type for array.__getattr__");
+        CHIMP_BUG ("bad argument type for array.__getattr__");
         return NULL;
     }
 

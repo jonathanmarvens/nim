@@ -252,14 +252,14 @@ chimp_hash_get (ChimpRef *self, ChimpRef *key, ChimpRef **value)
 ChimpRef *
 chimp_hash_keys (ChimpRef *self)
 {
-    chimp_bug (__FILE__, __LINE__, "not implemented");
+    CHIMP_BUG ("not implemented");
     return NULL;
 }
 
 ChimpRef *
 chimp_hash_values (ChimpRef *self)
 {
-    chimp_bug (__FILE__, __LINE__, "not implemented");
+    CHIMP_BUG ("not implemented");
     return NULL;
 }
 

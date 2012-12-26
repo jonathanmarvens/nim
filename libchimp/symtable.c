@@ -285,8 +285,7 @@ chimp_symtable_visit_decl (ChimpRef *self, ChimpRef *decl)
         case CHIMP_AST_DECL_VAR:
             return chimp_symtable_visit_decl_var (self, decl);
         default:
-            chimp_bug (__FILE__, __LINE__,
-                    "unknown AST decl type: %d", CHIMP_AST_DECL_TYPE(decl));
+            CHIMP_BUG ("unknown AST decl type: %d", CHIMP_AST_DECL_TYPE(decl));
             return CHIMP_FALSE;
     }
 }
@@ -372,8 +371,7 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
             return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
         }
         else {
-            chimp_bug (__FILE__, __LINE__,
-                        "unknown symbol: %s", CHIMP_STR_DATA(name));
+            CHIMP_BUG ("unknown symbol: %s", CHIMP_STR_DATA(name));
             return CHIMP_FALSE;
         }
     }
@@ -484,7 +482,7 @@ chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr)
         case CHIMP_AST_EXPR_NOT:
             return chimp_symtable_visit_expr_not (self, expr);
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
+            CHIMP_BUG ("unknown AST expr type: %d", CHIMP_AST_EXPR_TYPE(expr));
             return CHIMP_FALSE;
     }
 }
@@ -667,7 +665,7 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt)
         case CHIMP_AST_STMT_BREAK_:
             return CHIMP_TRUE;
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
+            CHIMP_BUG ("unknown AST stmt type: %d", CHIMP_AST_STMT_TYPE(stmt));
             return CHIMP_FALSE;
     }
 }
@@ -735,7 +733,7 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
                 return NULL;
             break;
         default:
-            chimp_bug (__FILE__, __LINE__, "unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
+            CHIMP_BUG ("unknown top-level AST node type: %d", CHIMP_ANY_TYPE(ast));
             return NULL;
     }
 
@@ -748,13 +746,11 @@ chimp_symtable_lookup (ChimpRef *self, ChimpRef *scope)
     ChimpRef *sym;
     int rc = chimp_hash_get (CHIMP_SYMTABLE(self)->lookup, scope, &sym);
     if (rc < 0) {
-        chimp_bug (__FILE__, __LINE__,
-                    "Error looking up symtable entry for scope %p", scope);
+        CHIMP_BUG ("Error looking up symtable entry for scope %p", scope);
         return NULL;
     }
     else if (rc > 0) {
-        chimp_bug (__FILE__, __LINE__,
-                    "No symtable entry for scope %p", scope);
+        CHIMP_BUG ("No symtable entry for scope %p", scope);
         return NULL;
     }
     return sym;
@@ -780,8 +776,7 @@ chimp_symtable_entry_sym_flags (ChimpRef *self, ChimpRef *name, int64_t *flags)
                  *
                  * Anything else is probably owned by another task & thus not safe.
                  */
-                chimp_bug (__FILE__, __LINE__,
-                        "cannot refer to `%s` from another task",
+                CHIMP_BUG ("cannot refer to `%s` from another task",
                         CHIMP_STR_DATA(name));
                 return CHIMP_FALSE;
             }
