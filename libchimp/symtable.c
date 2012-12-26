@@ -377,18 +377,25 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
     ChimpRef *name = CHIMP_AST_EXPR(expr)->ident.id;
     int64_t fl;
 
-    if (!chimp_symtable_entry_sym_flags (ste, name, &fl)) {
-        if (chimp_is_builtin (name)) {
-            return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
+    while (ste != NULL) {
+        if (chimp_symtable_entry_sym_flags (ste, name, &fl)) {
+            int type = CHIMP_SYMTABLE_ENTRY(ste)->flags &
+                        CHIMP_SYM_TYPE_MASK;
+            if (ste != CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self)) {
+                return chimp_symtable_add (self, name, CHIMP_SYM_FREE | type);
+            }
+            return CHIMP_TRUE;
         }
-        /* TODO search the symtable stack */
-        else {
-            CHIMP_BUG ("unknown symbol: %s", CHIMP_STR_DATA(name));
-            return CHIMP_FALSE;
-        }
+        ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
     }
 
-    return CHIMP_TRUE;
+    /* XXX is this really the best way to handle builtins? */
+    if (chimp_is_builtin (name)) {
+        return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
+    }
+
+    CHIMP_BUG ("unknown symbol: %s", CHIMP_STR_DATA(name));
+    return CHIMP_FALSE;
 }
 
 static chimp_bool_t
