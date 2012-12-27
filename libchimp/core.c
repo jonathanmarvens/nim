@@ -56,6 +56,15 @@
     do { \
     } while (0)
 
+#define CHIMP_BUILTIN_METHOD(method, method_name) \
+    do { \
+      ChimpRef* temp = chimp_method_new_native (NULL, method); \
+      if (temp == NULL) { \
+          return CHIMP_FALSE; \
+      } \
+      chimp_hash_put_str (chimp_builtins, method_name, temp); \
+    } while (0)
+
 ChimpRef *chimp_object_class = NULL;
 ChimpRef *chimp_class_class = NULL;
 ChimpRef *chimp_str_class = NULL;
@@ -232,13 +241,17 @@ _chimp_task_recv (ChimpRef *self, ChimpRef *args)
     return chimp_task_recv (chimp_task_get_self (CHIMP_CURRENT_TASK));
 }
 
+static ChimpRef *
+_chimp_task_self (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_task_get_self (CHIMP_CURRENT_TASK);
+}
+
 static ChimpTaskInternal *main_task = NULL;
 
 static chimp_bool_t
 chimp_core_init_builtins (void)
 {
-    ChimpRef *temp;
-
     chimp_builtins = chimp_hash_new ();
     if (chimp_builtins == NULL) {
         return CHIMP_FALSE;
@@ -257,11 +270,8 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
 
-    temp = chimp_method_new_native (NULL, _chimp_task_recv);
-    if (temp == NULL) {
-        return CHIMP_FALSE;
-    }
-    chimp_hash_put_str (chimp_builtins, "recv", temp);
+    CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
+    CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
 
     return CHIMP_TRUE;
 }

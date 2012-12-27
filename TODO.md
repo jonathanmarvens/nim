@@ -1,4 +1,3 @@
-* Add the `self` builtin.
 * MAKECLOSURE opcode + free vars for code/method objects.
   (captures lexical environment based upon free vars)
   PUSHCONST some\_method
