@@ -23,17 +23,31 @@
 #include "chimp/str.h"
 
 static ChimpRef *
-_chimp_io_print (ChimpRef *self, ChimpRef *args)
+_chimp_io_output (ChimpRef *self, ChimpRef *args, char* separator)
 {
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         ChimpRef *str = chimp_object_str (CHIMP_ARRAY_ITEM (args, i));
-        printf ("%s\n", CHIMP_STR_DATA(str));
+        printf ("%s%s", CHIMP_STR_DATA(str), separator);
     }
 
     return chimp_nil;
 }
+
+static ChimpRef *
+_chimp_io_print (ChimpRef *self, ChimpRef *args)
+{
+    return _chimp_io_output(self, args, "\n");
+}
+
+
+static ChimpRef *
+_chimp_io_write (ChimpRef *self, ChimpRef *args)
+{
+    return _chimp_io_output(self, args, "");
+}
+
 
 static ChimpRef *
 _chimp_io_readline (ChimpRef *self, ChimpRef *args)
@@ -63,6 +77,10 @@ chimp_init_io_module (void)
     }
 
     if (!chimp_module_add_method_str (io, "print", _chimp_io_print)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (io, "write", _chimp_io_write)) {
         return NULL;
     }
 

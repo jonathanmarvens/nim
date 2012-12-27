@@ -1,0 +1,34 @@
+use io;
+use os;
+use assert;
+
+join t {
+  t.join();
+}
+
+main argv {
+  var suite = [
+    spawn {
+      io.write(".");
+
+      var executed = false;
+      if true {
+        executed = true;
+      }
+
+      assert.eq(true, executed);
+    },
+    spawn {
+      io.write(".");
+
+      if false {
+        assert.fail("Executed false branch!");
+      }
+    }];
+  
+  suite.each(join);
+  
+  io.print("");
+  io.write("Passed ", suite.size(), " tests");
+  io.print("");
+}

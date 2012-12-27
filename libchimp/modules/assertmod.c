@@ -35,8 +35,10 @@ _chimp_assert_equal (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
     if (r != CHIMP_CMP_EQ) {
-        /* TODO complain */
-        return NULL;
+        fprintf (stderr, "assertion failed: expected %s to not be equal to %s\n",
+            CHIMP_STR_DATA(chimp_object_str(left)),
+            CHIMP_STR_DATA(chimp_object_str(right)));
+        exit(1);
     }
     else {
         return chimp_nil;
@@ -65,6 +67,15 @@ _chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
 }
 
 ChimpRef *
+_chimp_assert_fail (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
+    fprintf (stderr, "assertion failed: %s\n",
+        CHIMP_STR_DATA(chimp_object_str(msg)));
+    exit(1);
+}
+
+ChimpRef *
 chimp_init_assert_module (void)
 {
     ChimpRef *mod;
@@ -79,6 +90,10 @@ chimp_init_assert_module (void)
     }
 
     if (!chimp_module_add_method_str (mod, "neq", _chimp_assert_not_equal)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (mod, "fail", _chimp_assert_fail)) {
         return NULL;
     }
 
