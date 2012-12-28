@@ -207,6 +207,9 @@ chimp_task_new (ChimpRef *callable)
     /* XXX can we guarantee callable won't be collected? think so ... */
     task->method = callable;
     task->flags = 0;
+    /* !!! important to incref *BEFORE* we start the task thread !!! */
+    /* (otherwise, short-lived tasks can prematurely kill the TaskInternal) */
+    task->refs++;
     if (pthread_mutex_init (&task->lock, NULL) != 0) {
         CHIMP_FREE (task);
         return NULL;
@@ -261,7 +264,6 @@ chimp_task_new (ChimpRef *callable)
     }
     CHIMP_TASK(taskobj)->priv = task;
     CHIMP_TASK(taskobj)->local = CHIMP_FALSE;
-    task->refs++;
     CHIMP_TASK_UNLOCK(task);
     return taskobj;
 }
