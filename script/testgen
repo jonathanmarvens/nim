@@ -3,66 +3,69 @@
 import sys
 import os
 import re
+from glob import glob
 
 TEST_REGEX = re.compile(r'^START_TEST\s*\(([^)]+)\)\s*$')
 SETUP_REGEX = re.compile(r'^(test_[a-zA-Z_0-9]+_setup)\s*\(')
 TEARDOWN_REGEX = re.compile(r'^(test_[a-zA-Z0-9]+_teardown)\s*\(')
 
-print "#include <check.h>"
-print "#include <chimp.h>"
-print
-print "void *stack_base = 0;"
-print
+files = glob(sys.argv[1] + os.path.sep + "test_*.c")
+with open(sys.argv[2], "w+") as out:
+    print >>out, "#include <check.h>"
+    print >>out, "#include <chimp.h>"
+    print >>out
+    print >>out, "void *stack_base = 0;"
+    print >>out
 
-for input_file in sys.argv[1:]:
-    print "#include \"%s\"" % os.path.basename(input_file)
+    for input_file in files:
+        print >>out, "#include \"%s\"" % os.path.basename(input_file)
 
-print
-print "int"
-print "main (int argc, char **argv)"
-print "{"
-print "    int num_failed;"
-print "    SRunner *sr;"
-print "    Suite   *s;"
-print "    TCase   *tc;"
-print "    stack_base = &num_failed;"
-print
+    print >>out
+    print >>out, "int"
+    print >>out, "main (int argc, char **argv)"
+    print >>out, "{"
+    print >>out, "    int num_failed;"
+    print >>out, "    SRunner *sr;"
+    print >>out, "    Suite   *s;"
+    print >>out, "    TCase   *tc;"
+    print >>out, "    stack_base = &num_failed;"
+    print >>out
 
-first = True
-for input_file in sys.argv[1:]:
-    suite_name = ".".join(os.path.basename(input_file).split(".")[:-1])
-    print "    s = suite_create (\"%s\");" % suite_name
-    print "    tc = tcase_create (\"all\");"
+    first = True
+    for input_file in files:
+        suite_name = ".".join(os.path.basename(input_file).split(".")[:-1])
+        print >>out, "    s = suite_create (\"%s\");" % suite_name
+        print >>out, "    tc = tcase_create (\"all\");"
 
-    setup = None
-    teardown = None
-    with open(input_file, "r") as stream:
-        for line in stream:
-            m = TEST_REGEX.match(line)
-            if m:
-                print "    tcase_add_test (tc, %s);" % m.group(1)
-            else:
-                m = SETUP_REGEX.match(line)
+        setup = None
+        teardown = None
+        with open(input_file, "r") as stream:
+            for line in stream:
+                m = TEST_REGEX.match(line)
                 if m:
-                    setup = m.group(1)
+                    print >>out, "    tcase_add_test (tc, %s);" % m.group(1)
                 else:
-                    m = TEARDOWN_REGEX.match(line)
+                    m = SETUP_REGEX.match(line)
                     if m:
-                        teardown = m.group(1)
+                        setup = m.group(1)
+                    else:
+                        m = TEARDOWN_REGEX.match(line)
+                        if m:
+                            teardown = m.group(1)
 
-    if setup or teardown:
-        print "    tcase_add_checked_fixture (tc, %s, %s);" % (setup, teardown)
-    print "    suite_add_tcase (s, tc);"
-    print
-    if first:
-        print "    sr = srunner_create (s);"
-        first = False
-    else:
-        print "    srunner_add_suite (sr, s);"
+        if setup or teardown:
+            print >>out, "    tcase_add_checked_fixture (tc, %s, %s);" % (setup, teardown)
+        print >>out, "    suite_add_tcase (s, tc);"
+        print >>out
+        if first:
+            print >>out, "    sr = srunner_create (s);"
+            first = False
+        else:
+            print >>out, "    srunner_add_suite (sr, s);"
 
-print "    srunner_run_all (sr, CK_NORMAL);"
-print "    num_failed = srunner_ntests_failed (sr);"
-print "    srunner_free (sr);"
-print "    return num_failed;"
-print "}"
+    print >>out, "    srunner_run_all (sr, CK_NORMAL);"
+    print >>out, "    num_failed = srunner_ntests_failed (sr);"
+    print >>out, "    srunner_free (sr);"
+    print >>out, "    return num_failed;"
+    print >>out, "}"
 

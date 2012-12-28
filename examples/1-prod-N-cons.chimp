@@ -12,11 +12,12 @@ main argv {
       io.print("[producer] recv()");
       match recv() {
         [consumer, "ready"] {
+          io.print("[producer] send()");
           consumer.send(["test", tests[i]]);
           i = i + 1;
         }
         other {
-          io.print(str("unknown message: ", other));
+          io.print(str("[producer] unknown message: ", other));
         }
       }
     }
@@ -37,6 +38,9 @@ main argv {
           }
           "done" {
             break;
+          }
+          other {
+            io.print(str("[", self(), "] unknown message: ", other));
           }
         }
       }

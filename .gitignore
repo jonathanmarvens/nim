@@ -22,7 +22,11 @@ autom4te.cache
 tags
 TAGS
 /test/_test_main.c
-/test/all-native
 .dirstamp
 /chimp-*
 /libchimp/_parser.out
+/CMakeCache.txt
+/CMakeFiles
+/a.out.dSYM
+/cmake_install.cmake
+/test-native
