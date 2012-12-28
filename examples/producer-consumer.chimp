@@ -8,6 +8,10 @@ main argv {
   var producer = spawn {
     var tests = [1, 2, 3];
     var i = 0;
+
+    #
+    # State 1: serve up tests
+    #
     while i < tests.size() {
       io.print("[producer] recv()");
       match recv() {
@@ -18,6 +22,20 @@ main argv {
         }
         other {
           io.print(str("[producer] unknown message: ", other));
+        }
+      }
+    }
+
+    #
+    # State 2: kill consumers
+    #
+    while true {
+      match recv() {
+        [consumer, "ready"] {
+          consumer.send("done");
+        }
+        "done" {
+          break;
         }
       }
     }
@@ -49,8 +67,10 @@ main argv {
     i = i + 1;
   }
   consumers.each(fn { |c| c.send(producer); });
+  consumers.each(fn { |c| c.join(); });
+  io.print("consumers are done");
+  producer.send("done");
   producer.join();
   io.print("producer is done");
-  consumers.each(fn { |c| c.send("done"); c.join(); });
 }
 
