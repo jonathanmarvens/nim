@@ -1,0 +1,52 @@
+#
+# This example is broken.
+#
+
+use io;
+
+main argv {
+  var producer = spawn {
+    var tests = [1, 2, 3];
+    var i = 0;
+    while i < tests.size() {
+      io.print("[producer] recv()");
+      match recv() {
+        [consumer, "ready"] {
+          consumer.send(["test", tests[i]]);
+          i = i + 1;
+        }
+        other {
+          io.print(str("unknown message: ", other));
+        }
+      }
+    }
+  };
+
+  var consumers = [];
+  var i = 0;
+  while i < 2 {
+    consumers.push(spawn {
+      var producer = recv();
+      while true {
+        io.print(str("[", self(), "] send('ready')"));
+        producer.send([self(), "ready"]);
+        io.print(str("[", self(), "] recv()"));
+        match recv() {
+          ["test", test] {
+            io.print(str("test ", test, " on consumer ", self()));
+          }
+          "done" {
+            break;
+          }
+        }
+      }
+      io.print("consumer is done");
+    });
+    i = i + 1;
+  }
+  consumers.each(fn { |c| c.send(producer); });
+  producer.join();
+  io.print("producer is done");
+  consumers.each(fn { |c| c.send("done"); c.join(); });
+}
+
