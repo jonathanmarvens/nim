@@ -27,6 +27,10 @@ struct _ChimpVM {
     ChimpRef  *frames;
 };
 
+static chimp_bool_t
+chimp_vm_resolvename (
+    ChimpVM *vm, ChimpRef *name, ChimpRef **value, chimp_bool_t binding);
+
 ChimpVM *
 chimp_vm_new (void)
 {
@@ -92,6 +96,7 @@ static chimp_bool_t
 chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *value;
+    ChimpRef *var;
     ChimpRef *target = CHIMP_INSTR_NAME1(code, pc);
     if (target == NULL) {
         CHIMP_BUG ("unknown or missing name #%d at pc=%d", pc);
@@ -102,16 +107,87 @@ chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         CHIMP_BUG ("empty stack during assignment to %s", CHIMP_STR_DATA(target));
         return CHIMP_FALSE;
     }
-    return chimp_hash_put (locals, target, value);
+    if (chimp_hash_get (locals, target, &var) != 0) {
+        CHIMP_BUG ("could not find local for %s", CHIMP_STR_DATA(target));
+        return CHIMP_FALSE;
+    }
+    CHIMP_VAR(var)->value = value;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_resolvename (
+    ChimpVM *vm, ChimpRef *name, ChimpRef **value, chimp_bool_t binding)
+{
+    ChimpRef *frame;
+    ChimpRef *module;
+    int rc;
+    /* 1. check locals */
+    /* if we're binding a closure, we want to walk up the call stack */
+    /* XXX this is potentially expensive. how do we do it better? */
+    if (binding && CHIMP_ARRAY_SIZE(vm->frames) >= 1) {
+        size_t i = CHIMP_ARRAY_SIZE(vm->frames);
+        do {
+            i--;
+            frame = CHIMP_ARRAY_ITEM(vm->frames, i);
+            rc = chimp_hash_get (CHIMP_FRAME(frame)->locals, name, value);
+            if (rc < 0) {
+                return CHIMP_FALSE;
+            }
+            else if (rc == 0) {
+                /* deref vars if we're not binding a closure */
+                if (!binding && CHIMP_ANY_TYPE(*value) == CHIMP_VALUE_TYPE_VAR) {
+                    *value = CHIMP_VAR(*value)->value;
+                }
+                return CHIMP_TRUE;
+            }
+        } while (i > 0);
+    }
+    else {
+        frame = CHIMP_ARRAY_LAST (vm->frames);
+        if (frame == NULL) {
+            return CHIMP_FALSE;
+        }
+        rc = chimp_hash_get (CHIMP_FRAME(frame)->locals, name, value);
+        if (rc < 0) {
+            return CHIMP_FALSE;
+        }
+        else if (rc == 0) {
+            /* deref vars if we're not binding a closure */
+            if (!binding && CHIMP_ANY_TYPE(*value) == CHIMP_VALUE_TYPE_VAR) {
+                *value = CHIMP_VAR(*value)->value;
+            }
+            return CHIMP_TRUE;
+        }
+    }
+
+    /* 2. check module */
+    module = CHIMP_METHOD(CHIMP_FRAME(frame)->method)->module;
+    if (module != NULL) { /* builtins have no module */
+        *value = chimp_object_getattr (module, name);
+        /* TODO discern between 'no-such-attr' and other errors */
+        if (*value != NULL) {
+            return CHIMP_TRUE;
+        }
+    }
+
+    /* 3. check builtins */
+    rc = chimp_hash_get (chimp_builtins, name, value);
+    if (rc < 0) {
+        return CHIMP_FALSE;
+    }
+    else if (rc == 0) {
+        return CHIMP_TRUE;
+    }
+
+    CHIMP_BUG ("unknown name: %s", CHIMP_STR_DATA(name));
+    return CHIMP_FALSE;
 }
 
 static chimp_bool_t
 chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
 {
     ChimpRef *value;
-    ChimpRef *frame;
-    ChimpRef *module;
-    int rc;
     ChimpRef *name = CHIMP_INSTR_NAME1(code, pc);
     if (name == NULL) {
         int n = CHIMP_INSTR_ARG1(code, pc);
@@ -119,40 +195,11 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
 
-    /* 1. check locals */
-    frame = CHIMP_ARRAY_LAST (vm->frames);
-    if (frame == NULL) {
+    if (!chimp_vm_resolvename (vm, name, &value, CHIMP_FALSE)) {
         return CHIMP_FALSE;
     }
-    rc = chimp_hash_get (CHIMP_FRAME(frame)->locals, name, &value);
-    if (rc < 0) {
-        return CHIMP_FALSE;
-    }
-    else if (rc == 0) {
-        return chimp_vm_push (vm, value);
-    }
 
-    /* 2. check module */
-    module = CHIMP_METHOD(CHIMP_FRAME(frame)->method)->module;
-    if (module != NULL) { /* builtins have no module */
-        value = chimp_object_getattr (module, name);
-        /* TODO discern between 'no-such-attr' and other errors */
-        if (value != NULL) {
-            return chimp_vm_push (vm, value);
-        }
-    }
-
-    /* 3. check builtins */
-    rc = chimp_hash_get (chimp_builtins, name, &value);
-    if (rc < 0) {
-        return CHIMP_FALSE;
-    }
-    else if (rc == 0) {
-        return chimp_vm_push (vm, value);
-    }
-
-    CHIMP_BUG ("unknown name: %s", CHIMP_STR_DATA(name));
-    return CHIMP_FALSE;
+    return chimp_vm_push (vm, value);
 }
 
 static chimp_bool_t
@@ -267,6 +314,37 @@ chimp_vm_makehash (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         }
     }
     if (!chimp_vm_push (vm, hash)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
+chimp_vm_makeclosure (ChimpVM *vm, ChimpRef *code, size_t pc)
+{
+    ChimpRef *freevars;
+    size_t i;
+    ChimpRef *bindings = chimp_hash_new ();
+    ChimpRef *method = chimp_vm_pop (vm);
+    if (method == NULL || method == chimp_nil) {
+        return CHIMP_FALSE;
+    }
+    freevars = CHIMP_CODE(CHIMP_METHOD(method)->bytecode.code)->freevars;
+    for (i = 0; i < CHIMP_ARRAY_SIZE(freevars); i++) {
+        ChimpRef *varname = CHIMP_ARRAY_ITEM(freevars, i);
+        ChimpRef *value;
+        if (!chimp_vm_resolvename (vm, varname, &value, CHIMP_TRUE)) {
+            return CHIMP_FALSE;
+        }
+        if (!chimp_hash_put (bindings, varname, value)) {
+            return CHIMP_FALSE;
+        }
+    }
+    method = chimp_method_new_closure (method, bindings);
+    if (method == NULL) {
+        return CHIMP_FALSE;
+    }
+    if (!chimp_vm_push (vm, method)) {
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;
@@ -492,6 +570,15 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             {
                 if (!chimp_vm_makehash (vm, code, locals, pc)) {
                     CHIMP_BUG ("MAKEHASH instruction failed");
+                    return NULL;
+                }
+                pc++;
+                break;
+            }
+            case CHIMP_OPCODE_MAKECLOSURE:
+            {
+                if (!chimp_vm_makeclosure (vm, code, pc)) {
+                    CHIMP_BUG ("MAKECLOSURE instruction failed");
                     return NULL;
                 }
                 pc++;
@@ -782,7 +869,11 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
 
 #define CHIMP_IS_BYTECODE_METHOD(ref) \
     (CHIMP_ANY(ref)->type == CHIMP_VALUE_TYPE_METHOD && \
-        CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE)
+        ( \
+            (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE) || \
+            (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_CLOSURE) \
+        ) \
+    )
 
 ChimpRef *
 chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)

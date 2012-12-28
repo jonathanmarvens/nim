@@ -371,6 +371,16 @@ chimp_code_makehash (ChimpRef *self, uint8_t nargs)
 }
 
 chimp_bool_t
+chimp_code_makeclosure (ChimpRef *self)
+{
+    if (!chimp_code_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_NEXT_INSTR(self) = CHIMP_MAKE_INSTR0(MAKECLOSURE);
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label)
 {
     if (label == NULL) {
@@ -602,6 +612,8 @@ chimp_code_opcode_str (ChimpOpcode op)
              return "DUP";
         case CHIMP_OPCODE_GETCLASS:
              return "GETCLASS";
+        case CHIMP_OPCODE_MAKECLOSURE:
+             return "MAKECLOSURE";
         default:
              return "???OPCODE???";
     };

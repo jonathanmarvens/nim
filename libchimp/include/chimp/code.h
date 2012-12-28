@@ -59,6 +59,8 @@ typedef enum _ChimpOpcode {
     CHIMP_OPCODE_SUB,
     CHIMP_OPCODE_MUL,
     CHIMP_OPCODE_DIV,
+    
+    CHIMP_OPCODE_MAKECLOSURE,
 
     /* XXX temporary until we get a better way to do it */
     CHIMP_OPCODE_GETCLASS
@@ -144,6 +146,9 @@ chimp_code_makearray (ChimpRef *self, uint8_t nargs);
 
 chimp_bool_t
 chimp_code_makehash (ChimpRef *self, uint8_t nargs);
+
+chimp_bool_t
+chimp_code_makeclosure (ChimpRef *self);
 
 chimp_bool_t
 chimp_code_jumpiftrue (ChimpRef *self, ChimpLabel *label);

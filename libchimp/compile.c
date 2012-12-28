@@ -1112,11 +1112,13 @@ chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *fn, ChimpRef *arg
         ChimpRef *value = CHIMP_HASH(symbols)->values[i];
         if (CHIMP_INT(value)->value & CHIMP_SYM_DECL) {
             if (!chimp_array_push (CHIMP_CODE(func_code)->vars, key)) {
+                CHIMP_BUG ("failed to push var name");
                 return NULL;
             }
         }
         else if (CHIMP_INT(value)->value & CHIMP_SYM_FREE) {
             if (!chimp_array_push (CHIMP_CODE(func_code)->freevars, key)) {
+                CHIMP_BUG ("failed to push freevar name");
                 return NULL;
             }
         }
@@ -1126,6 +1128,7 @@ chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *fn, ChimpRef *arg
     for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
         ChimpRef *var_decl = CHIMP_ARRAY_ITEM(args, CHIMP_ARRAY_SIZE(args) - i - 1);
         if (!chimp_code_storename (func_code, CHIMP_AST_DECL(var_decl)->var.name)) {
+            CHIMP_BUG ("failed to emit STORENAME instruction");
             return NULL;
         }
     }
@@ -1779,7 +1782,20 @@ chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
         return CHIMP_FALSE;
     }
     
-    return chimp_code_pushconst (code, method);
+    if (!chimp_code_pushconst (code, method)) {
+        return CHIMP_FALSE;
+    }
+
+    if (CHIMP_METHOD(method)->type == CHIMP_METHOD_TYPE_BYTECODE) {
+        ChimpRef *method_code = CHIMP_METHOD(method)->bytecode.code;
+        if (CHIMP_ARRAY_SIZE(CHIMP_CODE(method_code)->freevars) > 0) {
+            if (!chimp_code_makeclosure (code)) {
+                return CHIMP_FALSE;
+            }
+        }
+    }
+
+    return CHIMP_TRUE;
 }
 
 static chimp_bool_t

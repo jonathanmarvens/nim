@@ -84,6 +84,27 @@ chimp_method_new_bytecode (ChimpRef *module, ChimpRef *code)
 }
 
 ChimpRef *
+chimp_method_new_closure (ChimpRef *method, ChimpRef *bindings)
+{
+    ChimpRef *ref;
+    if (CHIMP_METHOD(method)->type != CHIMP_METHOD_TYPE_BYTECODE) {
+        CHIMP_BUG("closures must be created from bytecode methods");
+        return NULL;
+    }
+    ref = chimp_gc_new_object (NULL);
+    if (ref == NULL) {
+        return NULL;
+    }
+    CHIMP_METHOD_INIT(ref);
+    CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_CLOSURE;
+    CHIMP_METHOD(ref)->module = CHIMP_METHOD(method)->module;
+    CHIMP_CLOSURE_METHOD(ref)->code = CHIMP_BYTECODE_METHOD(method)->code;
+    CHIMP_CLOSURE_METHOD(ref)->bindings = bindings;
+    /* TODO check for incomplete bindings hash? */
+    return ref;
+}
+
+ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
 {
     /* TODO ensure unbound is actually ... er ... unbound */

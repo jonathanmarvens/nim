@@ -56,11 +56,17 @@ chimp_frame_new (ChimpRef *method)
     }
     CHIMP_FRAME(ref)->method = method;
     CHIMP_FRAME(ref)->locals = locals;
-    if (CHIMP_METHOD(method)->type == CHIMP_METHOD_TYPE_BYTECODE) {
+    if (CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_BYTECODE ||
+            CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_CLOSURE) {
         ChimpRef *code;
         size_t i;
 
-        code = CHIMP_METHOD(method)->bytecode.code;
+        if (CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_BYTECODE) {
+            code = CHIMP_METHOD(method)->bytecode.code;
+        }
+        else {
+            code = CHIMP_METHOD(method)->closure.code;
+        }
 
         /* allocate ChimpVar entries in `locals` for each non-free var */
         for (i = 0; i < CHIMP_ARRAY_SIZE(CHIMP_CODE(code)->vars); i++) {
@@ -69,6 +75,17 @@ chimp_frame_new (ChimpRef *method)
             ChimpRef *var = chimp_var_new ();
             if (!chimp_hash_put (CHIMP_FRAME(ref)->locals, varname, var)) {
                 return CHIMP_FALSE;
+            }
+        }
+
+        if (CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_CLOSURE) {
+            ChimpRef *bindings = CHIMP_CLOSURE_METHOD(method)->bindings;
+            for (i = 0; i < CHIMP_HASH_SIZE(bindings); i++) {
+                ChimpRef *varname = CHIMP_HASH(bindings)->keys[i];
+                ChimpRef *value = CHIMP_HASH(bindings)->values[i];
+                if (!chimp_hash_put (CHIMP_FRAME(ref)->locals, varname, value)) {
+                    return CHIMP_FALSE;
+                }
             }
         }
     }
