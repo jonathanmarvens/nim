@@ -13,7 +13,7 @@ syn keyword chimpKeyword receive match class this break
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
 syn keyword chimpType str int hash object array
-syn keyword chimpSpecial init recv
+syn keyword chimpSpecial init recv self
 syn match chimpString '"[^"]*"'
 syn match chimpComment '#.*$'
 syn match chimpInt '[0-9][0-9]*'
