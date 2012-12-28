@@ -37,6 +37,7 @@ libchimp_la_SOURCES = \
 	symtable.c \
 	msg.c \
 	module.c \
+	var.c \
 	modules/iomod.c \
 	modules/assertmod.c \
 	modules/osmod.c \

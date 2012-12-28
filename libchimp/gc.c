@@ -48,6 +48,7 @@ struct _ChimpRef {
 #define CHIMP_FAST_FRAME(ref) (&((ref)->value.frame))
 #define CHIMP_FAST_SYMTABLE(ref) (&((ref)->value.symtable))
 #define CHIMP_FAST_SYMTABLE_ENTRY(ref) (&((ref)->value.symtable_entry))
+#define CHIMP_FAST_VAR(ref) (&((ref)->value.var))
 
 #define CHIMP_FAST_REF_TYPE(ref) ((ref)->value.any.type)
 
@@ -143,6 +144,10 @@ type_name (ChimpValueType type)
         case CHIMP_VALUE_TYPE_TASK:
             {
                 return "task";
+            }
+        case CHIMP_VALUE_TYPE_VAR:
+            {
+                return "var";
             }
         case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
             {
@@ -498,6 +503,12 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symbols);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->parent);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
+                break;
+            }
+        case CHIMP_VALUE_TYPE_VAR:
+            {
+
+                chimp_gc_mark_ref (gc, CHIMP_FAST_VAR(ref)->value);
                 break;
             }
         case CHIMP_VALUE_TYPE_TASK:

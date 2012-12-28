@@ -103,7 +103,7 @@ am_libchimp_la_OBJECTS = libchimp_la-ast.lo libchimp_la-_parser.lo \
 	libchimp_la-method.lo libchimp_la-frame.lo libchimp_la-hash.lo \
 	libchimp_la-int.lo libchimp_la-code.lo libchimp_la-compile.lo \
 	libchimp_la-vm.lo libchimp_la-symtable.lo libchimp_la-msg.lo \
-	libchimp_la-module.lo libchimp_la-iomod.lo \
+	libchimp_la-module.lo libchimp_la-var.lo libchimp_la-iomod.lo \
 	libchimp_la-assertmod.lo libchimp_la-osmod.lo \
 	libchimp_la-gcmod.lo
 libchimp_la_OBJECTS = $(am_libchimp_la_OBJECTS)
@@ -307,6 +307,7 @@ libchimp_la_SOURCES = \
 	symtable.c \
 	msg.c \
 	module.c \
+	var.c \
 	modules/iomod.c \
 	modules/assertmod.c \
 	modules/osmod.c \
@@ -437,6 +438,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-str.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-symtable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-task.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-var.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libchimp_la-vm.Plo@am__quote@
 
 .c.o:
@@ -606,6 +608,13 @@ libchimp_la-module.lo: module.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='module.c' object='libchimp_la-module.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-module.lo `test -f 'module.c' || echo '$(srcdir)/'`module.c
+
+libchimp_la-var.lo: var.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -MT libchimp_la-var.lo -MD -MP -MF $(DEPDIR)/libchimp_la-var.Tpo -c -o libchimp_la-var.lo `test -f 'var.c' || echo '$(srcdir)/'`var.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libchimp_la-var.Tpo $(DEPDIR)/libchimp_la-var.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='var.c' object='libchimp_la-var.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -c -o libchimp_la-var.lo `test -f 'var.c' || echo '$(srcdir)/'`var.c
 
 libchimp_la-iomod.lo: modules/iomod.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libchimp_la_CFLAGS) $(CFLAGS) -MT libchimp_la-iomod.lo -MD -MP -MF $(DEPDIR)/libchimp_la-iomod.Tpo -c -o libchimp_la-iomod.lo `test -f 'modules/iomod.c' || echo '$(srcdir)/'`modules/iomod.c
