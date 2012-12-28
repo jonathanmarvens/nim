@@ -86,6 +86,8 @@ typedef struct _ChimpCode {
     uint32_t *bytecode;
     size_t    used;
     size_t    allocated;
+    ChimpRef *vars;
+    ChimpRef *freevars;
 } ChimpCode;
 
 typedef struct _ChimpLabel {
@@ -232,6 +234,8 @@ chimp_label_free (ChimpLabel *self);
 #define CHIMP_CODE_SIZE(ref) CHIMP_CODE(ref)->used
 #define CHIMP_CODE_CONSTANTS(ref) CHIMP_CODE(ref)->constants
 #define CHIMP_CODE_NAMES(ref) CHIMP_CODE(ref)->names
+
+#define CHIMP_DEBUG_INSPECT(obj) CHIMP_STR_DATA(chimp_object_str(obj))
 
 #define CHIMP_DEBUG_CLASS_NAME(klass) \
     CHIMP_STR_DATA(CHIMP_CLASS(klass)->name)

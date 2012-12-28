@@ -1095,12 +1095,31 @@ chimp_compile_bytecode_method (ChimpCodeCompiler *c, ChimpRef *fn, ChimpRef *arg
 {
     ChimpRef *mod;
     ChimpRef *func_code;
+    ChimpRef *symbols;
     ChimpRef *method;
+    ChimpRef *ste;
     size_t i;
 
     func_code = chimp_code_compiler_push_code_unit (c, fn);
     if (func_code == NULL) {
         return NULL;
+    }
+
+    ste = c->current_unit->ste;
+    symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
+    for (i = 0; i < CHIMP_HASH_SIZE(symbols); i++) {
+        ChimpRef *key = CHIMP_HASH(symbols)->keys[i];
+        ChimpRef *value = CHIMP_HASH(symbols)->values[i];
+        if (CHIMP_INT(value)->value & CHIMP_SYM_DECL) {
+            if (!chimp_array_push (CHIMP_CODE(func_code)->vars, key)) {
+                return NULL;
+            }
+        }
+        else if (CHIMP_INT(value)->value & CHIMP_SYM_FREE) {
+            if (!chimp_array_push (CHIMP_CODE(func_code)->freevars, key)) {
+                return NULL;
+            }
+        }
     }
 
     /* unpack arguments */

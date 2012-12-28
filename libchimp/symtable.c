@@ -375,10 +375,11 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
 {
     ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
     ChimpRef *name = CHIMP_AST_EXPR(expr)->ident.id;
-    int64_t fl;
 
     while (ste != NULL) {
-        if (chimp_symtable_entry_sym_flags (ste, name, &fl)) {
+        int rc;
+        rc = chimp_hash_get (CHIMP_SYMTABLE_ENTRY(ste)->symbols, name, NULL);
+        if (rc == 0) {
             int type = CHIMP_SYMTABLE_ENTRY(ste)->flags &
                         CHIMP_SYM_TYPE_MASK;
             if (ste != CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self)) {

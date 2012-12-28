@@ -117,6 +117,18 @@ chimp_code_new (void)
     if (CHIMP_CODE(ref)->bytecode == NULL) {
         return NULL;
     }
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("could not allocate vars array");
+        return NULL;
+    }
+    CHIMP_CODE(ref)->vars = temp;
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("could not allocate freevars array");
+        return NULL;
+    }
+    CHIMP_CODE(ref)->freevars = temp;
     return ref;
 }
 

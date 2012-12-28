@@ -56,6 +56,22 @@ chimp_frame_new (ChimpRef *method)
     }
     CHIMP_FRAME(ref)->method = method;
     CHIMP_FRAME(ref)->locals = locals;
+    if (CHIMP_METHOD(method)->type == CHIMP_METHOD_TYPE_BYTECODE) {
+        ChimpRef *code;
+        size_t i;
+
+        code = CHIMP_METHOD(method)->bytecode.code;
+
+        /* allocate ChimpVar entries in `locals` for each non-free var */
+        for (i = 0; i < CHIMP_ARRAY_SIZE(CHIMP_CODE(code)->vars); i++) {
+            ChimpRef *varname =
+                CHIMP_ARRAY_ITEM(CHIMP_CODE(code)->vars, i);
+            ChimpRef *var = chimp_var_new ();
+            if (!chimp_hash_put (CHIMP_FRAME(ref)->locals, varname, var)) {
+                return CHIMP_FALSE;
+            }
+        }
+    }
     return ref;
 }
 

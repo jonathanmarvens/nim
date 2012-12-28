@@ -480,6 +480,8 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
             {
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->constants);
                 chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->names);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->vars);
+                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->freevars);
                 break;
             }
         case CHIMP_VALUE_TYPE_FRAME:
