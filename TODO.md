@@ -22,6 +22,7 @@ macro from C?) -- we *should* be doing this already.
   * "super" keyword? "inner" keyword?
   * chain existing methods/constructors.
 * setitem opcode for hash/array element mutation syntax (arr[1] = 10)
+* Line number info for code objects.
 * slice syntax for arrays (arr[1:2])
 * Error handling. Differentiate between runtime/compile errors & chimp bugs.
 * Unit testing API.
