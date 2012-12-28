@@ -120,5 +120,9 @@ main argv {
   var d = dog();
   d.bark();
   io.print(str(d));
+
+  io.print(arr);
+  fn { arr.push("added from closure"); }();
+  io.print(arr);
 }
 
