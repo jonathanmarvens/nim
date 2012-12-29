@@ -8,17 +8,17 @@ project (chimp)
 find_package (BISON)
 find_package (FLEX)
 
-SET (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
-SET (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
+set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
+set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
 
-SET (PARSER_Y ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/_parser.y)
-SET (PARSER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/_parser.c)
-SET (PARSER_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/_parser.h)
+set (PARSER_Y ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/_parser.y)
+set (PARSER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/_parser.c)
+set (PARSER_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/_parser.h)
 
-SET (AST_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/ast.c)
-SET (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/ast.h)
+set (AST_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/ast.c)
+set (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/ast.h)
 
-SET (_TEST_MAIN_C ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
+set (_TEST_MAIN_C ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 
 #
 # XXX standard flex/bison macros left me doing a strange song & dance to
