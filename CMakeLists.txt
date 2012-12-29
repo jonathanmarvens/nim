@@ -21,6 +21,11 @@ set (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/ast.h)
 set (_TEST_MAIN_C ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 
 #
+# TODO CFLAGS env var seems to be ignored by cmake ... ?
+#
+set (CMAKE_C_FLAGS "-Wall -Werror -Wno-error=nonnull -O0 -g3")
+
+#
 # XXX standard flex/bison macros left me doing a strange song & dance to
 #     get the _parser.h header in the right place. Felt better to just
 #     "do it right" rather than hack around the macros.
