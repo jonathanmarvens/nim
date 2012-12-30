@@ -1,18 +1,11 @@
 * Fix broken examples.
-* Prevent the use of closures in spawn(...).
-* Replace the above logic with scoping rules for spawn(...) function e.g.
-
-    #
-    # This is illegal because i is owned by the parent heap.
-    #
-    var i = 10;
-    spawn(fn { i = 20; });
+* Forward declarations.
 * Interesting note: because closures may capture parts of their execution
   environment & thus dependendent upon the state of the heap, it's
   rarely kosher to send closures to other tasks. (n.b. we can't send any
   kind of method between tasks atm -- perhaps best to keep it that way?)
+* Constants/read-only vars: accessible between tasks without message passing.
 * Verify scoping rules using the symtable.
-  * Identifiers have function, module or 'builtin' scope.
   * Identifiers should not be used/referenced before declared ('var' keyword)
   * Ensure variables in the outer scope are not accessible inside spawn blocks
   * If we can determine a variable has been used without being initialized,
