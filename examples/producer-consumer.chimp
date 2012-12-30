@@ -5,33 +5,24 @@ main argv {
     var tests = [1, 2, 3];
     var i = 0;
 
-    #
-    # State 1: serve up tests
-    #
-    while i < tests.size() {
+    while true {
       io.print("[producer] recv()");
       match recv() {
         [consumer, "ready"] {
           io.print("[producer] send()");
-          consumer.send(["test", tests[i]]);
-          i = i + 1;
-        }
-        other {
-          io.print(str("[producer] unknown message: ", other));
-        }
-      }
-    }
-
-    #
-    # State 2: kill consumers
-    #
-    while true {
-      match recv() {
-        [consumer, "ready"] {
-          consumer.send("done");
+          if i < tests.size() {
+            consumer.send(["test", tests[i]]);
+            i = i + 1;
+          }
+          else {
+            consumer.send("done");
+          }
         }
         "done" {
           break;
+        }
+        other {
+          io.print(str("[producer] unknown message: ", other));
         }
       }
     }
