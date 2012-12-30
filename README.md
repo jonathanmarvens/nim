@@ -15,8 +15,8 @@ Running on OS X
 
 Getting started with Chimp is a breeze.
 
-    brew install pkg-config
-    ./configure
+    brew install cmake
+    cmake .
     make
     ./chimp examples/helloworld.chimp
 
@@ -27,4 +27,5 @@ Unit testing uses the check library, so you'll need to install that before you
 can run the tests:
 
     brew install check
-    make clean check
+    cmake .
+    make clean test
