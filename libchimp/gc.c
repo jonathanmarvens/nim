@@ -133,7 +133,9 @@ chimp_heap_grow (ChimpHeap *heap)
     if (slab == NULL) {
         return CHIMP_FALSE;
     }
-    slabs = CHIMP_REALLOC (ChimpSlab *, heap->slabs, sizeof (*heap->slabs) * (heap->slab_count + 1));
+    slabs = CHIMP_REALLOC (
+        ChimpSlab *, heap->slabs,
+        sizeof (*heap->slabs) * (heap->slab_count + 1));
     if (slabs == NULL) {
         CHIMP_FREE (slab);
         return CHIMP_FALSE;
