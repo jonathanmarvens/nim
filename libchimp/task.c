@@ -594,6 +594,10 @@ _chimp_task_dtor (ChimpRef *self)
 static ChimpRef *
 _chimp_task_send (ChimpRef *self, ChimpRef *args)
 {
+    ChimpRef *arg;
+    if (!chimp_method_parse_args (args, "O", &arg)) {
+        return CHIMP_FALSE;
+    }
     return chimp_task_send (self, CHIMP_ARRAY_ITEM(args, 0)) ? chimp_true : chimp_false;
 }
 

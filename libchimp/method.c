@@ -16,8 +16,11 @@
  *                                                                           *
  *****************************************************************************/
 
+#include <inttypes.h>
+
 #include "chimp/method.h"
 #include "chimp/class.h"
+#include "chimp/array.h"
 #include "chimp/str.h"
 #include "chimp/task.h"
 #include "chimp/vm.h"
@@ -124,5 +127,63 @@ chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
             CHIMP_BYTECODE_METHOD(unbound)->code;
     }
     return ref;
+}
+
+chimp_bool_t
+chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
+{
+    size_t i;
+    va_list argp;
+    const size_t len = strlen (fmt);
+    size_t n = 0;
+    chimp_bool_t optional = CHIMP_FALSE;
+    const size_t nmax = CHIMP_ARRAY_SIZE(args);
+
+    va_start (argp, fmt);
+    for (i = 0; i < len; i++) {
+        if (n >= nmax) {
+            if (!optional) {
+                CHIMP_BUG ("not enough arguments");
+                goto error;
+            }
+            else {
+                return CHIMP_TRUE;
+            }
+        }
+        switch (fmt[i]) {
+            case 'O':
+                {
+                    ChimpRef **arg = va_arg (argp, ChimpRef **);
+                    *arg = CHIMP_ARRAY_ITEM(args, n++);
+                    break;
+                }
+            case 's':
+                {
+                    char **arg = va_arg (argp, char **);
+                    *arg = CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, n++));
+                    break;
+                }
+            case '|':
+                {
+                    optional = CHIMP_TRUE;
+                    break;
+                }
+            default:
+                CHIMP_BUG ("unknown format character: %c", fmt[i]);
+                goto error;
+        };
+    }
+    va_end (argp);
+
+    if (n < nmax && !optional) {
+        CHIMP_BUG ("too many arguments");
+        return CHIMP_FALSE;
+    }
+
+    return CHIMP_TRUE;
+
+error:
+    va_end (argp);
+    return CHIMP_FALSE;
 }
 
