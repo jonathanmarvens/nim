@@ -25,37 +25,14 @@
 extern "C" {
 #endif
 
-typedef enum _ChimpValueType {
-    CHIMP_VALUE_TYPE_ANY,
-    CHIMP_VALUE_TYPE_OBJECT,
-    CHIMP_VALUE_TYPE_CLASS,
-    CHIMP_VALUE_TYPE_MODULE,
-    CHIMP_VALUE_TYPE_STR,
-    CHIMP_VALUE_TYPE_INT,
-    CHIMP_VALUE_TYPE_ARRAY,
-    CHIMP_VALUE_TYPE_HASH,
-    CHIMP_VALUE_TYPE_METHOD,
-    CHIMP_VALUE_TYPE_FRAME,
-    CHIMP_VALUE_TYPE_CODE,
-    CHIMP_VALUE_TYPE_SYMTABLE,
-    CHIMP_VALUE_TYPE_SYMTABLE_ENTRY,
-    CHIMP_VALUE_TYPE_TASK,
-    CHIMP_VALUE_TYPE_VAR,
-    CHIMP_VALUE_TYPE_ERROR,
-    CHIMP_VALUE_TYPE_AST_MOD,
-    CHIMP_VALUE_TYPE_AST_DECL,
-    CHIMP_VALUE_TYPE_AST_STMT,
-    CHIMP_VALUE_TYPE_AST_EXPR
-} ChimpValueType;
-
 typedef struct _ChimpAny {
-    ChimpValueType  type;
     ChimpRef       *klass;
 } ChimpAny;
 
-#define CHIMP_CHECK_CAST(struc, ref, type) ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
+#define CHIMP_CHECK_CAST(struc, ref, type) \
+  ((struc *) chimp_gc_ref_check_cast ((ref), (type)))
 
-#define CHIMP_ANY(ref)    CHIMP_CHECK_CAST(ChimpAny, (ref), CHIMP_VALUE_TYPE_ANY)
+#define CHIMP_ANY(ref)    CHIMP_CHECK_CAST(ChimpAny, (ref), NULL)
 
 #define CHIMP_ANY_CLASS(ref) (CHIMP_ANY(ref)->klass)
 #define CHIMP_ANY_TYPE(ref) (CHIMP_ANY(ref)->type)

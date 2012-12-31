@@ -108,7 +108,6 @@ chimp_code_new (void)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CODE;
     CHIMP_ANY(ref)->klass = chimp_code_class;
     temp = chimp_array_new ();
     if (temp == NULL) {

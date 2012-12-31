@@ -66,7 +66,7 @@ chimp_array_first (ChimpRef *self);
 ChimpRef *
 chimp_array_last (ChimpRef *self);
 
-#define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), CHIMP_VALUE_TYPE_ARRAY)
+#define CHIMP_ARRAY(ref)  CHIMP_CHECK_CAST(ChimpArray, (ref), chimp_array_class)
 
 #define CHIMP_ARRAY_ITEMS(ref) (CHIMP_ARRAY(ref)->items)
 #define CHIMP_ARRAY_SIZE(ref) (CHIMP_ARRAY(ref)->size)

@@ -85,7 +85,6 @@ chimp_module_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     chimp_gc_make_root (NULL, chimp_module_class);
-    CHIMP_CLASS(chimp_module_class)->inst_type = CHIMP_VALUE_TYPE_MODULE;
     CHIMP_CLASS(chimp_module_class)->str = chimp_module_str;
     CHIMP_CLASS(chimp_module_class)->getattr = chimp_module_getattr;
     CHIMP_CLASS(chimp_module_class)->init = chimp_module_init;

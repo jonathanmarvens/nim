@@ -37,7 +37,7 @@ chimp_int_class_bootstrap (void);
 ChimpRef *
 chimp_int_new (int64_t value);
 
-#define CHIMP_INT(ref) CHIMP_CHECK_CAST(ChimpInt, (ref), CHIMP_VALUE_TYPE_INT)
+#define CHIMP_INT(ref) CHIMP_CHECK_CAST(ChimpInt, (ref), chimp_int_class)
 
 #define CHIMP_INT_VALUE(ref) CHIMP_INT(ref)->value
 

@@ -23,7 +23,6 @@
 #include "chimp/str.h"
 
 #define CHIMP_ARRAY_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_ARRAY; \
     CHIMP_ANY(ref)->klass = chimp_array_class;
 
 ChimpRef *chimp_array_class = NULL;
@@ -182,7 +181,8 @@ chimp_array_str (ChimpRef *self)
     for (i = 0; i < size; i++) {
         ref = CHIMP_ARRAY_ITEM(self, i);
         /* XXX what we really want is something like Python's repr() */
-        if (CHIMP_ANY_TYPE(ref) == CHIMP_VALUE_TYPE_STR) {
+        /* TODO instanceof */
+        if (CHIMP_ANY_CLASS(ref) == chimp_str_class) {
             /* for surrounding quotes */
             total_len += 2;
         }
@@ -204,12 +204,12 @@ chimp_array_str (ChimpRef *self)
     for (i = 0; i < size; i++) {
         ref = CHIMP_ARRAY_ITEM(item_strs, i);
         /* XXX what we really want is something like Python's repr() */
-        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(self, i)) == CHIMP_VALUE_TYPE_STR) {
+        if (CHIMP_ANY_CLASS(CHIMP_ARRAY_ITEM(self, i)) == chimp_str_class) {
             data[j++] = '"';
         }
         memcpy (data + j, CHIMP_STR_DATA(ref), CHIMP_STR_SIZE(ref));
         j += CHIMP_STR_SIZE(ref);
-        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(self, i)) == CHIMP_VALUE_TYPE_STR) {
+        if (CHIMP_ANY_CLASS(CHIMP_ARRAY_ITEM(self, i)) == chimp_str_class) {
             data[j++] = '"';
         }
         if (i < (size-1)) {
@@ -322,7 +322,6 @@ chimp_array_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_array_class)->str = chimp_array_str;
-    CHIMP_CLASS(chimp_array_class)->inst_type = CHIMP_VALUE_TYPE_ARRAY;
     CHIMP_CLASS(chimp_array_class)->dtor = _chimp_array_dtor;
     CHIMP_CLASS(chimp_array_class)->getitem = _chimp_array_getitem;
     CHIMP_CLASS(chimp_array_class)->mark = _chimp_array_mark;

@@ -628,7 +628,6 @@ chimp_task_class_bootstrap (void)
     CHIMP_CLASS(chimp_task_class)->init = _chimp_task_init;
     CHIMP_CLASS(chimp_task_class)->dtor = _chimp_task_dtor;
     CHIMP_CLASS(chimp_task_class)->str  = _chimp_task_str;
-    CHIMP_CLASS(chimp_task_class)->inst_type = CHIMP_VALUE_TYPE_TASK;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
     chimp_class_add_native_method (chimp_task_class, "join", _chimp_task_join);

@@ -97,7 +97,7 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name);
 #define CHIMP_POP_STACK_FRAME() \
     chimp_task_pop_stack_frame (chimp_task_current ())
 
-#define CHIMP_TASK(ref)  CHIMP_CHECK_CAST(ChimpTask, (ref), CHIMP_VALUE_TYPE_TASK)
+#define CHIMP_TASK(ref)  CHIMP_CHECK_CAST(ChimpTask, (ref), chimp_task_class)
 
 CHIMP_EXTERN_CLASS(task);
 

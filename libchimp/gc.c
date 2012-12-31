@@ -37,20 +37,6 @@ struct _ChimpRef {
 };
 
 #define CHIMP_FAST_ANY(ref) (&((ref)->value.any))
-#define CHIMP_FAST_CLASS(ref) (&((ref)->value.klass))
-#define CHIMP_FAST_MODULE(ref) (&((ref)->value.module))
-#define CHIMP_FAST_STR(ref) (&((ref)->value.str))
-#define CHIMP_FAST_ARRAY(ref) (&((ref)->value.array))
-#define CHIMP_FAST_HASH(ref) (&((ref)->value.hash))
-#define CHIMP_FAST_METHOD(ref) (&((ref)->value.method))
-#define CHIMP_FAST_CODE(ref) (&((ref)->value.code))
-#define CHIMP_FAST_FRAME(ref) (&((ref)->value.frame))
-#define CHIMP_FAST_SYMTABLE(ref) (&((ref)->value.symtable))
-#define CHIMP_FAST_SYMTABLE_ENTRY(ref) (&((ref)->value.symtable_entry))
-#define CHIMP_FAST_VAR(ref) (&((ref)->value.var))
-#define CHIMP_FAST_ERROR(ref) (&((ref)->value.error))
-
-#define CHIMP_FAST_REF_TYPE(ref) ((ref)->value.any.type)
 
 typedef struct _ChimpSlab {
     ChimpRef *refs;
@@ -76,93 +62,6 @@ struct _ChimpGC {
     void      *stack_start;
     uint64_t   collection_count;
 };
-
-static const char *
-type_name (ChimpValueType type)
-{
-    switch (type) {
-        case CHIMP_VALUE_TYPE_CLASS:
-            {
-                return "class";
-            }
-        case CHIMP_VALUE_TYPE_OBJECT:
-            {
-                return "object";
-            }
-        case CHIMP_VALUE_TYPE_STR:
-            {
-                return "str";
-            }
-        case CHIMP_VALUE_TYPE_CODE:
-            {
-                return "code";
-            }
-        case CHIMP_VALUE_TYPE_MODULE:
-            {
-                return "module";
-            }
-        case CHIMP_VALUE_TYPE_INT:
-            {
-                return "int";
-            }
-        case CHIMP_VALUE_TYPE_ARRAY:
-            {
-                return "array";
-            }
-        case CHIMP_VALUE_TYPE_HASH:
-            {
-                return "hash";
-            }
-        case CHIMP_VALUE_TYPE_METHOD:
-            {
-                return "method";
-            }
-        case CHIMP_VALUE_TYPE_FRAME:
-            {
-                return "stackframe";
-            }
-        case CHIMP_VALUE_TYPE_AST_MOD:
-            {
-                return "ast.mod";
-            }
-        case CHIMP_VALUE_TYPE_AST_STMT:
-            {
-                return "ast.stmt";
-            }
-        case CHIMP_VALUE_TYPE_AST_EXPR:
-            {
-                return "ast.expr";
-            }
-        case CHIMP_VALUE_TYPE_AST_DECL:
-            {
-                return "ast.decl";
-            }
-        case CHIMP_VALUE_TYPE_SYMTABLE:
-            {
-                return "symtable";
-            }
-        case CHIMP_VALUE_TYPE_TASK:
-            {
-                return "task";
-            }
-        case CHIMP_VALUE_TYPE_VAR:
-            {
-                return "var";
-            }
-        case CHIMP_VALUE_TYPE_ERROR:
-            {
-                return "error";
-            }
-        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
-            {
-                return "symtable.entry";
-            }
-        default:
-            {
-                return "<unknown>";
-            }
-    };
-}
 
 #define CHIMP_HEAP_CURRENT_SLAB(heap) \
     (heap)->slabs[(heap)->used / ((heap)->slab_size * sizeof(ChimpRef))]
@@ -371,31 +270,32 @@ chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref)
 }
 
 ChimpValue *
-chimp_gc_ref_check_cast (ChimpRef *ref, ChimpValueType type)
+chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass)
 {
     if (ref == NULL) {
-        CHIMP_BUG ("expected ref type '%s', but got a null ref",
-                    type_name (type));
+        if (klass != NULL) {
+            CHIMP_BUG ("expected ref type '%s', but got a null ref",
+                        CHIMP_STR_DATA(CHIMP_CLASS (klass)->name));
+        }
+        else {
+            CHIMP_BUG ("expected non-null ref");
+        }
         return NULL;
     }
 
-    if (type == CHIMP_VALUE_TYPE_ANY) {
+    if (klass == NULL) {
         return &ref->value;
     }
 
-    if (ref->value.any.type != type) {
+    /* TODO need an 'instanceof' type check here */
+    if (CHIMP_ANY_CLASS(ref) != klass) {
         CHIMP_BUG ("expected ref type '%s', but got '%s'",
-                type_name (type), type_name (ref->value.any.type));
+                    CHIMP_STR_DATA(CHIMP_CLASS (klass)->name),
+                    CHIMP_STR_DATA(CHIMP_CLASS (CHIMP_ANY_CLASS(ref))->name));
         return NULL;
     }
 
     return &ref->value;
-}
-
-ChimpValueType
-chimp_gc_ref_type (ChimpRef *ref)
-{
-    return ref->value.any.type;
 }
 
 void
@@ -422,7 +322,10 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 
     if (CHIMP_CLASS(klass)->mark) {
         CHIMP_CLASS(klass)->mark (gc, ref);
-        return;
+    }
+    else {
+      CHIMP_BUG ("no mark method provided for class: %s",
+          CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->name));
     }
 }
 

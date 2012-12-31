@@ -36,11 +36,9 @@
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
-        CHIMP_ANY(c)->type = CHIMP_VALUE_TYPE_CLASS; \
         CHIMP_ANY(c)->klass = chimp_class_class; \
         CHIMP_CLASS(c)->super = (sup); \
         CHIMP_CLASS(c)->name = chimp_gc_new_object ((gc)); \
-        CHIMP_ANY(CHIMP_CLASS(c)->name)->type = CHIMP_VALUE_TYPE_STR; \
         CHIMP_ANY(CHIMP_CLASS(c)->name)->klass = chimp_str_class; \
         CHIMP_STR(CHIMP_CLASS(c)->name)->data = fake_strndup ((n), (sizeof(n)-1)); \
         if (CHIMP_STR(CHIMP_CLASS(c)->name)->data == NULL) { \
@@ -94,23 +92,19 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
 {
     ChimpStr *as;
     ChimpStr *bs;
-    ChimpValueType at, bt;
     int r;
 
     if (a == b) {
         return CHIMP_CMP_EQ;
     }
 
-    at = CHIMP_REF_TYPE(a);
-    bt = CHIMP_REF_TYPE(b);
-
-    if (at != CHIMP_VALUE_TYPE_STR) {
+    if (CHIMP_ANY_CLASS(a) != chimp_str_class) {
         /* TODO this is almost certainly a bug */
         return CHIMP_CMP_ERROR;
     }
 
     /* TODO should probably be a subtype check? */
-    if (at != bt) {
+    if (CHIMP_ANY_CLASS(a) != CHIMP_ANY_CLASS(b)) {
         return CHIMP_CMP_NOT_IMPL;
     }
 

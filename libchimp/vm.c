@@ -136,7 +136,7 @@ chimp_vm_resolvename (
             }
             else if (rc == 0) {
                 /* deref vars if we're not binding a closure */
-                if (!binding && CHIMP_ANY_TYPE(*value) == CHIMP_VALUE_TYPE_VAR) {
+                if (!binding && CHIMP_ANY_CLASS(*value) == chimp_var_class) {
                     *value = CHIMP_VAR(*value)->value;
                 }
                 return CHIMP_TRUE;
@@ -154,7 +154,7 @@ chimp_vm_resolvename (
         }
         else if (rc == 0) {
             /* deref vars if we're not binding a closure */
-            if (!binding && CHIMP_ANY_TYPE(*value) == CHIMP_VALUE_TYPE_VAR) {
+            if (!binding && CHIMP_ANY_CLASS(*value) == chimp_var_class) {
                 *value = CHIMP_VAR(*value)->value;
             }
             return CHIMP_TRUE;
@@ -868,7 +868,7 @@ chimp_vm_eval (ChimpVM *vm, ChimpRef *code, ChimpRef *locals)
 */
 
 #define CHIMP_IS_BYTECODE_METHOD(ref) \
-    (CHIMP_ANY(ref)->type == CHIMP_VALUE_TYPE_METHOD && \
+    (CHIMP_ANY_CLASS(ref) == chimp_method_class && \
         ( \
             (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_BYTECODE) || \
             (CHIMP_METHOD(ref)->type == CHIMP_METHOD_TYPE_CLOSURE) \

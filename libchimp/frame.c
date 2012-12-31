@@ -23,7 +23,6 @@
 
 #define CHIMP_FRAME_INIT(ref) \
     do { \
-        CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_FRAME; \
         CHIMP_ANY(ref)->klass = chimp_frame_class; \
     } while (0)
 

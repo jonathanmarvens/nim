@@ -26,7 +26,6 @@
 #include "chimp/ast.h"
 
 #define CHIMP_INT_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_INT; \
     CHIMP_ANY(ref)->klass = chimp_int_class;
 
 ChimpRef *chimp_int_class = NULL;
@@ -108,16 +107,12 @@ chimp_int_cmp (ChimpRef *left, ChimpRef *right)
 {
     ChimpInt *a;
     ChimpInt *b;
-    ChimpValueType at, bt;
 
-    at = CHIMP_ANY_TYPE(left);
-    bt = CHIMP_ANY_TYPE(right);
-
-    if (at != CHIMP_VALUE_TYPE_INT) {
+    if (CHIMP_ANY_CLASS(left) != chimp_int_class) {
         return CHIMP_CMP_ERROR;
     }
 
-    if (at != bt) {
+    if (CHIMP_ANY_CLASS(left) != CHIMP_ANY_CLASS(right)) {
         return CHIMP_CMP_NOT_IMPL;
     }
 

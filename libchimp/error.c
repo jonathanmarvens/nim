@@ -46,7 +46,6 @@ chimp_error_class_bootstrap (void)
     }
     CHIMP_CLASS(chimp_error_class)->str = _chimp_error_str;
     CHIMP_CLASS(chimp_error_class)->init = _chimp_error_init;
-    CHIMP_CLASS(chimp_error_class)->inst_type = CHIMP_VALUE_TYPE_ERROR;
     CHIMP_CLASS(chimp_error_class)->mark = _chimp_error_mark;
     chimp_gc_make_root (NULL, chimp_error_class);
     return CHIMP_TRUE;

@@ -24,7 +24,6 @@
 #include "chimp/method.h"
 
 #define CHIMP_CLASS_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_CLASS; \
     CHIMP_ANY(ref)->klass = chimp_class_class;
 
 static ChimpRef *
@@ -43,7 +42,6 @@ chimp_class_call (ChimpRef *self, ChimpRef *args)
             return NULL;
         }
         CHIMP_ANY(ref)->klass = self;
-        CHIMP_ANY(ref)->type = CHIMP_CLASS(self)->inst_type;
         if (CHIMP_CLASS(self)->init != NULL) {
             ref = CHIMP_CLASS(self)->init (ref, args);
             if (ref == NULL) {
@@ -158,7 +156,6 @@ chimp_class_new (ChimpRef *name, ChimpRef *super)
     CHIMP_CLASS(ref)->super = super;
     CHIMP_CLASS(ref)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(ref)->call = chimp_class_call;
-    CHIMP_CLASS(ref)->inst_type = CHIMP_VALUE_TYPE_OBJECT;
     return ref;
 }
 
@@ -232,18 +229,15 @@ _chimp_bootstrap_L3 (void)
 {
     CHIMP_CLASS(chimp_class_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
-    CHIMP_CLASS(chimp_class_class)->inst_type = CHIMP_VALUE_TYPE_CLASS;
     CHIMP_CLASS(chimp_class_class)->dtor = chimp_class_dtor;
     CHIMP_CLASS(chimp_class_class)->str = chimp_class_str;
     CHIMP_CLASS(chimp_class_class)->mark = _chimp_class_mark;
 
     CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_object_class)->call = chimp_class_call;
-    CHIMP_CLASS(chimp_object_class)->inst_type = CHIMP_VALUE_TYPE_OBJECT;
 
     CHIMP_CLASS(chimp_str_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_str_class)->call = chimp_class_call;
-    CHIMP_CLASS(chimp_str_class)->inst_type = CHIMP_VALUE_TYPE_STR;
     CHIMP_CLASS(chimp_str_class)->init = chimp_str_init;
     CHIMP_CLASS(chimp_str_class)->dtor = chimp_str_dtor;
 

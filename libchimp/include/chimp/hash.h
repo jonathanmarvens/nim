@@ -56,7 +56,7 @@ ChimpRef *
 chimp_hash_values (ChimpRef *self);
 
 #define CHIMP_HASH(ref) \
-    CHIMP_CHECK_CAST(ChimpHash, (ref), CHIMP_VALUE_TYPE_HASH)
+    CHIMP_CHECK_CAST(ChimpHash, (ref), chimp_hash_class)
 
 #define CHIMP_HASH_PUT(ref, key, value) \
     chimp_hash_put ((ref), CHIMP_STR_NEW(NULL, (key)), (value))

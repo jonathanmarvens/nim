@@ -55,7 +55,7 @@ chimp_module_add_method_str (
     ChimpNativeMethodFunc impl
 );
 
-#define CHIMP_MODULE(ref) CHIMP_CHECK_CAST(ChimpModule, (ref), CHIMP_VALUE_TYPE_MODULE)
+#define CHIMP_MODULE(ref) CHIMP_CHECK_CAST(ChimpModule, (ref), chimp_module_class)
 #define CHIMP_MODULE_NAME(ref) (CHIMP_MODULE(ref)->name)
 #define CHIMP_MODULE_LOCALS(ref) (CHIMP_MODULE(ref)->locals)
 

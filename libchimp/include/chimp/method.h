@@ -74,7 +74,7 @@ chimp_method_no_args (ChimpRef *args);
 chimp_bool_t
 chimp_method_parse_args (ChimpRef *args, const char *fmt, ...);
 
-#define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), CHIMP_VALUE_TYPE_METHOD)
+#define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), chimp_method_class)
 #define CHIMP_METHOD_SELF(ref) (CHIMP_METHOD(ref)->self)
 #define CHIMP_METHOD_TYPE(ref) (CHIMP_METHOD(ref)->type)
 

@@ -57,7 +57,7 @@ chimp_str_append (ChimpRef *str, ChimpRef *append_me);
 chimp_bool_t
 chimp_str_append_str (ChimpRef *str, const char *s);
 
-#define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), CHIMP_VALUE_TYPE_STR)
+#define CHIMP_STR(ref)    CHIMP_CHECK_CAST(ChimpStr, (ref), chimp_str_class)
 
 #define CHIMP_STR_DATA(ref) (CHIMP_STR(ref)->data)
 #define CHIMP_STR_SIZE(ref) (CHIMP_STR(ref)->size)

@@ -39,7 +39,6 @@ typedef struct _ChimpClass {
     ChimpAny  base;
     ChimpRef *name;
     ChimpRef *super;
-    ChimpValueType inst_type;
     ChimpCmpResult (*cmp)(ChimpRef *, ChimpRef *);
     ChimpRef *(*init)(ChimpRef *, ChimpRef *);
     void (*dtor)(ChimpRef *);
@@ -70,7 +69,7 @@ chimp_class_add_native_method (ChimpRef *klass, const char *name, ChimpNativeMet
 chimp_bool_t
 _chimp_bootstrap_L3 (void);
 
-#define CHIMP_CLASS(ref)  CHIMP_CHECK_CAST(ChimpClass, (ref), CHIMP_VALUE_TYPE_CLASS)
+#define CHIMP_CLASS(ref)  CHIMP_CHECK_CAST(ChimpClass, (ref), chimp_class_class)
 
 #define CHIMP_CLASS_NAME(ref) (CHIMP_CLASS(ref)->name)
 #define CHIMP_CLASS_SUPER(ref) (CHIMP_CLASS(ref)->super)

@@ -20,7 +20,6 @@
 #include "chimp/object.h"
 
 #define CHIMP_HASH_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_HASH; \
     CHIMP_ANY(ref)->klass = chimp_hash_class;
 
 ChimpRef *chimp_hash_class = NULL;
@@ -50,7 +49,7 @@ chimp_hash_str (ChimpRef *self)
         for (j = 0; j < 2; j++) {
             ref = item[j];
             /* XXX what we really want is something like Python's repr() */
-            if (CHIMP_ANY_TYPE(ref) == CHIMP_VALUE_TYPE_STR) {
+            if (CHIMP_ANY_CLASS(ref) == chimp_str_class) {
                 /* for surrounding quotes */
                 total_len += 2;
             }
@@ -78,12 +77,13 @@ chimp_hash_str (ChimpRef *self)
         for (j = 0; j < 2; j++) {
             ref = CHIMP_ARRAY_ITEM(strs, (i * 2) + j);
             /* XXX what we really want is something like Python's repr() */
-            if (CHIMP_ANY_TYPE(item[j]) == CHIMP_VALUE_TYPE_STR) {
+            /* TODO instanceof */
+            if (CHIMP_ANY_CLASS(item[j]) == chimp_str_class) {
                 data[k++] = '"';
             }
             memcpy (data + k, CHIMP_STR_DATA(ref), CHIMP_STR_SIZE(ref));
             k += CHIMP_STR_SIZE(ref);
-            if (CHIMP_ANY_TYPE(item[j]) == CHIMP_VALUE_TYPE_STR) {
+            if (CHIMP_ANY_CLASS(item[j]) == chimp_str_class) {
                 data[k++] = '"';
             }
             if (j == 0) {
@@ -170,7 +170,6 @@ chimp_hash_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_hash_class)->str = chimp_hash_str;
-    CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
     CHIMP_CLASS(chimp_hash_class)->dtor = _chimp_hash_dtor;
     CHIMP_CLASS(chimp_hash_class)->getitem = _chimp_hash_getitem;
     CHIMP_CLASS(chimp_hash_class)->mark = _chimp_hash_mark;

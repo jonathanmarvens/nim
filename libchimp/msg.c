@@ -57,29 +57,25 @@ chimp_msg_task_cell_size (ChimpRef *ref)
 static size_t
 chimp_msg_value_cell_size (ChimpRef *ref)
 {
-    /* check acceptable (immutable values) */
-    switch (CHIMP_ANY_TYPE(ref)) {
-        case CHIMP_VALUE_TYPE_INT:
-            {
-                return chimp_msg_int_cell_size(ref);
-            }
-        case CHIMP_VALUE_TYPE_STR:
-            {
-                return chimp_msg_str_cell_size(ref);
-            }
-        case CHIMP_VALUE_TYPE_ARRAY:
-            {
-                return chimp_msg_array_cell_size (ref);
-            }
-        case CHIMP_VALUE_TYPE_TASK:
-            {
-                return chimp_msg_task_cell_size (ref);
-            }
-        default:
-            CHIMP_BUG ("unsupported message type in array encode: %s",
-                    CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
-            return 0;
-    };
+    ChimpRef *klass = CHIMP_ANY_CLASS(ref);
+
+    if (klass == chimp_int_class) {
+        return chimp_msg_int_cell_size(ref);
+    }
+    else if (klass == chimp_str_class) {
+        return chimp_msg_str_cell_size(ref);
+    }
+    else if (klass == chimp_array_class) {
+        return chimp_msg_array_cell_size (ref);
+    }
+    else if (klass == chimp_task_class) {
+        return chimp_msg_task_cell_size (ref);
+    }
+    else {
+        CHIMP_BUG ("unsupported message type in array encode: %s",
+                CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+        return 0;
+    }
 }
 
 static chimp_bool_t
@@ -146,40 +142,34 @@ chimp_msg_task_cell_encode (char **buf_ptr, ChimpRef *ref)
 static chimp_bool_t
 chimp_msg_value_cell_encode (char **buf_ptr, ChimpRef *ref)
 {
-    switch (CHIMP_ANY_TYPE(ref)) {
-        case CHIMP_VALUE_TYPE_INT:
-            {
-                if (!chimp_msg_int_cell_encode (buf_ptr, ref)) {
-                    return CHIMP_FALSE;
-                }
-                break;
-            }
-        case CHIMP_VALUE_TYPE_STR:
-            {
-                if (!chimp_msg_str_cell_encode (buf_ptr, ref)) {
-                    return CHIMP_FALSE;
-                }
-                break;
-            }
-        case CHIMP_VALUE_TYPE_ARRAY:
-            {
-                if (!chimp_msg_array_cell_encode (buf_ptr, ref)) {
-                    return CHIMP_FALSE;
-                }
-                break;
-            }
-        case CHIMP_VALUE_TYPE_TASK:
-            {
-                if (!chimp_msg_task_cell_encode (buf_ptr, ref)) {
-                    return CHIMP_FALSE;
-                }
-                break;
-            }
-        default:
-            CHIMP_BUG ("unsupported message type in encode: %s",
-                    CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+    ChimpRef *klass = CHIMP_ANY_CLASS(ref);
+
+    if (klass == chimp_int_class) {
+        if (!chimp_msg_int_cell_encode (buf_ptr, ref)) {
             return CHIMP_FALSE;
-    };
+        }
+    }
+    else if (klass == chimp_str_class) {
+        if (!chimp_msg_str_cell_encode (buf_ptr, ref)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else if (klass == chimp_array_class) {
+        if (!chimp_msg_array_cell_encode (buf_ptr, ref)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else if (klass == chimp_task_class) {
+        if (!chimp_msg_task_cell_encode (buf_ptr, ref)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else {
+        CHIMP_BUG ("unsupported message type in encode: %s",
+                CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
+        return CHIMP_FALSE;
+    }
+
     return CHIMP_TRUE;
 }
 

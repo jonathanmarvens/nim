@@ -46,10 +46,7 @@ chimp_bool_t
 chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref);
 
 union _ChimpValue *
-chimp_gc_ref_check_cast (ChimpRef *ref, enum _ChimpValueType type);
-
-enum _ChimpValueType
-chimp_gc_ref_type (ChimpRef *ref);
+chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass);
 
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc);
@@ -68,8 +65,6 @@ chimp_gc_num_live (ChimpGC *gc);
 
 uint64_t
 chimp_gc_num_free (ChimpGC *gc);
-
-#define CHIMP_REF_TYPE(ref) chimp_gc_ref_type(ref)
 
 #define CHIMP_GC_MAKE_STACK_ROOT(p) \
     (*((ChimpRef **)alloca(sizeof(ChimpRef *)))) = (p)

@@ -19,7 +19,6 @@ chimp_var_class_bootstrap (void)
     if (chimp_var_class == NULL) {
         return CHIMP_FALSE;
     }
-    CHIMP_CLASS(chimp_var_class)->inst_type = CHIMP_VALUE_TYPE_VAR;
     CHIMP_CLASS(chimp_var_class)->mark = _chimp_var_mark;
     chimp_gc_make_root (NULL, chimp_var_class);
     return CHIMP_TRUE;

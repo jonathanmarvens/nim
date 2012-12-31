@@ -23,11 +23,9 @@
 #include "chimp/symtable.h"
 
 #define CHIMP_SYMTABLE_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_SYMTABLE; \
     CHIMP_ANY(ref)->klass = chimp_symtable_class;
 
 #define CHIMP_SYMTABLE_ENTRY_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_SYMTABLE_ENTRY; \
     CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
 
 #define CHIMP_SYMTABLE_GET_CURRENT_ENTRY(ref) CHIMP_SYMTABLE(ref)->ste
@@ -180,12 +178,12 @@ chimp_symtable_visit_stmts_or_decls (ChimpRef *self, ChimpRef *arr)
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(arr); i++) {
         ChimpRef *item = CHIMP_ARRAY_ITEM(arr, i);
-        if (CHIMP_ANY_TYPE(item) == CHIMP_VALUE_TYPE_AST_STMT) {
+        if (CHIMP_ANY_CLASS(item) == chimp_ast_stmt_class) {
             if (!chimp_symtable_visit_stmt (self, item)) {
                 return CHIMP_FALSE;
             }
         }
-        else if (CHIMP_ANY_TYPE(item) == CHIMP_VALUE_TYPE_AST_DECL) {
+        else if (CHIMP_ANY_CLASS(item) == chimp_ast_decl_class) {
             if (!chimp_symtable_visit_decl (self, item)) {
                 return CHIMP_FALSE;
             }
@@ -771,15 +769,14 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
         return NULL;
     }
 
-    switch (CHIMP_ANY_TYPE(ast)) {
-        case CHIMP_VALUE_TYPE_AST_MOD:
-            if (!chimp_symtable_visit_mod (ref, ast))
-                return NULL;
-            break;
-        default:
-            CHIMP_BUG ("unknown top-level AST node type: %d",
-                        CHIMP_ANY_TYPE(ast));
+    if (CHIMP_ANY_CLASS(ast) == chimp_ast_mod_class) {
+        if (!chimp_symtable_visit_mod (ref, ast))
             return NULL;
+    }
+    else {
+        CHIMP_BUG ("unknown top-level AST node type: %s",
+                    CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ast))->name));
+        return NULL;
     }
 
     return ref;

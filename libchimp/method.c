@@ -27,7 +27,6 @@
 
 #define CHIMP_METHOD_INIT(ref) \
     do { \
-        CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_METHOD; \
         CHIMP_ANY(ref)->klass = chimp_method_class; \
     } while (0)
 
@@ -68,7 +67,6 @@ chimp_method_class_bootstrap (void)
     }
     chimp_gc_make_root (NULL, chimp_method_class);
     CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
-    CHIMP_CLASS(chimp_method_class)->inst_type = CHIMP_VALUE_TYPE_METHOD;
     CHIMP_CLASS(chimp_method_class)->mark = _chimp_method_mark;
     return CHIMP_TRUE;
 }

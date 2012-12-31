@@ -20,7 +20,6 @@
 #include "chimp/str.h"
 
 #define CHIMP_STR_INIT(ref) \
-    CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_STR; \
     CHIMP_ANY(ref)->klass = chimp_str_class;
 
 ChimpRef *

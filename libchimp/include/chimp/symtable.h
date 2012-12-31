@@ -76,11 +76,11 @@ chimp_bool_t
 chimp_symtable_entry_sym_exists (ChimpRef *self, ChimpRef *name);
 
 #define CHIMP_SYMTABLE(ref) \
-    CHIMP_CHECK_CAST(ChimpSymtable, (ref), CHIMP_VALUE_TYPE_SYMTABLE)
+    CHIMP_CHECK_CAST(ChimpSymtable, (ref), chimp_symtable_class)
 
 #define CHIMP_SYMTABLE_ENTRY(ref) \
     CHIMP_CHECK_CAST( \
-        ChimpSymtableEntry, (ref), CHIMP_VALUE_TYPE_SYMTABLE_ENTRY)
+        ChimpSymtableEntry, (ref), chimp_symtable_entry_class)
 
 #define CHIMP_SYMTABLE_ENTRY_CHILDREN(ref) CHIMP_SYMTABLE_ENTRY(ref)->children
 

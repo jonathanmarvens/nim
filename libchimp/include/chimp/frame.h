@@ -39,7 +39,7 @@ ChimpRef *
 chimp_frame_new (ChimpRef *method);
 
 #define CHIMP_FRAME(ref) \
-    CHIMP_CHECK_CAST(ChimpFrame, (ref), CHIMP_VALUE_TYPE_FRAME)
+    CHIMP_CHECK_CAST(ChimpFrame, (ref), chimp_frame_class)
 
 /* XXX it's ugly as hell to distinguish between closures & normal methods here */
 #define CHIMP_FRAME_CODE(ref) \

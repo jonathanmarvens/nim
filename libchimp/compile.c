@@ -391,13 +391,13 @@ chimp_compile_ast_stmts (ChimpCodeCompiler *c, ChimpRef *stmts)
     size_t i;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(stmts); i++) {
-        if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(stmts, i)) == CHIMP_VALUE_TYPE_AST_STMT) {
+        if (CHIMP_ANY_CLASS(CHIMP_ARRAY_ITEM(stmts, i)) == chimp_ast_stmt_class) {
             if (!chimp_compile_ast_stmt (c, CHIMP_ARRAY_ITEM(stmts, i))) {
                 /* TODO error message? */
                 return CHIMP_FALSE;
             }
         }
-        else if (CHIMP_ANY_TYPE(CHIMP_ARRAY_ITEM(stmts, i)) == CHIMP_VALUE_TYPE_AST_DECL) {
+        else if (CHIMP_ANY_CLASS(CHIMP_ARRAY_ITEM(stmts, i)) == chimp_ast_decl_class) {
             if (!chimp_compile_ast_decl (c, CHIMP_ARRAY_ITEM(stmts, i))) {
                 return CHIMP_FALSE;
             }
@@ -1244,7 +1244,7 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
                 ChimpRef *child;
                 ChimpRef *name;
                 if (i != CHIMP_ARRAY_SIZE(base)-1 && 
-                    CHIMP_ANY_TYPE(base_ref) != CHIMP_VALUE_TYPE_MODULE) {
+                    CHIMP_ANY_CLASS(base_ref) != chimp_module_class) {
                     CHIMP_BUG ("Cannot resolve class on non-module type: %s",
                         CHIMP_STR_DATA(name));
                     return CHIMP_FALSE;
@@ -1316,7 +1316,7 @@ chimp_compile_ast_decl_var (ChimpCodeCompiler *c, ChimpRef *decl)
     ChimpRef *name = CHIMP_AST_DECL(decl)->var.name;
     ChimpRef *value = CHIMP_AST_DECL(decl)->var.value;
 
-    if (CHIMP_ANY_TYPE(scope) == CHIMP_VALUE_TYPE_MODULE) {
+    if (CHIMP_ANY_CLASS(scope) == chimp_module_class) {
         return chimp_module_add_local (scope, name, value == NULL ? chimp_nil : value);
     }
     else {
@@ -1864,15 +1864,16 @@ chimp_compile_ast (ChimpRef *name, const char *filename, ChimpRef *ast)
     }
     CHIMP_MODULE(module)->name = name;
 
-    switch (CHIMP_ANY_TYPE(ast)) {
-        case CHIMP_VALUE_TYPE_AST_MOD:
-            if (!chimp_compile_ast_mod (&c, ast)) goto error;
-            break;
-        default:
-            CHIMP_BUG ("unknown top-level AST node type: %d",
-                        CHIMP_ANY_TYPE(ast));
+    if (CHIMP_ANY_CLASS(ast) == chimp_ast_mod_class) {
+        if (!chimp_compile_ast_mod (&c, ast)) {
             goto error;
-    };
+        }
+    }
+    else {
+        CHIMP_BUG ("unknown top-level AST node type: %s",
+                    CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ast))->name));
+        goto error;
+    }
 
     if (!chimp_code_compiler_pop_unit (&c, CHIMP_UNIT_TYPE_MODULE)) {
         goto error;

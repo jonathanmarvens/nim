@@ -19,7 +19,7 @@ chimp_var_class_bootstrap (void);
 ChimpRef *
 chimp_var_new (void);
 
-#define CHIMP_VAR(ref)  CHIMP_CHECK_CAST(ChimpVar, (ref), CHIMP_VALUE_TYPE_VAR)
+#define CHIMP_VAR(ref)  CHIMP_CHECK_CAST(ChimpVar, (ref), chimp_var_class)
 #define CHIMP_VAR_VALUE(ref) CHIMP_VAR(ref)->value
 
 CHIMP_EXTERN_CLASS(var);
