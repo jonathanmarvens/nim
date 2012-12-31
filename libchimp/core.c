@@ -269,6 +269,7 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
+    chimp_hash_put_str (chimp_builtins, "error", chimp_error_class);
 
     CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
     CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
@@ -300,6 +301,8 @@ chimp_core_startup (void *stack_start)
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_str_class);
+
+    if (!chimp_error_class_bootstrap ()) goto error;
 
     if (!chimp_method_class_bootstrap ()) goto error;
 

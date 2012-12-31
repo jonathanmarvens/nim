@@ -51,25 +51,40 @@ ChimpRef *
 chimp_str_new_format (const char *fmt, ...)
 {
     va_list args;
-    int size;
-    char *buf;
+    ChimpRef *result;
 
-    va_start(args, fmt);
+    va_start (args, fmt);
+    result = chimp_str_new_formatv (fmt, args);
+    va_end (args);
+
+    return result;
+}
+
+ChimpRef *
+chimp_str_new_formatv (const char *fmt, va_list args)
+{
+    size_t size;
+    va_list args_p;
+    
+    va_copy (args_p, args);
     size = vsnprintf (NULL, 0, fmt, args);
-    va_end(args);
 
     if (size >= 0) {
-        buf = CHIMP_MALLOC(char, size + 1);
+        char *buf = CHIMP_MALLOC(char, size + 1);
         if (buf == NULL) {
+            va_end (args_p);
             return NULL;
         }
 
-        va_start(args, fmt);
+        va_end (args);
+        va_copy (args, args_p);
+        va_end (args_p);
+
         vsnprintf (buf, size + 1, fmt, args);
-        va_end(args);
         return chimp_str_new_take (buf, size);
     }
     else {
+        va_end (args_p);
         return NULL;
     }
 }

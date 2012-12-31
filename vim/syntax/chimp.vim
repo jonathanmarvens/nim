@@ -12,7 +12,7 @@ syn keyword chimpKeyword nil use ret var and or panic fn spawn while not _
 syn keyword chimpKeyword receive match class this break
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
-syn keyword chimpType str int hash object array
+syn keyword chimpType str int hash object array error
 syn keyword chimpSpecial init recv self
 syn match chimpString '"[^"]*"'
 syn match chimpComment '#.*$'

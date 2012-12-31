@@ -19,6 +19,8 @@
 #ifndef _CHIMP_STR_H_INCLUDED_
 #define _CHIMP_STR_H_INCLUDED_
 
+#include <stdarg.h>
+
 #include <chimp/gc.h>
 #include <chimp/any.h>
 
@@ -40,6 +42,9 @@ chimp_str_new_take (char *data, size_t size);
 
 ChimpRef *
 chimp_str_new_format (const char *fmt, ...);
+
+ChimpRef *
+chimp_str_new_formatv (const char *fmt, va_list args);
 
 ChimpRef *
 chimp_str_new_concat (const char *a, ...);

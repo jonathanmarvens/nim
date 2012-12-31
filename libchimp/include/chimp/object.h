@@ -35,6 +35,7 @@
 #include <chimp/msg.h>
 #include <chimp/task.h>
 #include <chimp/var.h>
+#include <chimp/error.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,6 +60,7 @@ typedef union _ChimpValue {
     ChimpSymtable       symtable;
     ChimpSymtableEntry  symtable_entry;
     ChimpVar            var;
+    ChimpError          error;
     ChimpAstMod         ast_mod;
     ChimpAstDecl        ast_decl;
     ChimpAstStmt        ast_stmt;
