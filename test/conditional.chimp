@@ -4,6 +4,9 @@ use assert;
 use chimpunit;
 
 main argv {
+  # TODO: Suite/chimprunner to print start/finish/counts?
+  io.print("Running Chimp Tests");
+
   chimpunit.test("if positive", fn {
     var executed = false;
     if true {
@@ -18,4 +21,6 @@ main argv {
       assert.fail("Executed false branch!");
     }
   });
+
+  io.print("");
 }

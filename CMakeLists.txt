@@ -150,5 +150,7 @@ add_executable (test-native
   EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 target_link_libraries (test-native libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} check)
-add_custom_target (test test-native DEPENDS test-native)
 
+add_custom_target (test test-native
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/chimp test/conditional.chimp
+  DEPENDS test-native)
