@@ -66,15 +66,6 @@ _chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
     }
 }
 
-static ChimpRef *
-_chimp_assert_fail (ChimpRef *self, ChimpRef *args)
-{
-    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
-    fprintf (stderr, "assertion failed: %s\n",
-        CHIMP_STR_DATA(chimp_object_str(msg)));
-    exit(1);
-}
-
 ChimpRef *
 _chimp_assert_fail (ChimpRef *self, ChimpRef *args)
 {
