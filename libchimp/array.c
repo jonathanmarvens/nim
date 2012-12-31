@@ -235,6 +235,59 @@ _chimp_array_size (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_join (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    size_t len;
+    size_t seplen;
+    const char *sep;
+    ChimpRef *strs;
+    char *result;
+    char *ptr;
+
+    if (!chimp_method_parse_args (args, "s", &sep)) {
+        return NULL;
+    }
+    seplen = strlen (sep);
+
+    strs = chimp_array_new_with_capacity (CHIMP_ARRAY_SIZE(self));
+    if (strs == NULL) {
+        return NULL;
+    }
+
+    len = strlen (sep) * (CHIMP_ARRAY_SIZE(self) - 1);
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *strval = chimp_object_str (CHIMP_ARRAY_ITEM(self, i));
+        if (strval == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (strs, strval)) {
+            return NULL;
+        }
+        len += CHIMP_STR_SIZE(strval);
+    }
+
+    result = malloc (len + 1);
+    if (result == NULL) {
+        return NULL;
+    }
+    ptr = result;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        ChimpRef *s = CHIMP_ARRAY_ITEM(strs, i);
+        memcpy (ptr, CHIMP_STR_DATA(s), CHIMP_STR_SIZE(s));
+        ptr += CHIMP_STR_SIZE(s);
+        if (i < CHIMP_ARRAY_SIZE(self)-1) {
+            memcpy (ptr, sep, seplen);
+            ptr += seplen;
+        }
+    }
+    result[len] = '\0';
+
+    return chimp_str_new_take (result, len);
+}
+
+static ChimpRef *
 _chimp_array_getitem (ChimpRef *self, ChimpRef *key)
 {
     if (CHIMP_ANY_CLASS(key) != chimp_int_class) {
@@ -271,6 +324,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
     chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
     chimp_class_add_native_method (chimp_array_class, "size", _chimp_array_size);
+    chimp_class_add_native_method (chimp_array_class, "join", _chimp_array_join);
     return CHIMP_TRUE;
 }
 

@@ -124,5 +124,7 @@ main argv {
   io.print(arr);
   fn { arr.push("added from closure"); }();
   io.print(arr);
+
+  io.print([1, 2, 3].join(", "));
 }
 
