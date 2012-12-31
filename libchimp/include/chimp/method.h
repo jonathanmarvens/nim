@@ -69,6 +69,9 @@ ChimpRef *
 chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self);
 
 chimp_bool_t
+chimp_method_no_args (ChimpRef *args);
+
+chimp_bool_t
 chimp_method_parse_args (ChimpRef *args, const char *fmt, ...);
 
 #define CHIMP_METHOD(ref) CHIMP_CHECK_CAST(ChimpMethod, (ref), CHIMP_VALUE_TYPE_METHOD)

@@ -595,7 +595,7 @@ static ChimpRef *
 _chimp_task_send (ChimpRef *self, ChimpRef *args)
 {
     ChimpRef *arg;
-    if (!chimp_method_parse_args (args, "O", &arg)) {
+    if (!chimp_method_parse_args (args, "o", &arg)) {
         return CHIMP_FALSE;
     }
     return chimp_task_send (self, CHIMP_ARRAY_ITEM(args, 0)) ? chimp_true : chimp_false;
@@ -604,6 +604,9 @@ _chimp_task_send (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_task_join (ChimpRef *self, ChimpRef *args)
 {
+    if (!chimp_method_no_args (args)) {
+        return NULL;
+    }
     chimp_task_join (CHIMP_TASK(self)->priv);
     return chimp_nil;
 }

@@ -130,6 +130,16 @@ chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_method_no_args (ChimpRef *args)
+{
+    if (CHIMP_ARRAY_SIZE(args) > 0) {
+        CHIMP_BUG ("method takes no arguments");
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
 {
     size_t i;
@@ -151,7 +161,7 @@ chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
             }
         }
         switch (fmt[i]) {
-            case 'O':
+            case 'o':
                 {
                     ChimpRef **arg = va_arg (argp, ChimpRef **);
                     *arg = CHIMP_ARRAY_ITEM(args, n++);
@@ -160,6 +170,7 @@ chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
             case 's':
                 {
                     char **arg = va_arg (argp, char **);
+                    /* TODO ensure array item is a str object */
                     *arg = CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, n++));
                     break;
                 }

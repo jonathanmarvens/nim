@@ -31,8 +31,12 @@ ChimpRef *chimp_array_class = NULL;
 static ChimpRef *
 _chimp_array_push (ChimpRef *self, ChimpRef *args)
 {
+    ChimpRef *arg;
+    if (!chimp_method_parse_args (args, "o", &arg)) {
+        return NULL;
+    }
     /* TODO error if args len == 0 */
-    if (!chimp_array_push (self, chimp_array_get (args, 0))) {
+    if (!chimp_array_push (self, arg)) {
         /* XXX error? exception? abort? */
         return NULL;
     }
@@ -42,6 +46,9 @@ _chimp_array_push (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_array_pop (ChimpRef *self, ChimpRef *args)
 {
+    if (!chimp_method_no_args (args)) {
+        return NULL;
+    }
     return chimp_array_pop (self);
 }
 
@@ -49,8 +56,11 @@ static ChimpRef *
 _chimp_array_map (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
+    ChimpRef *fn;
     ChimpRef *result = chimp_array_new_with_capacity (CHIMP_ARRAY_SIZE(self));
-    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    if (!chimp_method_parse_args (args, "o", &fn)) {
+        return NULL;
+    }
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpRef *fn_args;
         ChimpRef *mapped;
@@ -75,7 +85,10 @@ static ChimpRef *
 _chimp_array_each (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
-    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *fn;
+    if (!chimp_method_parse_args (args, "o", &fn)) {
+        return NULL;
+    }
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpRef *fn_args;
         ChimpRef *value;
@@ -96,7 +109,10 @@ static ChimpRef *
 _chimp_array_contains (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
-    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *right;
+    if (!chimp_method_parse_args (args, "o", &right)) {
+        return NULL;
+    }
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         ChimpCmpResult r;
         ChimpRef *left = CHIMP_ARRAY_ITEM(self, i);
@@ -117,7 +133,11 @@ _chimp_array_filter (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
     ChimpRef *result;
-    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *fn;
+
+    if (!chimp_method_parse_args (args, "o", &fn)) {
+        return NULL;
+    }
 
     result = chimp_array_new ();
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
@@ -207,6 +227,10 @@ chimp_array_str (ChimpRef *self)
 static ChimpRef *
 _chimp_array_size (ChimpRef *self, ChimpRef *args)
 {
+    if (!chimp_method_no_args (args)) {
+        return NULL;
+    }
+
     return chimp_int_new (CHIMP_ARRAY_SIZE(self));
 }
 
