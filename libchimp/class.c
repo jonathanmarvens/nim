@@ -23,9 +23,6 @@
 #include "chimp/str.h"
 #include "chimp/method.h"
 
-#define CHIMP_CLASS_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_class_class;
-
 static ChimpRef *
 chimp_class_call (ChimpRef *self, ChimpRef *args)
 {
@@ -151,7 +148,7 @@ chimp_class_new (ChimpRef *name, ChimpRef *super)
     if (super == NULL || super == chimp_nil) {
         super = chimp_object_class;
     }
-    CHIMP_CLASS_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_class_class;
     CHIMP_CLASS(ref)->name = name;
     CHIMP_CLASS(ref)->super = super;
     CHIMP_CLASS(ref)->methods = chimp_lwhash_new ();

@@ -19,9 +19,6 @@
 #include "chimp/hash.h"
 #include "chimp/object.h"
 
-#define CHIMP_HASH_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_hash_class;
-
 ChimpRef *chimp_hash_class = NULL;
 
 static ChimpRef *
@@ -187,7 +184,7 @@ chimp_hash_new (void)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_HASH_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_hash_class;
     return ref;
 }
 

@@ -19,9 +19,6 @@
 #include "chimp/object.h"
 #include "chimp/str.h"
 
-#define CHIMP_STR_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_str_class;
-
 ChimpRef *
 chimp_str_new (const char *data, size_t size)
 {
@@ -40,7 +37,7 @@ chimp_str_new_take (char *data, size_t size)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_STR_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_str_class;
     CHIMP_STR(ref)->data = data;
     CHIMP_STR(ref)->size = size;
     return ref;

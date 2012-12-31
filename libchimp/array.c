@@ -22,9 +22,6 @@
 #include "chimp/class.h"
 #include "chimp/str.h"
 
-#define CHIMP_ARRAY_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_array_class;
-
 ChimpRef *chimp_array_class = NULL;
 
 static ChimpRef *
@@ -350,7 +347,7 @@ chimp_array_new_with_capacity (size_t capacity)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_ARRAY_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_array_class;
     CHIMP_ARRAY(ref)->items = CHIMP_MALLOC(ChimpRef *, capacity * sizeof(ChimpRef *));
     if (CHIMP_ARRAY(ref)->items == NULL) {
         return NULL;

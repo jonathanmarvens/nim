@@ -21,11 +21,6 @@
 #include "chimp/object.h"
 #include "chimp/str.h"
 
-#define CHIMP_FRAME_INIT(ref) \
-    do { \
-        CHIMP_ANY(ref)->klass = chimp_frame_class; \
-    } while (0)
-
 ChimpRef *chimp_frame_class = NULL;
 
 static void
@@ -56,7 +51,7 @@ chimp_frame_new (ChimpRef *method)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_FRAME_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_frame_class;
     locals = chimp_hash_new ();
     if (locals == NULL) {
         return NULL;

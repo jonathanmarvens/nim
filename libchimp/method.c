@@ -25,11 +25,6 @@
 #include "chimp/task.h"
 #include "chimp/vm.h"
 
-#define CHIMP_METHOD_INIT(ref) \
-    do { \
-        CHIMP_ANY(ref)->klass = chimp_method_class; \
-    } while (0)
-
 ChimpRef *chimp_method_class = NULL;
 
 static ChimpRef *
@@ -78,7 +73,7 @@ chimp_method_new_native (ChimpRef *module, ChimpNativeMethodFunc func)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_METHOD_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_method_class;
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_NATIVE;
     CHIMP_METHOD(ref)->module = module;
     CHIMP_NATIVE_METHOD(ref)->func = func;
@@ -92,7 +87,7 @@ chimp_method_new_bytecode (ChimpRef *module, ChimpRef *code)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_METHOD_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_method_class;
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_BYTECODE;
     CHIMP_METHOD(ref)->module = module;
     CHIMP_BYTECODE_METHOD(ref)->code = code;
@@ -111,7 +106,7 @@ chimp_method_new_closure (ChimpRef *method, ChimpRef *bindings)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_METHOD_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_method_class;
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_CLOSURE;
     CHIMP_METHOD(ref)->module = CHIMP_METHOD(method)->module;
     CHIMP_CLOSURE_METHOD(ref)->code = CHIMP_BYTECODE_METHOD(method)->code;
@@ -128,7 +123,7 @@ chimp_method_new_bound (ChimpRef *unbound, ChimpRef *self)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_METHOD_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_method_class;
     CHIMP_METHOD(ref)->type = CHIMP_METHOD(unbound)->type;
     CHIMP_METHOD(ref)->self = self;
     CHIMP_METHOD(ref)->module = CHIMP_METHOD(unbound)->module;

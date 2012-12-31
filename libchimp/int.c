@@ -25,9 +25,6 @@
 #include "chimp/class.h"
 #include "chimp/ast.h"
 
-#define CHIMP_INT_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_int_class;
-
 ChimpRef *chimp_int_class = NULL;
 
 static ChimpRef *
@@ -155,7 +152,7 @@ chimp_int_new (int64_t value)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_INT_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_int_class;
     CHIMP_INT(ref)->value = value;
     return ref;
 }

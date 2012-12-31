@@ -20,12 +20,6 @@
 #include "chimp/gc.h"
 #include "chimp/task.h"
 
-#define CHIMP_OBJECT_INIT(ref, c) \
-    do { \
-        CHIMP_ANY(ref)->type = CHIMP_VALUE_TYPE_OBJECT; \
-        CHIMP_ANY(ref)->klass = ((c) == NULL ? chimp_object_class : (c)); \
-    } while (0)
-
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b)
 {

@@ -22,12 +22,6 @@
 #include "chimp/object.h"
 #include "chimp/symtable.h"
 
-#define CHIMP_SYMTABLE_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_symtable_class;
-
-#define CHIMP_SYMTABLE_ENTRY_INIT(ref) \
-    CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
-
 #define CHIMP_SYMTABLE_GET_CURRENT_ENTRY(ref) CHIMP_SYMTABLE(ref)->ste
 
 #define CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, t) \
@@ -107,7 +101,7 @@ chimp_symtable_entry_new (
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_SYMTABLE_ENTRY_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
     CHIMP_SYMTABLE_ENTRY(ref)->flags = flags;
     CHIMP_SYMTABLE_ENTRY(ref)->symtable = symtable;
     CHIMP_SYMTABLE_ENTRY(ref)->scope = scope;
@@ -758,7 +752,7 @@ chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
     if (ref == NULL) {
         return NULL;
     }
-    CHIMP_SYMTABLE_INIT(ref);
+    CHIMP_ANY(ref)->klass = chimp_symtable_class;
     CHIMP_SYMTABLE(ref)->filename = filename;
     CHIMP_SYMTABLE(ref)->lookup = chimp_hash_new ();
     if (CHIMP_SYMTABLE(ref)->lookup == NULL) {
