@@ -77,6 +77,15 @@ _chimp_code_dtor (ChimpRef *self)
     CHIMP_FREE (CHIMP_CODE(self)->bytecode);
 }
 
+static void
+_chimp_code_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_CODE(self)->constants);
+    chimp_gc_mark_ref (gc, CHIMP_CODE(self)->names);
+    chimp_gc_mark_ref (gc, CHIMP_CODE(self)->vars);
+    chimp_gc_mark_ref (gc, CHIMP_CODE(self)->freevars);
+}
+
 chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
@@ -86,6 +95,7 @@ chimp_code_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_code_class)->dtor = _chimp_code_dtor;
+    CHIMP_CLASS(chimp_code_class)->mark = _chimp_code_mark;
     chimp_gc_make_root (NULL, chimp_code_class);
     return CHIMP_TRUE;
 }

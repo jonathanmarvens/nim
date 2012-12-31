@@ -151,6 +151,16 @@ _chimp_hash_dtor (ChimpRef *self)
     CHIMP_FREE (CHIMP_HASH(self)->values);
 }
 
+static void
+_chimp_hash_mark (ChimpGC *gc, ChimpRef *self)
+{
+    size_t i;
+    for (i = 0; i < CHIMP_HASH(self)->size; i++) {
+        chimp_gc_mark_ref (gc, CHIMP_HASH(self)->keys[i]);
+        chimp_gc_mark_ref (gc, CHIMP_HASH(self)->values[i]);
+    }
+}
+
 chimp_bool_t
 chimp_hash_class_bootstrap (void)
 {
@@ -163,6 +173,7 @@ chimp_hash_class_bootstrap (void)
     CHIMP_CLASS(chimp_hash_class)->inst_type = CHIMP_VALUE_TYPE_HASH;
     CHIMP_CLASS(chimp_hash_class)->dtor = _chimp_hash_dtor;
     CHIMP_CLASS(chimp_hash_class)->getitem = _chimp_hash_getitem;
+    CHIMP_CLASS(chimp_hash_class)->mark = _chimp_hash_mark;
     chimp_gc_make_root (NULL, chimp_hash_class);
     chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);

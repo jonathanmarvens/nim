@@ -56,6 +56,15 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt);
 static chimp_bool_t
 chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr);
 
+static void
+_chimp_symtable_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->filename);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->lookup);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->stack);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->ste);
+}
+
 chimp_bool_t
 chimp_symtable_class_bootstrap (void)
 {
@@ -64,8 +73,19 @@ chimp_symtable_class_bootstrap (void)
     if (chimp_symtable_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_symtable_class)->mark = _chimp_symtable_mark;
     chimp_gc_make_root (NULL, chimp_symtable_class);
     return CHIMP_TRUE;
+}
+
+static void
+_chimp_symtable_entry_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->symtable);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->scope);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->symbols);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->parent);
+    chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->children);
 }
 
 chimp_bool_t
@@ -76,6 +96,7 @@ chimp_symtable_entry_class_bootstrap (void)
     if (chimp_symtable_entry_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_symtable_entry_class)->mark = _chimp_symtable_entry_mark;
     chimp_gc_make_root (NULL, chimp_symtable_entry_class);
     return CHIMP_TRUE;
 }

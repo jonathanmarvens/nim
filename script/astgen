@@ -244,9 +244,9 @@ def header():
 
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
-            _("void")
-            _("%(app_name)s_ast_%(node_type)s_mark(%(node_ctype)s ref);", np)
-            _()
+            #_("void")
+            #_("%(app_name)s_ast_%(node_type)s_mark(%(node_ctype)s ref);", np)
+            #_()
             for k in node_type_kinds(t):
                 kp = kind_params(k)
                 argp = kind_ctor_args_params(k)
@@ -277,6 +277,10 @@ def source():
             np = node_type_params(t)
             # XXX class_ctype ?
             _("%(AppName)sRef *%(app_name)s_ast_%(node_type)s_class = NULL;", np)
+        for t in AST_DESCRIPTOR:
+            np = node_type_params(t)
+            _("static void")
+            _("_%(app_name)s_ast_%(node_type)s_mark(ChimpGC *gc, %(node_ctype)s ref);", np)
         _()
         _("chimp_bool_t")
         _("%(app_name)s_ast_class_bootstrap(void)")
@@ -287,6 +291,7 @@ def source():
             _("    if (%(app_name)s_ast_%(node_type)s_class == NULL) {", np)
             _("        return %(APP_NAME)s_FALSE;")
             _("    }")
+            _("    %(APP_NAME)s_CLASS(%(app_name)s_ast_%(node_type)s_class)->mark = _%(app_name)s_ast_%(node_type)s_mark;", np)
             _("    chimp_gc_make_root (NULL, %(app_name)s_ast_%(node_type)s_class);", np)
             _()
         _("    return %(APP_NAME)s_TRUE;")
@@ -294,8 +299,8 @@ def source():
         _()
         for t in AST_DESCRIPTOR:
             np = node_type_params(t)
-            _("void")
-            _("%(app_name)s_ast_%(node_type)s_mark(%(node_ctype)s ref)", np)
+            _("static void")
+            _("_%(app_name)s_ast_%(node_type)s_mark(ChimpGC *gc, %(node_ctype)s ref)", np)
             _("{")
             _("    switch (%(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type) {", np)
             for k in node_type_kinds(t):

@@ -5,6 +5,12 @@
 
 ChimpRef *chimp_var_class = NULL;
 
+static void
+_chimp_var_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_VAR(self)->value);
+}
+
 chimp_bool_t
 chimp_var_class_bootstrap (void)
 {
@@ -14,6 +20,7 @@ chimp_var_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_var_class)->inst_type = CHIMP_VALUE_TYPE_VAR;
+    CHIMP_CLASS(chimp_var_class)->mark = _chimp_var_mark;
     chimp_gc_make_root (NULL, chimp_var_class);
     return CHIMP_TRUE;
 }

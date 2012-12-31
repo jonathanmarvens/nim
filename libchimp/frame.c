@@ -29,6 +29,13 @@
 
 ChimpRef *chimp_frame_class = NULL;
 
+static void
+_chimp_frame_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->method);
+    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->locals);
+}
+
 chimp_bool_t
 chimp_frame_class_bootstrap (void)
 {
@@ -37,6 +44,7 @@ chimp_frame_class_bootstrap (void)
     if (chimp_frame_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_frame_class)->mark = _chimp_frame_mark;
     chimp_gc_make_root (NULL, chimp_frame_class);
     return CHIMP_TRUE;
 }

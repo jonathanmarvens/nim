@@ -44,6 +44,7 @@ typedef struct _ChimpClass {
     ChimpRef *(*init)(ChimpRef *, ChimpRef *);
     void (*dtor)(ChimpRef *);
     ChimpRef *(*str)(ChimpRef *);
+    void (*mark)(struct _ChimpGC *gc, ChimpRef *);
     ChimpRef *(*add)(ChimpRef *, ChimpRef *);
     ChimpRef *(*sub)(ChimpRef *, ChimpRef *);
     ChimpRef *(*mul)(ChimpRef *, ChimpRef *);

@@ -44,6 +44,20 @@ chimp_method_call (ChimpRef *self, ChimpRef *args)
     }
 }
 
+static void
+_chimp_method_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->self);
+    if (CHIMP_METHOD_TYPE(self) == CHIMP_METHOD_TYPE_BYTECODE) {
+        chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->bytecode.code);
+    }
+    else if (CHIMP_METHOD_TYPE(self) == CHIMP_METHOD_TYPE_CLOSURE) {
+        chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->closure.code);
+        chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->closure.bindings);
+    }
+    chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->module);
+}
+
 chimp_bool_t
 chimp_method_class_bootstrap (void)
 {
@@ -55,6 +69,7 @@ chimp_method_class_bootstrap (void)
     chimp_gc_make_root (NULL, chimp_method_class);
     CHIMP_CLASS(chimp_method_class)->call = chimp_method_call;
     CHIMP_CLASS(chimp_method_class)->inst_type = CHIMP_VALUE_TYPE_METHOD;
+    CHIMP_CLASS(chimp_method_class)->mark = _chimp_method_mark;
     return CHIMP_TRUE;
 }
 

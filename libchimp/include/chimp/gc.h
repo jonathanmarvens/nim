@@ -25,6 +25,8 @@
 extern "C" {
 #endif
 
+struct _ChimpLWHash;
+
 typedef struct _ChimpGC ChimpGC;
 typedef struct _ChimpRef ChimpRef;
 
@@ -54,6 +56,9 @@ chimp_gc_collect (ChimpGC *gc);
 
 void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref);
+
+void
+chimp_gc_mark_lwhash (ChimpGC *gc, struct _ChimpLWHash *lwhash);
 
 uint64_t
 chimp_gc_collection_count (ChimpGC *gc);

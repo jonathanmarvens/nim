@@ -28,6 +28,14 @@ _chimp_error_str (ChimpRef *self)
     }
 }
 
+static void
+_chimp_error_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->message);
+    chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->cause);
+    chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->backtrace);
+}
+
 chimp_bool_t
 chimp_error_class_bootstrap (void)
 {
@@ -39,6 +47,7 @@ chimp_error_class_bootstrap (void)
     CHIMP_CLASS(chimp_error_class)->str = _chimp_error_str;
     CHIMP_CLASS(chimp_error_class)->init = _chimp_error_init;
     CHIMP_CLASS(chimp_error_class)->inst_type = CHIMP_VALUE_TYPE_ERROR;
+    CHIMP_CLASS(chimp_error_class)->mark = _chimp_error_mark;
     chimp_gc_make_root (NULL, chimp_error_class);
     return CHIMP_TRUE;
 }

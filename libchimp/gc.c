@@ -25,7 +25,6 @@
 #include "chimp/gc.h"
 #include "chimp/object.h"
 #include "chimp/core.h"
-#include "chimp/lwhash.h"
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
@@ -399,12 +398,11 @@ chimp_gc_ref_type (ChimpRef *ref)
     return ref->value.any.type;
 }
 
-static void
-chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data);
-
 void
 chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 {
+    ChimpRef *klass;
+
     if (ref == NULL) return;
 
     if (gc == NULL) {
@@ -420,127 +418,27 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
     ref->marked = CHIMP_TRUE;
 
     chimp_gc_mark_ref (gc, CHIMP_FAST_ANY(ref)->klass);
-    switch (CHIMP_FAST_REF_TYPE(ref)) {
-        case CHIMP_VALUE_TYPE_CLASS:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->super);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CLASS(ref)->name);
-                chimp_lwhash_foreach (CHIMP_FAST_CLASS(ref)->methods,
-                                        chimp_gc_mark_lwhash_items, gc);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_MODULE:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_MODULE(ref)->name);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_MODULE(ref)->locals);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_ARRAY:
-            {
-                size_t i;
-                for (i = 0; i < CHIMP_FAST_ARRAY(ref)->size; i++) {
-                    chimp_gc_mark_ref (gc, CHIMP_FAST_ARRAY(ref)->items[i]);
-                }
-                break;
-            }
-        case CHIMP_VALUE_TYPE_HASH:
-            {
-                size_t i;
-                for (i = 0; i < CHIMP_FAST_HASH(ref)->size; i++) {
-                    chimp_gc_mark_ref (gc, CHIMP_FAST_HASH(ref)->keys[i]);
-                    chimp_gc_mark_ref (gc, CHIMP_FAST_HASH(ref)->values[i]);
-                }
-                break;
-            }
-        case CHIMP_VALUE_TYPE_METHOD:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->self);
-                if (CHIMP_METHOD_TYPE(ref) == CHIMP_METHOD_TYPE_BYTECODE) {
-                    chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->bytecode.code);
-                }
-                chimp_gc_mark_ref (gc, CHIMP_FAST_METHOD(ref)->module);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_AST_MOD:
-            {
-                chimp_ast_mod_mark (ref);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_AST_DECL:
-            {
-                chimp_ast_decl_mark (ref);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_AST_STMT:
-            {
-                chimp_ast_stmt_mark (ref);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_AST_EXPR:
-            {
-                chimp_ast_expr_mark (ref);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_CODE:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->constants);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->names);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->vars);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_CODE(ref)->freevars);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_FRAME:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->method);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_FRAME(ref)->locals);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_SYMTABLE:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->filename);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->lookup);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->stack);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE(ref)->ste);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_SYMTABLE_ENTRY:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symtable);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->scope);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->symbols);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->parent);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_SYMTABLE_ENTRY(ref)->children);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_VAR:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_VAR(ref)->value);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_ERROR:
-            {
-                chimp_gc_mark_ref (gc, CHIMP_FAST_ERROR(ref)->message);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_ERROR(ref)->cause);
-                chimp_gc_mark_ref (gc, CHIMP_FAST_ERROR(ref)->backtrace);
-                break;
-            }
-        case CHIMP_VALUE_TYPE_TASK:
-        case CHIMP_VALUE_TYPE_OBJECT:
-        case CHIMP_VALUE_TYPE_STR:
-        case CHIMP_VALUE_TYPE_INT:
-            break;
-        default:
-            CHIMP_BUG ("unknown ref type '%s'",
-                        type_name (ref->value.any.type));
-    };
+    klass = CHIMP_FAST_ANY(ref)->klass;
+
+    if (CHIMP_CLASS(klass)->mark) {
+        CHIMP_CLASS(klass)->mark (gc, ref);
+        return;
+    }
 }
 
 static void
-chimp_gc_mark_lwhash_items (ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data)
+_chimp_gc_mark_lwhash_item (
+    ChimpLWHash *self, ChimpRef *key, ChimpRef *value, void *data)
 {
     ChimpGC *gc = (ChimpGC *) data;
     chimp_gc_mark_ref (gc, key);
     chimp_gc_mark_ref (gc, value);
+}
+
+void
+chimp_gc_mark_lwhash (ChimpGC *gc, ChimpLWHash *lwhash)
+{
+    chimp_lwhash_foreach (lwhash, _chimp_gc_mark_lwhash_item, gc);
 }
 
 static size_t
