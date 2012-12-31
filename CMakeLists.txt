@@ -131,6 +131,7 @@ add_library (libchimp STATIC
   libchimp/error.c
   libchimp/modules/net.c
   libchimp/modules/assertmod.c
+  libchimp/modules/chimpunitmod.c
   libchimp/modules/gcmod.c
   libchimp/modules/iomod.c
   libchimp/modules/osmod.c)

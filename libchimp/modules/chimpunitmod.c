@@ -16,37 +16,44 @@
  *                                                                           *
  *****************************************************************************/
 
-#ifndef _CHIMP_MODULES_H_INCLUDED_
-#define _CHIMP_MODULES_H_INCLUDED_
+#include "chimp/any.h"
+#include "chimp/object.h"
+#include "chimp/array.h"
+#include "chimp/str.h"
+#include "chimp/vm.h"
 
-#include <chimp/any.h>
-#include <chimp/gc.h>
+static ChimpRef *
+_chimp_unit_test(ChimpRef *self, ChimpRef *args)
+{
+    fprintf (stdout, ".");
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    // TODO: Size/argument validation on the incoming args
+    // ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 1);
+
+    // TODO: What if fn takes arguments? We're never passing anything...
+    // TODO: How do we get the assertion results from the test?
+    if (chimp_object_call (fn, chimp_array_new()) == NULL) {
+        return NULL;
+    }
+
+    return chimp_nil;
+}
 
 ChimpRef *
-chimp_init_io_module (void);
+chimp_init_unit_module (void)
+{
+    ChimpRef *mod;
 
-ChimpRef *
-chimp_init_assert_module (void);
+    mod = chimp_module_new_str ("chimpunit", NULL);
+    if (mod == NULL) {
+        return NULL;
+    }
 
-ChimpRef *
-chimp_init_unit_module (void);
+    if (!chimp_module_add_method_str (mod, "test", _chimp_unit_test)) {
+        return NULL;
+    }
 
-ChimpRef *
-chimp_init_os_module (void);
-
-ChimpRef *
-chimp_init_gc_module (void);
-
-ChimpRef *
-chimp_init_net_module (void);
-
-#ifdef __cplusplus
-};
-#endif
-
-#endif
+    return mod;
+}
 

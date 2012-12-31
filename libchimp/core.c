@@ -408,6 +408,9 @@ chimp_core_startup (const char *path, void *stack_start)
     if (!chimp_module_add_builtin (chimp_init_assert_module ()))
         goto error;
 
+    if (!chimp_module_add_builtin (chimp_init_unit_module ()))
+        goto error;
+
     if (!chimp_module_add_builtin (chimp_init_os_module ()))
         goto error;
 
