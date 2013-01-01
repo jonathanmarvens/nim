@@ -37,6 +37,8 @@ struct _ChimpRef;
 #define CHIMP_TRUE ((chimp_bool_t) 1)
 #define CHIMP_FALSE ((chimp_bool_t) 0)
 
+#define SIGN(x) ((x > 0) - (x < 0))
+
 chimp_bool_t
 chimp_core_startup (void *stack_start);
 

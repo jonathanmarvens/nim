@@ -241,6 +241,51 @@ _chimp_task_self (ChimpRef *self, ChimpRef *args)
     return chimp_task_get_self (CHIMP_CURRENT_TASK);
 }
 
+static ChimpRef *
+_chimp_array_range(ChimpRef* a, ChimpRef *args)
+{
+    size_t start;
+    size_t stop; 
+    size_t step; 
+    size_t i;
+    ChimpRef *result;
+
+    switch (CHIMP_ARRAY(args)->size) {
+        case 1:
+            start = 0;
+            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
+            step = 1;
+            break;
+        case 2:
+            start = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
+            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 1));
+            step = 1;
+            break;
+        case 3:
+            start = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
+            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 1));
+            step = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 2));
+            if (0 == step) {
+                CHIMP_BUG("range(): step argument can't be zero.");
+                return NULL;
+            }
+            break;
+        default:
+            CHIMP_BUG("range(). Too many args.");
+            return NULL;
+    }
+
+
+    result = chimp_array_new();
+    for (i = start; (SIGN(step)*i) < stop; i += step) {
+        if (!chimp_array_push(result, chimp_int_new(i))) {
+            return NULL;
+        }
+    }
+    return result;
+}
+
+
 static ChimpTaskInternal *main_task = NULL;
 
 static chimp_bool_t
@@ -267,6 +312,7 @@ chimp_core_init_builtins (void)
 
     CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
     CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
+    CHIMP_BUILTIN_METHOD(_chimp_array_range, "range");
 
     return CHIMP_TRUE;
 }
