@@ -7,6 +7,7 @@ project (chimp)
 
 find_package (BISON)
 find_package (FLEX)
+find_package (Threads)
 
 set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
 set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
@@ -118,7 +119,7 @@ add_library (libchimp STATIC
 set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
 
 add_executable (chimp main.c)
-target_link_libraries (chimp libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
+target_link_libraries (chimp libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 #
 # TODO test for the presence of check
@@ -126,6 +127,6 @@ target_link_libraries (chimp libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
 add_executable (test-native
   EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
-target_link_libraries (test-native libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} check)
+target_link_libraries (test-native libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} check)
 add_custom_target (test test-native DEPENDS test-native)
 
