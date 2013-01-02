@@ -162,7 +162,7 @@ chimp_bool_t
 chimp_hash_class_bootstrap (void)
 {
     chimp_hash_class =
-        chimp_class_new (CHIMP_STR_NEW("hash"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("hash"), chimp_object_class, sizeof(ChimpHash));
     if (chimp_hash_class == NULL) {
         return CHIMP_FALSE;
     }

@@ -58,7 +58,7 @@ chimp_bool_t
 chimp_error_class_bootstrap (void)
 {
     chimp_error_class =
-        chimp_class_new (CHIMP_STR_NEW("error"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("error"), NULL, sizeof(ChimpError));
     if (chimp_error_class == NULL) {
         return CHIMP_FALSE;
     }

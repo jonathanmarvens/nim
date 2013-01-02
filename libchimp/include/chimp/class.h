@@ -55,7 +55,7 @@ typedef struct _ChimpClass {
 } ChimpClass;
 
 ChimpRef *
-chimp_class_new (ChimpRef *name, ChimpRef *super);
+chimp_class_new (ChimpRef *name, ChimpRef *super, size_t size);
 
 ChimpRef *
 chimp_class_new_instance (ChimpRef *klass, ...);

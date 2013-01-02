@@ -33,8 +33,8 @@ _chimp_frame_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_frame_class_bootstrap (void)
 {
-    chimp_frame_class =
-        chimp_class_new (CHIMP_STR_NEW("frame"), chimp_object_class);
+    chimp_frame_class = chimp_class_new (
+        CHIMP_STR_NEW("frame"), chimp_object_class, sizeof(ChimpFrame));
     if (chimp_frame_class == NULL) {
         return CHIMP_FALSE;
     }

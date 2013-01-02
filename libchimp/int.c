@@ -131,7 +131,7 @@ chimp_bool_t
 chimp_int_class_bootstrap (void)
 {
     chimp_int_class =
-        chimp_class_new (CHIMP_STR_NEW ("int"), NULL);
+        chimp_class_new (CHIMP_STR_NEW ("int"), NULL, sizeof(ChimpInt));
     if (chimp_int_class == NULL) {
         return CHIMP_FALSE;
     }

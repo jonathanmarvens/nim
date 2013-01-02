@@ -1269,7 +1269,7 @@ chimp_compile_ast_decl_class (ChimpCodeCompiler *c, ChimpRef *decl)
         }
     }
 
-    klass = chimp_class_new (name, base_ref);
+    klass = chimp_class_new (name, base_ref, sizeof(ChimpObject));
     if (klass == NULL) {
         return CHIMP_FALSE;
     }

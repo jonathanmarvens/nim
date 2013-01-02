@@ -139,9 +139,17 @@ chimp_str_dtor (ChimpRef *self)
 }
 
 ChimpRef *
-chimp_class_new (ChimpRef *name, ChimpRef *super)
+chimp_class_new (ChimpRef *name, ChimpRef *super, size_t size)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
+    ChimpRef *ref;
+    
+    if (size > CHIMP_VALUE_SIZE) {
+        CHIMP_BUG ("objects cannot be more than %zu bytes (%s is too big)",
+            size, CHIMP_STR_DATA(name));
+        return NULL;
+    }
+
+    ref = chimp_gc_new_object (NULL);
     if (ref == NULL) {
         return NULL;
     }
@@ -161,7 +169,17 @@ chimp_class_new_instance (ChimpRef *klass, ...)
 {
     va_list args;
     ChimpRef *arg;
-    ChimpRef *arr = chimp_array_new ();
+    size_t n;
+    ChimpRef *arr;
+    
+    va_start (args, klass);
+    n = 0;
+    while ((arg = va_arg(args, ChimpRef *)) != NULL) {
+        n++;
+    }
+    va_end (args);
+
+    arr = chimp_array_new_with_capacity (n);
     if (arr == NULL) {
         return NULL;
     }

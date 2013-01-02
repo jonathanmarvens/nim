@@ -313,8 +313,8 @@ _chimp_array_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
-    chimp_array_class =
-        chimp_class_new (CHIMP_STR_NEW("array"), chimp_object_class);
+    chimp_array_class = chimp_class_new (
+            CHIMP_STR_NEW("array"), chimp_object_class, sizeof(ChimpArray));
     if (chimp_array_class == NULL) {
         return CHIMP_FALSE;
     }

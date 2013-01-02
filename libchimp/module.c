@@ -80,7 +80,7 @@ _chimp_module_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_module_class_bootstrap (void)
 {
-    chimp_module_class = chimp_class_new (CHIMP_STR_NEW ("module"), NULL);
+    chimp_module_class = chimp_class_new (CHIMP_STR_NEW ("module"), NULL, sizeof(ChimpModule));
     if (chimp_module_class == NULL) {
         return CHIMP_FALSE;
     }

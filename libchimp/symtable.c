@@ -60,8 +60,8 @@ _chimp_symtable_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_symtable_class_bootstrap (void)
 {
-    chimp_symtable_class =
-        chimp_class_new (CHIMP_STR_NEW("symtable"), chimp_object_class);
+    chimp_symtable_class = chimp_class_new (
+        CHIMP_STR_NEW("symtable"), NULL, sizeof(ChimpSymtable));
     if (chimp_symtable_class == NULL) {
         return CHIMP_FALSE;
     }
@@ -83,8 +83,8 @@ _chimp_symtable_entry_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_symtable_entry_class_bootstrap (void)
 {
-    chimp_symtable_entry_class =
-        chimp_class_new (CHIMP_STR_NEW("symtable.entry"), chimp_object_class);
+    chimp_symtable_entry_class = chimp_class_new (
+        CHIMP_STR_NEW("symtable_entry"), NULL, sizeof(ChimpSymtableEntry));
     if (chimp_symtable_entry_class == NULL) {
         return CHIMP_FALSE;
     }

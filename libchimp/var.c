@@ -33,7 +33,7 @@ chimp_bool_t
 chimp_var_class_bootstrap (void)
 {
     chimp_var_class =
-        chimp_class_new (CHIMP_STR_NEW("var"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("var"), NULL, sizeof(ChimpVar));
     if (chimp_var_class == NULL) {
         return CHIMP_FALSE;
     }

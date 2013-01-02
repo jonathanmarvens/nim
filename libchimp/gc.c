@@ -28,8 +28,8 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define CHIMP_VALUE_SIZE 256
-#define DEFAULT_SLAB_SIZE 256 /* 64k default heap */
+/* 64k default heap (CHIMP_VALUE_SIZE * DEFAULT_SLAB_SIZE) */
+#define DEFAULT_SLAB_SIZE 256
 
 struct _ChimpRef {
     chimp_bool_t marked;

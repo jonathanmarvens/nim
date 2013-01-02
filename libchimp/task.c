@@ -621,7 +621,7 @@ chimp_bool_t
 chimp_task_class_bootstrap (void)
 {
     chimp_task_class =
-        chimp_class_new (CHIMP_STR_NEW("task"), chimp_object_class);
+        chimp_class_new (CHIMP_STR_NEW("task"), NULL, sizeof(ChimpTask));
     if (chimp_task_class == NULL) {
         return CHIMP_FALSE;
     }

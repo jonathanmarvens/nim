@@ -63,6 +63,8 @@ chimp_gc_num_live (ChimpGC *gc);
 uint64_t
 chimp_gc_num_free (ChimpGC *gc);
 
+#define CHIMP_VALUE_SIZE 256
+
 #define CHIMP_GC_MAKE_STACK_ROOT(p) \
     (*((ChimpRef **)alloca(sizeof(ChimpRef *)))) = (p)
 

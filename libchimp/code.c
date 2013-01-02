@@ -90,7 +90,7 @@ chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
     chimp_code_class =
-        chimp_class_new (CHIMP_STR_NEW("code"), NULL);
+        chimp_class_new (CHIMP_STR_NEW("code"), NULL, sizeof(ChimpCode));
     if (chimp_code_class == NULL) {
         return CHIMP_FALSE;
     }

@@ -356,7 +356,8 @@ chimp_core_startup (void *stack_start)
     if (!chimp_array_class_bootstrap ()) goto error;
     if (!chimp_hash_class_bootstrap ()) goto error;
 
-    chimp_nil_class = chimp_class_new (CHIMP_STR_NEW("nil"), chimp_object_class);
+    chimp_nil_class = chimp_class_new (
+        CHIMP_STR_NEW("nil"), chimp_object_class, sizeof(ChimpAny));
     if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
@@ -364,7 +365,8 @@ chimp_core_startup (void *stack_start)
     if (chimp_nil == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil);
 
-    chimp_bool_class = chimp_class_new (CHIMP_STR_NEW("bool"), chimp_object_class);
+    chimp_bool_class = chimp_class_new (
+        CHIMP_STR_NEW("bool"), chimp_object_class, sizeof(ChimpAny));
     if (chimp_bool_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_bool_class);
     CHIMP_CLASS(chimp_bool_class)->str = chimp_bool_str;
