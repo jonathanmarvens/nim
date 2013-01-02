@@ -180,12 +180,7 @@ chimp_hash_class_bootstrap (void)
 ChimpRef *
 chimp_hash_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_hash_class;
-    return ref;
+    return chimp_class_new_instance (chimp_hash_class, NULL);
 }
 
 chimp_bool_t

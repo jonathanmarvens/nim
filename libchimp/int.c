@@ -28,6 +28,13 @@
 ChimpRef *chimp_int_class = NULL;
 
 static ChimpRef *
+_chimp_int_init (ChimpRef *self, ChimpRef *args)
+{
+    /* TODO convert str arg to int */
+    return self;
+}
+
+static ChimpRef *
 chimp_int_str (ChimpRef *self)
 {
     char buf[64];
@@ -136,6 +143,7 @@ chimp_int_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     chimp_gc_make_root (NULL, chimp_int_class);
+    CHIMP_CLASS(chimp_int_class)->init = _chimp_int_init;
     CHIMP_CLASS(chimp_int_class)->str = chimp_int_str;
     CHIMP_CLASS(chimp_int_class)->add = chimp_int_add;
     CHIMP_CLASS(chimp_int_class)->sub = chimp_int_sub;
@@ -148,11 +156,7 @@ chimp_int_class_bootstrap (void)
 ChimpRef *
 chimp_int_new (int64_t value)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_int_class;
+    ChimpRef *ref = chimp_class_new_instance (chimp_int_class, NULL);
     CHIMP_INT(ref)->value = value;
     return ref;
 }

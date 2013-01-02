@@ -23,41 +23,22 @@
 
 ChimpRef *chimp_frame_class = NULL;
 
-static void
-_chimp_frame_mark (ChimpGC *gc, ChimpRef *self)
-{
-    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->method);
-    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->locals);
-}
-
-chimp_bool_t
-chimp_frame_class_bootstrap (void)
-{
-    chimp_frame_class = chimp_class_new (
-        CHIMP_STR_NEW("frame"), chimp_object_class, sizeof(ChimpFrame));
-    if (chimp_frame_class == NULL) {
-        return CHIMP_FALSE;
-    }
-    CHIMP_CLASS(chimp_frame_class)->mark = _chimp_frame_mark;
-    chimp_gc_make_root (NULL, chimp_frame_class);
-    return CHIMP_TRUE;
-}
-
-ChimpRef *
-chimp_frame_new (ChimpRef *method)
+static ChimpRef *
+_chimp_frame_init (ChimpRef *self, ChimpRef *args)
 {
     ChimpRef *locals;
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
+    ChimpRef *method;
+
+    if (!chimp_method_parse_args (args, "o", &method)) {
         return NULL;
     }
-    CHIMP_ANY(ref)->klass = chimp_frame_class;
+
     locals = chimp_hash_new ();
     if (locals == NULL) {
         return NULL;
     }
-    CHIMP_FRAME(ref)->method = method;
-    CHIMP_FRAME(ref)->locals = locals;
+    CHIMP_FRAME(self)->method = method;
+    CHIMP_FRAME(self)->locals = locals;
     if (CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_BYTECODE ||
             CHIMP_METHOD_TYPE(method) == CHIMP_METHOD_TYPE_CLOSURE) {
         ChimpRef *code;
@@ -75,7 +56,7 @@ chimp_frame_new (ChimpRef *method)
             ChimpRef *varname =
                 CHIMP_ARRAY_ITEM(CHIMP_CODE(code)->vars, i);
             ChimpRef *var = chimp_var_new ();
-            if (!chimp_hash_put (CHIMP_FRAME(ref)->locals, varname, var)) {
+            if (!chimp_hash_put (CHIMP_FRAME(self)->locals, varname, var)) {
                 return CHIMP_FALSE;
             }
         }
@@ -85,12 +66,39 @@ chimp_frame_new (ChimpRef *method)
             for (i = 0; i < CHIMP_HASH_SIZE(bindings); i++) {
                 ChimpRef *varname = CHIMP_HASH(bindings)->keys[i];
                 ChimpRef *value = CHIMP_HASH(bindings)->values[i];
-                if (!chimp_hash_put (CHIMP_FRAME(ref)->locals, varname, value)) {
+                if (!chimp_hash_put (CHIMP_FRAME(self)->locals, varname, value)) {
                     return CHIMP_FALSE;
                 }
             }
         }
     }
-    return ref;
+    return self;
+}
+
+static void
+_chimp_frame_mark (ChimpGC *gc, ChimpRef *self)
+{
+    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->method);
+    chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->locals);
+}
+
+chimp_bool_t
+chimp_frame_class_bootstrap (void)
+{
+    chimp_frame_class = chimp_class_new (
+        CHIMP_STR_NEW("frame"), chimp_object_class, sizeof(ChimpFrame));
+    if (chimp_frame_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_CLASS(chimp_frame_class)->init = _chimp_frame_init;
+    CHIMP_CLASS(chimp_frame_class)->mark = _chimp_frame_mark;
+    chimp_gc_make_root (NULL, chimp_frame_class);
+    return CHIMP_TRUE;
+}
+
+ChimpRef *
+chimp_frame_new (ChimpRef *method)
+{
+    return chimp_class_new_instance (chimp_frame_class, method, NULL);
 }
 

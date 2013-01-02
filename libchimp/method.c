@@ -70,11 +70,7 @@ chimp_method_class_bootstrap (void)
 ChimpRef *
 chimp_method_new_native (ChimpRef *module, ChimpNativeMethodFunc func)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_method_class;
+    ChimpRef *ref = chimp_class_new_instance (chimp_method_class, NULL);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_NATIVE;
     CHIMP_METHOD(ref)->module = module;
     CHIMP_NATIVE_METHOD(ref)->func = func;
@@ -84,10 +80,7 @@ chimp_method_new_native (ChimpRef *module, ChimpNativeMethodFunc func)
 ChimpRef *
 chimp_method_new_bytecode (ChimpRef *module, ChimpRef *code)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
+    ChimpRef *ref = chimp_class_new_instance (chimp_method_class, NULL);
     CHIMP_ANY(ref)->klass = chimp_method_class;
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_BYTECODE;
     CHIMP_METHOD(ref)->module = module;
@@ -103,11 +96,7 @@ chimp_method_new_closure (ChimpRef *method, ChimpRef *bindings)
         CHIMP_BUG("closures must be created from bytecode methods");
         return NULL;
     }
-    ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_method_class;
+    ref = chimp_class_new_instance (chimp_method_class, NULL);
     CHIMP_METHOD(ref)->type = CHIMP_METHOD_TYPE_CLOSURE;
     CHIMP_METHOD(ref)->module = CHIMP_METHOD(method)->module;
     CHIMP_CLOSURE_METHOD(ref)->code = CHIMP_BYTECODE_METHOD(method)->code;

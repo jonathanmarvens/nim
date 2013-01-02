@@ -48,6 +48,44 @@ chimp_symtable_visit_stmt (ChimpRef *self, ChimpRef *stmt);
 static chimp_bool_t
 chimp_symtable_visit_expr (ChimpRef *self, ChimpRef *expr);
 
+static chimp_bool_t
+chimp_symtable_visit_mod (ChimpRef *self, ChimpRef *mod);
+
+static ChimpRef *
+_chimp_symtable_init (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *filename;
+    ChimpRef *ast;
+
+    if (!chimp_method_parse_args (args, "oo", &filename, &ast)) {
+        return NULL;
+    }
+
+    CHIMP_ANY(self)->klass = chimp_symtable_class;
+    CHIMP_SYMTABLE(self)->filename = filename;
+    CHIMP_SYMTABLE(self)->ste = chimp_nil;
+    CHIMP_SYMTABLE(self)->lookup = chimp_hash_new ();
+    if (CHIMP_SYMTABLE(self)->lookup == NULL) {
+        return NULL;
+    }
+    CHIMP_SYMTABLE(self)->stack = chimp_array_new ();
+    if (CHIMP_SYMTABLE(self)->stack == NULL) {
+        return NULL;
+    }
+
+    if (CHIMP_ANY_CLASS(ast) == chimp_ast_mod_class) {
+        if (!chimp_symtable_visit_mod (self, ast))
+            return NULL;
+    }
+    else {
+        CHIMP_BUG ("unknown top-level AST node type: %s",
+                    CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ast))->name));
+        return NULL;
+    }
+
+    return self;
+}
+
 static void
 _chimp_symtable_mark (ChimpGC *gc, ChimpRef *self)
 {
@@ -65,9 +103,38 @@ chimp_symtable_class_bootstrap (void)
     if (chimp_symtable_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_symtable_class)->init = _chimp_symtable_init;
     CHIMP_CLASS(chimp_symtable_class)->mark = _chimp_symtable_mark;
     chimp_gc_make_root (NULL, chimp_symtable_class);
     return CHIMP_TRUE;
+}
+
+static ChimpRef *
+_chimp_symtable_entry_init (ChimpRef *self, ChimpRef *args)
+{
+    int64_t flags;
+    ChimpRef *symtable;
+    ChimpRef *scope;
+    ChimpRef *parent;
+
+    if (!chimp_method_parse_args (
+            args, "oooI", &symtable, &parent, &scope, &flags)) {
+        return NULL;
+    }
+
+    CHIMP_SYMTABLE_ENTRY(self)->flags = flags;
+    CHIMP_SYMTABLE_ENTRY(self)->symtable = symtable;
+    CHIMP_SYMTABLE_ENTRY(self)->scope = scope;
+    CHIMP_SYMTABLE_ENTRY(self)->parent = parent;
+    CHIMP_SYMTABLE_ENTRY(self)->symbols = chimp_hash_new ();
+    if (CHIMP_SYMTABLE_ENTRY(self)->symbols == NULL) {
+        return NULL;
+    }
+    CHIMP_SYMTABLE_ENTRY(self)->children = chimp_array_new ();
+    if (CHIMP_SYMTABLE_ENTRY(self)->children == NULL) {
+        return NULL;
+    }
+    return self;
 }
 
 static void
@@ -88,6 +155,7 @@ chimp_symtable_entry_class_bootstrap (void)
     if (chimp_symtable_entry_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_symtable_entry_class)->init = _chimp_symtable_entry_init;
     CHIMP_CLASS(chimp_symtable_entry_class)->mark = _chimp_symtable_entry_mark;
     chimp_gc_make_root (NULL, chimp_symtable_entry_class);
     return CHIMP_TRUE;
@@ -97,24 +165,15 @@ static ChimpRef *
 chimp_symtable_entry_new (
     ChimpRef *symtable, ChimpRef *parent, ChimpRef *scope, int flags)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
+    ChimpRef *flags_obj = chimp_int_new (flags);
+    if (flags_obj == NULL) {
         return NULL;
     }
-    CHIMP_ANY(ref)->klass = chimp_symtable_entry_class;
-    CHIMP_SYMTABLE_ENTRY(ref)->flags = flags;
-    CHIMP_SYMTABLE_ENTRY(ref)->symtable = symtable;
-    CHIMP_SYMTABLE_ENTRY(ref)->scope = scope;
-    CHIMP_SYMTABLE_ENTRY(ref)->parent = parent;
-    CHIMP_SYMTABLE_ENTRY(ref)->symbols = chimp_hash_new ();
-    if (CHIMP_SYMTABLE_ENTRY(ref)->symbols == NULL) {
-        return NULL;
-    }
-    CHIMP_SYMTABLE_ENTRY(ref)->children = chimp_array_new ();
-    if (CHIMP_SYMTABLE_ENTRY(ref)->children == NULL) {
-        return NULL;
-    }
-    return ref;
+    symtable = symtable ? symtable : chimp_nil;
+    parent = parent ? parent : chimp_nil;
+    scope = scope ? scope : chimp_nil;
+    return chimp_class_new_instance (
+        chimp_symtable_entry_class, symtable, parent, scope, flags_obj, NULL);
 }
 
 static chimp_bool_t
@@ -128,7 +187,7 @@ chimp_symtable_enter_scope (ChimpRef *self, ChimpRef *scope, int flags)
     if (!chimp_hash_put (CHIMP_SYMTABLE(self)->lookup, scope, new_ste)) {
         return CHIMP_FALSE;
     }
-    if (ste != NULL) {
+    if (ste != chimp_nil) {
         if (!chimp_array_push (CHIMP_SYMTABLE(self)->stack, ste)) {
             return CHIMP_FALSE;
         }
@@ -147,7 +206,7 @@ chimp_symtable_leave_scope (ChimpRef *self)
     if (CHIMP_ARRAY_SIZE(stack) > 0) {
         CHIMP_SYMTABLE(self)->ste = chimp_array_pop (stack);
     }
-    return CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self) != NULL;
+    return CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self) != chimp_nil;
 }
 
 static chimp_bool_t
@@ -389,7 +448,7 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
     ChimpRef *ste = CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self);
     ChimpRef *name = CHIMP_AST_EXPR(expr)->ident.id;
 
-    while (ste != NULL) {
+    while (ste != chimp_nil) {
         int rc;
         rc = chimp_hash_get (CHIMP_SYMTABLE_ENTRY(ste)->symbols, name, NULL);
         if (rc == 0) {
@@ -748,32 +807,7 @@ chimp_symtable_visit_mod (ChimpRef *self, ChimpRef *mod)
 ChimpRef *
 chimp_symtable_new_from_ast (ChimpRef *filename, ChimpRef *ast)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_symtable_class;
-    CHIMP_SYMTABLE(ref)->filename = filename;
-    CHIMP_SYMTABLE(ref)->lookup = chimp_hash_new ();
-    if (CHIMP_SYMTABLE(ref)->lookup == NULL) {
-        return NULL;
-    }
-    CHIMP_SYMTABLE(ref)->stack = chimp_array_new ();
-    if (CHIMP_SYMTABLE(ref)->stack == NULL) {
-        return NULL;
-    }
-
-    if (CHIMP_ANY_CLASS(ast) == chimp_ast_mod_class) {
-        if (!chimp_symtable_visit_mod (ref, ast))
-            return NULL;
-    }
-    else {
-        CHIMP_BUG ("unknown top-level AST node type: %s",
-                    CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ast))->name));
-        return NULL;
-    }
-
-    return ref;
+    return chimp_class_new_instance (chimp_symtable_class, filename, ast, NULL);
 }
 
 ChimpRef *
@@ -798,7 +832,7 @@ chimp_symtable_entry_sym_flags (
 {
     ChimpRef *ste = self;
     chimp_bool_t crossed_spawn_boundary = CHIMP_FALSE;
-    while (ste != NULL) {
+    while (ste != chimp_nil) {
         ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
         ChimpRef *ref;
         int rc;

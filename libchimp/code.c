@@ -86,6 +86,43 @@ _chimp_code_mark (ChimpGC *gc, ChimpRef *self)
     chimp_gc_mark_ref (gc, CHIMP_CODE(self)->freevars);
 }
 
+static ChimpRef *
+_chimp_code_init (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *temp;
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("wtf");
+        return NULL;
+    }
+    CHIMP_CODE(self)->constants = temp;
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("wtf");
+        return NULL;
+    }
+    CHIMP_CODE(self)->names = temp;
+    CHIMP_CODE(self)->allocated = 256;
+    CHIMP_CODE(self)->bytecode =
+        CHIMP_MALLOC(uint32_t, sizeof(uint32_t) * CHIMP_CODE(self)->allocated);
+    if (CHIMP_CODE(self)->bytecode == NULL) {
+        return NULL;
+    }
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("could not allocate vars array");
+        return NULL;
+    }
+    CHIMP_CODE(self)->vars = temp;
+    temp = chimp_array_new ();
+    if (temp == NULL) {
+        CHIMP_BUG ("could not allocate freevars array");
+        return NULL;
+    }
+    CHIMP_CODE(self)->freevars = temp;
+    return self;
+}
+
 chimp_bool_t
 chimp_code_class_bootstrap (void)
 {
@@ -94,6 +131,7 @@ chimp_code_class_bootstrap (void)
     if (chimp_code_class == NULL) {
         return CHIMP_FALSE;
     }
+    CHIMP_CLASS(chimp_code_class)->init = _chimp_code_init;
     CHIMP_CLASS(chimp_code_class)->dtor = _chimp_code_dtor;
     CHIMP_CLASS(chimp_code_class)->mark = _chimp_code_mark;
     chimp_gc_make_root (NULL, chimp_code_class);
@@ -103,42 +141,7 @@ chimp_code_class_bootstrap (void)
 ChimpRef *
 chimp_code_new (void)
 {
-    ChimpRef *ref = chimp_gc_new_object (NULL);
-    ChimpRef *temp;
-    if (ref == NULL) {
-        return NULL;
-    }
-    CHIMP_ANY(ref)->klass = chimp_code_class;
-    temp = chimp_array_new ();
-    if (temp == NULL) {
-        CHIMP_BUG ("wtf");
-        return NULL;
-    }
-    CHIMP_CODE(ref)->constants = temp;
-    temp = chimp_array_new ();
-    if (temp == NULL) {
-        CHIMP_BUG ("wtf");
-        return NULL;
-    }
-    CHIMP_CODE(ref)->names = temp;
-    CHIMP_CODE(ref)->allocated = 256;
-    CHIMP_CODE(ref)->bytecode = CHIMP_MALLOC(uint32_t, sizeof(uint32_t) * CHIMP_CODE(ref)->allocated);
-    if (CHIMP_CODE(ref)->bytecode == NULL) {
-        return NULL;
-    }
-    temp = chimp_array_new ();
-    if (temp == NULL) {
-        CHIMP_BUG ("could not allocate vars array");
-        return NULL;
-    }
-    CHIMP_CODE(ref)->vars = temp;
-    temp = chimp_array_new ();
-    if (temp == NULL) {
-        CHIMP_BUG ("could not allocate freevars array");
-        return NULL;
-    }
-    CHIMP_CODE(ref)->freevars = temp;
-    return ref;
+    return chimp_class_new_instance (chimp_code_class, NULL);
 }
 
 #define CHIMP_CURR_INSTR(co) CHIMP_CODE(co)->bytecode[CHIMP_CODE(co)->used]
