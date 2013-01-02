@@ -244,37 +244,39 @@ _chimp_task_self (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_array_range(ChimpRef* a, ChimpRef *args)
 {
-    size_t start;
-    size_t stop; 
-    size_t step; 
-    size_t i;
+    int64_t start = 0;
+    int64_t stop;
+    int64_t step = 1;
+    int64_t i;
     ChimpRef *result;
 
     switch (CHIMP_ARRAY(args)->size) {
+        case 0:
+            CHIMP_BUG("range(): not enough args");
+            return NULL;
         case 1:
-            start = 0;
-            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
-            step = 1;
+            if (!chimp_method_parse_args (args, "I", &stop)) {
+                return NULL;
+            }
             break;
         case 2:
-            start = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
-            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 1));
-            step = 1;
+            if (!chimp_method_parse_args (args, "II", &start, &stop)) {
+                return NULL;
+            }
             break;
         case 3:
-            start = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 0));
-            stop = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 1));
-            step = CHIMP_INT_VALUE(CHIMP_ARRAY_ITEM(args, 2));
+            if (!chimp_method_parse_args (args, "III", &start, &stop, &step)) {
+                return NULL;
+            }
             if (0 == step) {
                 CHIMP_BUG("range(): step argument can't be zero.");
                 return NULL;
             }
             break;
         default:
-            CHIMP_BUG("range(). Too many args.");
+            CHIMP_BUG("range(): too many args.");
             return NULL;
     }
-
 
     result = chimp_array_new();
     for (i = start; (SIGN(step)*i) < stop; i += step) {
