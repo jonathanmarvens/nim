@@ -42,6 +42,13 @@ ChimpRef *
 chimp_module_new_str (const char *name, ChimpRef *locals);
 
 chimp_bool_t
+chimp_module_add_method_str (
+    ChimpRef *self,
+    const char *name,
+    ChimpNativeMethodFunc impl
+);
+
+chimp_bool_t
 chimp_module_add_local (
     ChimpRef *self,
     ChimpRef *name,
@@ -49,10 +56,10 @@ chimp_module_add_local (
 );
 
 chimp_bool_t
-chimp_module_add_method_str (
+chimp_module_add_local_str (
     ChimpRef *self,
     const char *name,
-    ChimpNativeMethodFunc impl
+    ChimpRef *value
 );
 
 #define CHIMP_MODULE(ref) CHIMP_CHECK_CAST(ChimpModule, (ref), chimp_module_class)

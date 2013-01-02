@@ -139,3 +139,20 @@ chimp_module_add_method_str (
     return chimp_hash_put (CHIMP_MODULE(self)->locals, nameref, method);
 }
 
+chimp_bool_t
+chimp_module_add_local_str (
+    ChimpRef *self,
+    const char *name,
+    ChimpRef *value
+)
+{
+    ChimpRef *nameref;
+
+    nameref = chimp_str_new (name, strlen (name));
+    if (nameref == NULL) {
+        return CHIMP_FALSE;
+    }
+
+    return chimp_module_add_local (self, nameref, value);
+}
+

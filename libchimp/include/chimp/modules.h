@@ -38,6 +38,9 @@ chimp_init_os_module (void);
 ChimpRef *
 chimp_init_gc_module (void);
 
+ChimpRef *
+chimp_init_net_module (void);
+
 #ifdef __cplusplus
 };
 #endif
