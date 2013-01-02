@@ -30,9 +30,6 @@ struct _ChimpLWHash;
 typedef struct _ChimpGC ChimpGC;
 typedef struct _ChimpRef ChimpRef;
 
-union _ChimpValue;
-enum _ChimpValueType;
-
 ChimpGC *
 chimp_gc_new (void *stack_start);
 
@@ -45,7 +42,7 @@ chimp_gc_new_object (ChimpGC *gc);
 chimp_bool_t
 chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref);
 
-union _ChimpValue *
+void *
 chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass);
 
 chimp_bool_t

@@ -28,15 +28,16 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define DEFAULT_SLAB_SIZE 1500
+#define VALUE_SIZE 256
+#define DEFAULT_SLAB_SIZE 256 /* 64k default heap */
 
 struct _ChimpRef {
     chimp_bool_t marked;
-    ChimpValue value;
     struct _ChimpRef *next;
+    char value[VALUE_SIZE];
 };
 
-#define CHIMP_FAST_ANY(ref) (&((ref)->value.any))
+#define CHIMP_FAST_ANY(ref) ((ChimpAny *)(ref)->value)
 
 typedef struct _ChimpSlab {
     ChimpRef *refs;
@@ -64,7 +65,7 @@ struct _ChimpGC {
 };
 
 #define CHIMP_HEAP_CURRENT_SLAB(heap) \
-    (heap)->slabs[(heap)->used / ((heap)->slab_size * sizeof(ChimpRef))]
+    (heap)->slabs[(heap)->used / (heap)->slab_size]
 
 #define CHIMP_HEAP_ALLOCATED(heap) \
     ((heap)->slab_count * ((heap)->slab_size * sizeof(ChimpRef)))
@@ -74,13 +75,15 @@ chimp_slab_new (size_t size)
 {
     ChimpRef *refs;
     size_t i;
-    ChimpSlab *slab = CHIMP_MALLOC (ChimpSlab, sizeof (*slab) + sizeof(ChimpRef) * size);
+    ChimpSlab *slab =
+      CHIMP_MALLOC (ChimpSlab, sizeof (*slab) + sizeof(ChimpRef) * size);
     if (slab == NULL) {
         return NULL;
     }
     refs = (ChimpRef *)(((char *) slab) + sizeof (*slab));
     slab->head = refs;
     slab->refs = refs;
+    /* TODO don't think we need the conditional check */
     if (size > 1) {
         for (i = 1; i < size; i++) {
             refs[i-1].next = refs + i;
@@ -233,8 +236,7 @@ chimp_gc_new_object (ChimpGC *gc)
         if (!chimp_gc_collect (gc)) {
             ChimpSlab *slab;
             if (!chimp_heap_grow (&gc->heap)) {
-                fprintf (stderr, "out of memory\n");
-                abort ();
+                CHIMP_BUG ("out of memory");
                 return NULL;
             }
             slab = CHIMP_HEAP_CURRENT_SLAB(&gc->heap);
@@ -271,7 +273,7 @@ chimp_gc_make_root (ChimpGC *gc, ChimpRef *ref)
     return CHIMP_TRUE;
 }
 
-ChimpValue *
+void *
 chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass)
 {
     if (ref == NULL) {
@@ -286,7 +288,7 @@ chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass)
     }
 
     if (klass == NULL) {
-        return &ref->value;
+        return ref->value;
     }
 
     /* TODO need an 'instanceof' type check here */
@@ -297,7 +299,7 @@ chimp_gc_ref_check_cast (ChimpRef *ref, ChimpRef *klass)
         return NULL;
     }
 
-    return &ref->value;
+    return ref->value;
 }
 
 void
@@ -324,10 +326,6 @@ chimp_gc_mark_ref (ChimpGC *gc, ChimpRef *ref)
 
     if (CHIMP_CLASS(klass)->mark) {
         CHIMP_CLASS(klass)->mark (gc, ref);
-    }
-    else {
-      CHIMP_BUG ("no mark method provided for class: %s",
-          CHIMP_STR_DATA(CHIMP_CLASS(CHIMP_ANY_CLASS(ref))->name));
     }
 }
 

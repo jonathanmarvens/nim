@@ -45,28 +45,6 @@ typedef struct _ChimpObject {
     ChimpAny     base;
 } ChimpObject;
 
-typedef union _ChimpValue {
-    ChimpAny            any;
-    ChimpClass          klass;
-    ChimpObject         object;
-    ChimpModule         module;
-    ChimpStr            str;
-    ChimpInt            integer;
-    ChimpArray          array;
-    ChimpHash           hash;
-    ChimpCode           code;
-    ChimpMethod         method;
-    ChimpFrame          frame;
-    ChimpSymtable       symtable;
-    ChimpSymtableEntry  symtable_entry;
-    ChimpVar            var;
-    ChimpError          error;
-    ChimpAstMod         ast_mod;
-    ChimpAstDecl        ast_decl;
-    ChimpAstStmt        ast_stmt;
-    ChimpAstExpr        ast_expr;
-} ChimpValue;
-
 ChimpCmpResult
 chimp_object_cmp (ChimpRef *a, ChimpRef *b);
 
@@ -100,7 +78,7 @@ chimp_object_getattr_str (ChimpRef *self, const char *name);
 chimp_bool_t
 chimp_object_instance_of (ChimpRef *object, ChimpRef *klass);
 
-#define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), CHIMP_VALUE_TYPE_OBJECT)
+#define CHIMP_OBJECT(ref) CHIMP_CHECK_CAST(ChimpObject, (ref), chimp_object_class)
 
 CHIMP_EXTERN_CLASS(object);
 CHIMP_EXTERN_CLASS(bool);

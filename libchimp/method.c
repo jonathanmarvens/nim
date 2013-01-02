@@ -22,6 +22,7 @@
 #include "chimp/class.h"
 #include "chimp/array.h"
 #include "chimp/str.h"
+#include "chimp/int.h"
 #include "chimp/task.h"
 #include "chimp/vm.h"
 
@@ -181,6 +182,19 @@ chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
                     char **arg = va_arg (argp, char **);
                     /* TODO ensure array item is a str object */
                     *arg = CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, n++));
+                    break;
+                }
+            case 'i':
+                {
+                    int32_t *arg = va_arg (argp, int32_t *);
+                    /* TODO ensure array item is an int object */
+                    *arg = (int32_t) CHIMP_INT(CHIMP_ARRAY_ITEM(args, n++))->value;
+                    break;
+                }
+            case 'I':
+                {
+                    int64_t *arg = va_arg (argp, int64_t *);
+                    *arg = (int64_t) CHIMP_INT(CHIMP_ARRAY_ITEM(args, n++))->value;
                     break;
                 }
             case '|':
