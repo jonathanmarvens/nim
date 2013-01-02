@@ -28,13 +28,13 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 
-#define VALUE_SIZE 256
+#define CHIMP_VALUE_SIZE 256
 #define DEFAULT_SLAB_SIZE 256 /* 64k default heap */
 
 struct _ChimpRef {
     chimp_bool_t marked;
     struct _ChimpRef *next;
-    char value[VALUE_SIZE];
+    char value[CHIMP_VALUE_SIZE];
 };
 
 #define CHIMP_FAST_ANY(ref) ((ChimpAny *)(ref)->value)
@@ -65,7 +65,7 @@ struct _ChimpGC {
 };
 
 #define CHIMP_HEAP_CURRENT_SLAB(heap) \
-    (heap)->slabs[(heap)->used / (heap)->slab_size]
+    (heap)->slabs[(heap)->slab_count - 1]
 
 #define CHIMP_HEAP_ALLOCATED(heap) \
     ((heap)->slab_count * ((heap)->slab_size * sizeof(ChimpRef)))
@@ -177,17 +177,15 @@ chimp_gc_new (void *stack_start)
         return NULL;
     }
 
+    memset (gc, 0, sizeof (*gc));
+
     gc->stack_start = stack_start;
 
     if (!chimp_heap_init (&gc->heap, DEFAULT_SLAB_SIZE)) {
         CHIMP_FREE (gc);
         return NULL;
     }
-    gc->live = NULL;
-    gc->free = gc->heap.slabs[0]->refs;
-    gc->roots = NULL;
-    gc->num_roots = 0;
-    gc->collection_count = 0;
+    gc->free = gc->heap.slabs[0]->head;
     return gc;
 }
 
@@ -240,7 +238,7 @@ chimp_gc_new_object (ChimpGC *gc)
                 return NULL;
             }
             slab = CHIMP_HEAP_CURRENT_SLAB(&gc->heap);
-            gc->free = slab->refs;
+            gc->free = slab->head;
         }
     }
 
@@ -248,7 +246,6 @@ chimp_gc_new_object (ChimpGC *gc)
     gc->free = gc->free->next;
 
     memset (ref, 0, sizeof(*ref));
-    ref->marked = CHIMP_FALSE;
     ref->next = gc->live;
     gc->live = ref;
     gc->heap.used++;
