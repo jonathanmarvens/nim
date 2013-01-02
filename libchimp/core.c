@@ -279,7 +279,7 @@ _chimp_array_range(ChimpRef* a, ChimpRef *args)
     }
 
     result = chimp_array_new();
-    for (i = start; (SIGN(step)*i) < stop; i += step) {
+    for (i = start; SIGN(step)*(stop - i) > 0; i += step) {
         if (!chimp_array_push(result, chimp_int_new(i))) {
             return NULL;
         }
