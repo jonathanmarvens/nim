@@ -16,6 +16,9 @@
  *                                                                           *
  *****************************************************************************/
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "chimp/compile.h"
 #include "chimp/str.h"
 #include "chimp/ast.h"
@@ -1892,12 +1895,38 @@ extern int yyparse(ChimpRef *filename, ChimpRef **mod);
 extern void yylex_destroy(void);
 extern FILE *yyin;
 
+static chimp_bool_t
+is_file (const char *filename, chimp_bool_t *result)
+{
+    struct stat st;
+
+    if (stat (filename, &st) != 0) {
+        CHIMP_BUG ("stat() failed");
+        return CHIMP_FALSE;
+    }
+
+    *result = S_ISREG(st.st_mode);
+
+    return CHIMP_TRUE;
+}
+
 ChimpRef *
 chimp_compile_file (ChimpRef *name, const char *filename)
 {
     int rc;
     ChimpRef *filename_obj;
     ChimpRef *mod;
+    chimp_bool_t isreg;
+
+    if (!is_file (filename, &isreg)) {
+        return NULL;
+    }
+
+    if (!isreg) {
+        CHIMP_BUG ("not a regular file: %s", filename);
+        return NULL;
+    }
+
     yyin = fopen (filename, "r");
     if (yyin == NULL) {
         return NULL;
