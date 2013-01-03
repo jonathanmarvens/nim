@@ -38,6 +38,17 @@
         } \
     } while (0)
 
+#define CHIMP_MODULE_ADD_CLASS(mod, name, klass) \
+    do { \
+        if ((klass) == NULL) { \
+            return NULL; \
+        } \
+        \
+        if (!chimp_module_add_local_str ((mod), (name), (klass))) { \
+            return NULL; \
+        } \
+    } while (0)
+
 typedef struct _ChimpNetSocket {
     ChimpAny base;
     int fd;
@@ -204,6 +215,18 @@ _chimp_socket_recv (ChimpRef *self, ChimpRef *args)
     return chimp_str_new_take (buf, n);
 }
 
+static ChimpRef *
+_chimp_socket_getattr (ChimpRef *self, ChimpRef *attr)
+{
+    if (strcmp ("fd", CHIMP_STR_DATA(attr)) == 0) {
+        return chimp_int_new (CHIMP_NET_SOCKET (self)->fd);
+    }
+    else {
+        ChimpRef *super = CHIMP_CLASS_SUPER(CHIMP_ANY_CLASS(self));
+        return CHIMP_CLASS(super)->getattr (self, attr);
+    }
+}
+
 static void
 _chimp_socket_dtor (ChimpRef *self)
 {
@@ -221,6 +244,7 @@ _chimp_socket_class_bootstrap (void)
         }
         CHIMP_CLASS(chimp_net_socket_class)->init = _chimp_socket_init;
         CHIMP_CLASS(chimp_net_socket_class)->dtor = _chimp_socket_dtor;
+        CHIMP_CLASS(chimp_net_socket_class)->getattr = _chimp_socket_getattr;
 
         if (!chimp_class_add_native_method (
                 chimp_net_socket_class, "close", _chimp_socket_close)) {
@@ -275,9 +299,7 @@ chimp_init_net_module (void)
         return NULL;
     }
 
-    if (!chimp_module_add_local_str (net, "socket", chimp_net_socket_class)) {
-        return NULL;
-    }
+    CHIMP_MODULE_ADD_CLASS(net, "socket", chimp_net_socket_class);
 
     return net;
 }
