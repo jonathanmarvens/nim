@@ -42,6 +42,8 @@ chimp_method_call (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_method_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->self);
     if (CHIMP_METHOD_TYPE(self) == CHIMP_METHOD_TYPE_BYTECODE) {
         chimp_gc_mark_ref (gc, CHIMP_METHOD(self)->bytecode.code);

@@ -136,6 +136,11 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     }
 }
 
+static void
+_chimp_object_mark (ChimpGC *gc, ChimpRef *self)
+{
+}
+
 static ChimpRef *
 _chimp_object_str (ChimpRef *self)
 {
@@ -333,12 +338,14 @@ chimp_core_startup (void *stack_start)
 
     CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_object_class, "object", NULL);
     CHIMP_CLASS(chimp_object_class)->str = _chimp_object_str;
+    CHIMP_CLASS(chimp_object_class)->mark = _chimp_object_mark;
     CHIMP_CLASS(chimp_object_class)->getattr = _chimp_object_getattr;
     CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_class_class, "class", chimp_object_class);
     CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
     CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
+    CHIMP_CLASS(chimp_str_class)->mark = _chimp_object_mark;
 
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);

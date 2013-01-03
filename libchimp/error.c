@@ -49,6 +49,8 @@ _chimp_error_str (ChimpRef *self)
 static void
 _chimp_error_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->message);
     chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->cause);
     chimp_gc_mark_ref (gc, CHIMP_ERROR(self)->backtrace);

@@ -252,47 +252,52 @@ static chimp_bool_t
 _chimp_socket_class_bootstrap (void)
 {
     if (chimp_net_socket_class == NULL) {
+        ChimpRef *net_socket_class;
         chimp_net_socket_class = chimp_class_new (
             CHIMP_STR_NEW("net.socket"), NULL, sizeof(ChimpNetSocket));
         if (chimp_net_socket_class == NULL) {
             return CHIMP_FALSE;
         }
-        CHIMP_CLASS(chimp_net_socket_class)->init = _chimp_socket_init;
-        CHIMP_CLASS(chimp_net_socket_class)->dtor = _chimp_socket_dtor;
-        CHIMP_CLASS(chimp_net_socket_class)->getattr = _chimp_socket_getattr;
+
+        /* protect net.socket from the GC */
+        net_socket_class = chimp_net_socket_class;
+
+        CHIMP_CLASS(net_socket_class)->init = _chimp_socket_init;
+        CHIMP_CLASS(net_socket_class)->dtor = _chimp_socket_dtor;
+        CHIMP_CLASS(net_socket_class)->getattr = _chimp_socket_getattr;
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "close", _chimp_socket_close)) {
+                net_socket_class, "close", _chimp_socket_close)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "bind", _chimp_socket_bind)) {
+                net_socket_class, "bind", _chimp_socket_bind)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "setsockopt", _chimp_socket_setsockopt)) {
+                net_socket_class, "setsockopt", _chimp_socket_setsockopt)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "listen", _chimp_socket_listen)) {
+                net_socket_class, "listen", _chimp_socket_listen)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "accept", _chimp_socket_accept)) {
+                net_socket_class, "accept", _chimp_socket_accept)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "recv", _chimp_socket_recv)) {
+                net_socket_class, "recv", _chimp_socket_recv)) {
             return CHIMP_FALSE;
         }
 
         if (!chimp_class_add_native_method (
-                chimp_net_socket_class, "shutdown", _chimp_socket_shutdown)) {
+                net_socket_class, "shutdown", _chimp_socket_shutdown)) {
             return CHIMP_FALSE;
         }
     }
@@ -303,6 +308,7 @@ ChimpRef *
 chimp_init_net_module (void)
 {
     ChimpRef *net;
+    ChimpRef *net_socket;
 
     net = chimp_module_new_str ("net", NULL);
     if (net == NULL) {
@@ -317,15 +323,16 @@ chimp_init_net_module (void)
     CHIMP_MODULE_INT_CONSTANT(net, "SHUT_RD", SHUT_RD);
     CHIMP_MODULE_INT_CONSTANT(net, "SHUT_WR", SHUT_WR);
     /* XXX adding this seems to trigger a GC bug */
-    /*
     CHIMP_MODULE_INT_CONSTANT(net, "SHUT_RDWR", SHUT_RDWR);
-    */
 
     if (!_chimp_socket_class_bootstrap ()) {
         return NULL;
     }
 
-    CHIMP_MODULE_ADD_CLASS(net, "socket", chimp_net_socket_class);
+    /* protect net.socket from the garbage collector */
+    net_socket = chimp_net_socket_class;
+
+    CHIMP_MODULE_ADD_CLASS(net, "socket", net_socket);
 
     return net;
 }

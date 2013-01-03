@@ -161,6 +161,17 @@ chimp_class_new (ChimpRef *name, ChimpRef *super, size_t size)
     CHIMP_CLASS(ref)->super = super;
     CHIMP_CLASS(ref)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(ref)->call = chimp_class_call;
+    /* TODO wrap these in a struct & use memcpy */
+    CHIMP_CLASS(ref)->init = CHIMP_CLASS(super)->init;
+    CHIMP_CLASS(ref)->dtor = CHIMP_CLASS(super)->dtor;
+    CHIMP_CLASS(ref)->str = CHIMP_CLASS(super)->str;
+    CHIMP_CLASS(ref)->mark = CHIMP_CLASS(super)->mark;
+    CHIMP_CLASS(ref)->add = CHIMP_CLASS(super)->add;
+    CHIMP_CLASS(ref)->sub = CHIMP_CLASS(super)->sub;
+    CHIMP_CLASS(ref)->mul = CHIMP_CLASS(super)->mul;
+    CHIMP_CLASS(ref)->div = CHIMP_CLASS(super)->div;
+    CHIMP_CLASS(ref)->getattr = CHIMP_CLASS(super)->getattr;
+    CHIMP_CLASS(ref)->getitem = CHIMP_CLASS(super)->getitem;
     return ref;
 }
 
@@ -234,6 +245,8 @@ chimp_class_str (ChimpRef *self)
 static void
 _chimp_class_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->super);
     chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->name);
     chimp_gc_mark_lwhash (gc, CHIMP_CLASS(self)->methods);

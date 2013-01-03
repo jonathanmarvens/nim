@@ -73,6 +73,8 @@ chimp_module_str (ChimpRef *self)
 static void
 _chimp_module_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER(self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_MODULE(self)->name);
     chimp_gc_mark_ref (gc, CHIMP_MODULE(self)->locals);
 }

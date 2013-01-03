@@ -304,6 +304,8 @@ _chimp_array_dtor (ChimpRef *self)
 static void
 _chimp_array_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     size_t i;
     for (i = 0; i < CHIMP_ARRAY(self)->size; i++) {
         chimp_gc_mark_ref (gc, CHIMP_ARRAY(self)->items[i]);

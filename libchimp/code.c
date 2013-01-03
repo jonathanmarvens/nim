@@ -80,6 +80,8 @@ _chimp_code_dtor (ChimpRef *self)
 static void
 _chimp_code_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_CODE(self)->constants);
     chimp_gc_mark_ref (gc, CHIMP_CODE(self)->names);
     chimp_gc_mark_ref (gc, CHIMP_CODE(self)->vars);

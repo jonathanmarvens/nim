@@ -151,6 +151,8 @@ _chimp_hash_dtor (ChimpRef *self)
 static void
 _chimp_hash_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     size_t i;
     for (i = 0; i < CHIMP_HASH(self)->size; i++) {
         chimp_gc_mark_ref (gc, CHIMP_HASH(self)->keys[i]);

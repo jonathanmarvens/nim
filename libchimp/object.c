@@ -49,11 +49,8 @@ chimp_object_str (ChimpRef *self)
 {
     ChimpRef *klass = CHIMP_ANY_CLASS(self);
 
-    while (klass != NULL) {
-        if (CHIMP_CLASS(klass)->str != NULL) {
-            return CHIMP_CLASS(klass)->str (self);
-        }
-        klass = CHIMP_CLASS(klass)->super;
+    if (CHIMP_CLASS(klass)->str != NULL) {
+        return CHIMP_CLASS(klass)->str (self);
     }
 
     CHIMP_BUG ("cannot convert type to string. probably a bug.");

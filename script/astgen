@@ -305,6 +305,7 @@ def source():
             _("static void")
             _("_%(app_name)s_ast_%(node_type)s_mark(ChimpGC *gc, %(node_ctype)s ref)", np)
             _("{")
+            _("    %(APP_NAME)s_SUPER (ref)->mark (gc, ref);", np)
             _("    switch (%(APP_NAME)s_AST_%(NODE_TYPE)s(ref)->type) {", np)
             for k in node_type_kinds(t):
                 kp = kind_params(k)

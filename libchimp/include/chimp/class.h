@@ -74,6 +74,8 @@ _chimp_bootstrap_L3 (void);
 #define CHIMP_CLASS_NAME(ref) (CHIMP_CLASS(ref)->name)
 #define CHIMP_CLASS_SUPER(ref) (CHIMP_CLASS(ref)->super)
 
+#define CHIMP_SUPER(ref) CHIMP_CLASS(CHIMP_CLASS_SUPER(CHIMP_ANY_CLASS(ref)))
+
 CHIMP_EXTERN_CLASS(class);
 
 #ifdef __cplusplus

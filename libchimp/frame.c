@@ -78,6 +78,8 @@ _chimp_frame_init (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_frame_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->method);
     chimp_gc_mark_ref (gc, CHIMP_FRAME(self)->locals);
 }

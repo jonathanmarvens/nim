@@ -89,6 +89,8 @@ _chimp_symtable_init (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_symtable_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->filename);
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->lookup);
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE(self)->stack);
@@ -140,6 +142,8 @@ _chimp_symtable_entry_init (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_symtable_entry_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->symtable);
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->scope);
     chimp_gc_mark_ref (gc, CHIMP_SYMTABLE_ENTRY(self)->symbols);

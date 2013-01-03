@@ -26,6 +26,8 @@ ChimpRef *chimp_var_class = NULL;
 static void
 _chimp_var_mark (ChimpGC *gc, ChimpRef *self)
 {
+    CHIMP_SUPER (self)->mark (gc, self);
+
     chimp_gc_mark_ref (gc, CHIMP_VAR(self)->value);
 }
 
