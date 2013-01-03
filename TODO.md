@@ -1,3 +1,4 @@
+# General
 * Fix broken examples.
 * Forward declarations.
 * Interesting note: because closures may capture parts of their execution
@@ -62,3 +63,8 @@ macro from C?) -- we *should* be doing this already.
 * Modules, code objects, builtins, etc. (read-only global data) probably
   belongs somewhere other than the 'main' task heap. Alternatively, don't
   bother spinning up a modules hash for non-main tasks.
+
+# Windows
+* Bison & Flex are a pain with MSVC under windows. Options: MinGW? Lemon?
+* Some CMake quirks under Windows, too.
+
