@@ -7,6 +7,10 @@ main argv {
   # TODO: Suite/chimprunner to print start/finish/counts?
   io.print("Running Chimp Tests");
 
+  # TODO: Should this built-in class be test, or suite?
+  # Suspecting suite, as we'll use it across multiple chimpunit.test calls
+  test().fail();
+
   chimpunit.test("if positive", fn {
     var executed = false;
     if true {
