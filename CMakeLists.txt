@@ -25,7 +25,7 @@ find_path(VALGRIND_INCLUDE_DIR memcheck.h
 #
 # TODO CFLAGS env var seems to be ignored by cmake ... ?
 #
-set (CMAKE_C_FLAGS "$ENV{CFLAGS} -Wall -Werror -Wno-error=nonnull -O0 -g3")
+set (CMAKE_C_FLAGS "$ENV{CFLAGS}")
 
 if (DEFINED VALGRIND_INCLUDE_DIR)
     message (STATUS "memcheck.h [valgrind] found in ${VALGRIND_INCLUDE_DIR}")
