@@ -1,6 +1,7 @@
 # General
 * Fix broken examples.
 * Forward declarations.
+* Use CHIMP\_SUPER(self) to invoke super class slots for e.g. init, dtor, etc.
 * Interesting note: because closures may capture parts of their execution
   environment & thus dependendent upon the state of the heap, it's
   rarely kosher to send closures to other tasks. (n.b. we can't send any
