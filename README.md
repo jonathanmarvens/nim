@@ -20,12 +20,17 @@ Getting started with Chimp is a breeze.
     make
     ./chimp examples/helloworld.chimp
 
+Other things you might need to install.
+
+    brew install check
+    brew install valgrind
+
 Running Tests
 -------------
 
-Unit testing uses the check library, so you'll need to install that before you
-can run the tests:
+Unit testing are written partially with the check library (for testing C
+and partially in ChimpUnit) If you haven't already installed check, you might
+need to do that before you run the tests:
 
-    brew install check
     cmake .
     make clean test
