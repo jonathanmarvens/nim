@@ -5,9 +5,34 @@
 cmake_minimum_required (VERSION 2.6)
 project (chimp)
 
-find_package (BISON)
-find_package (FLEX)
-find_package (Threads)
+find_package (BISON REQUIRED)
+find_package (FLEX REQUIRED)
+find_package (Threads REQUIRED)
+
+#
+# Find valgrind
+#
+set (VALGRIND_HOME "$ENV{VALGRIND_HOME}")
+
+if (DEFINED VALGRIND_HOME)
+    message (STATUS "VALGRIND_HOME: ${VALGRIND_HOME}")
+endif (DEFINED VALGRIND_HOME)
+
+find_path(VALGRIND_INCLUDE_DIR memcheck.h
+  /usr/include /usr/include/valgrind /usr/local/include /usr/local/include/valgrind
+  ${VALGRIND_HOME}/include ${VALGRIND_HOME}/include/valgrind)
+
+#
+# TODO CFLAGS env var seems to be ignored by cmake ... ?
+#
+set (CMAKE_C_FLAGS "$ENV{CFLAGS} -Wall -Werror -Wno-error=nonnull -O0 -g3")
+
+if (DEFINED VALGRIND_INCLUDE_DIR)
+    message (STATUS "memcheck.h [valgrind] found in ${VALGRIND_INCLUDE_DIR}")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_VALGRIND=1 -I${VALGRIND_INCLUDE_DIR}")
+else (DEFINED VALGRIND_INCLUDE_DIR)
+    message (STATUS "memcheck.h [valgrind] not found (valgrind warnings ahoy)")
+endif (DEFINED VALGRIND_INCLUDE_DIR)
 
 set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
 set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
@@ -20,11 +45,6 @@ set (AST_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/ast.c)
 set (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/ast.h)
 
 set (_TEST_MAIN_C ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
-
-#
-# TODO CFLAGS env var seems to be ignored by cmake ... ?
-#
-set (CMAKE_C_FLAGS "-Wall -Werror -Wno-error=nonnull -O0 -g3")
 
 #
 # XXX standard flex/bison macros left me doing a strange song & dance to
