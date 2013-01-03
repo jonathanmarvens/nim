@@ -181,6 +181,21 @@ _chimp_socket_close (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_socket_shutdown (ChimpRef *self, ChimpRef *args)
+{
+    int32_t how = SHUT_RDWR;
+
+    if (!chimp_method_parse_args (args, "i", &how)) {
+        return NULL;
+    }
+
+    if (shutdown (CHIMP_NET_SOCKET (self)->fd, how) != 0) {
+        return chimp_false;
+    }
+    return chimp_true;
+}
+
+static ChimpRef *
 _chimp_socket_recv (ChimpRef *self, ChimpRef *args)
 {
     int32_t size;
@@ -275,6 +290,11 @@ _chimp_socket_class_bootstrap (void)
                 chimp_net_socket_class, "recv", _chimp_socket_recv)) {
             return CHIMP_FALSE;
         }
+
+        if (!chimp_class_add_native_method (
+                chimp_net_socket_class, "shutdown", _chimp_socket_shutdown)) {
+            return CHIMP_FALSE;
+        }
     }
     return CHIMP_TRUE;
 }
@@ -294,6 +314,12 @@ chimp_init_net_module (void)
     CHIMP_MODULE_INT_CONSTANT(net, "SOCK_STREAM", SOCK_STREAM);
     CHIMP_MODULE_INT_CONSTANT(net, "SOL_SOCKET", SOL_SOCKET);
     CHIMP_MODULE_INT_CONSTANT(net, "SO_REUSEADDR", SO_REUSEADDR);
+    CHIMP_MODULE_INT_CONSTANT(net, "SHUT_RD", SHUT_RD);
+    CHIMP_MODULE_INT_CONSTANT(net, "SHUT_WR", SHUT_WR);
+    /* XXX adding this seems to trigger a GC bug */
+    /*
+    CHIMP_MODULE_INT_CONSTANT(net, "SHUT_RDWR", SHUT_RDWR);
+    */
 
     if (!_chimp_socket_class_bootstrap ()) {
         return NULL;
