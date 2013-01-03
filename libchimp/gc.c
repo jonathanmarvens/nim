@@ -155,15 +155,14 @@ chimp_heap_contains (ChimpHeap *heap, void *value)
     for (i = 0; i < heap->slab_count; i++) {
         void *begin = heap->slabs[i]->head;
         void *end   = heap->slabs[i]->head + sizeof(ChimpRef) * heap->slab_size;
-        chimp_bool_t is_base_ptr;
         
-        /* is this a pointer to the *start* of a value/ref?
-         * (We don't want to corrupt random bytes in the heap during a mark)
-         */ 
-        is_base_ptr = (end - value) % sizeof(ChimpRef) == 0;
-
-        if (value >= begin && value < end && is_base_ptr) {
-            return CHIMP_TRUE;
+        if (value >= begin && value < end) {
+            /* is this a pointer to the *start* of a value/ref?
+             * (We don't want to corrupt random bytes in the heap during a mark)
+             */
+            if ((end - value) % sizeof(ChimpRef) == 0) {
+                return CHIMP_TRUE;
+            }
         }
     }
     return CHIMP_FALSE;
