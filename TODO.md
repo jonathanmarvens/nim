@@ -2,6 +2,8 @@
 * Fix broken examples.
 * Forward declarations.
 * Use CHIMP\_SUPER(self) to invoke super class slots for e.g. init, dtor, etc.
+* Allow (de)serialization of custom types to allow these objects to be sent
+  as messages between tasks where safe (e.g. net.socket).
 * Interesting note: because closures may capture parts of their execution
   environment & thus dependendent upon the state of the heap, it's
   rarely kosher to send closures to other tasks. (n.b. we can't send any
