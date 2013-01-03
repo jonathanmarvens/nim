@@ -510,12 +510,20 @@ chimp_task_join (ChimpTaskInternal *task)
     CHIMP_TASK_UNLOCK(task);
 }
 
+static void
+_chimp_task_mark (ChimpGC *gc, ChimpRef *self)
+{
+    ChimpTaskInternal *task = CHIMP_TASK(self)->priv;
+    chimp_gc_mark_ref (gc, task->method);
+    chimp_gc_mark_ref (gc, task->modules);
+}
+
 void
 chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task)
 {
-    chimp_gc_mark_ref (gc, task->self);
-    chimp_gc_mark_ref (gc, task->method);
-    chimp_gc_mark_ref (gc, task->modules);
+    if (task->self != NULL) {
+        chimp_gc_mark_ref (gc, task->self);
+    }
 }
 
 ChimpTaskInternal *
@@ -628,7 +636,8 @@ chimp_task_class_bootstrap (void)
     CHIMP_CLASS(chimp_task_class)->init = _chimp_task_init;
     CHIMP_CLASS(chimp_task_class)->dtor = _chimp_task_dtor;
     CHIMP_CLASS(chimp_task_class)->str  = _chimp_task_str;
-    chimp_gc_make_root (NULL, chimp_array_class);
+    CHIMP_CLASS(chimp_task_class)->mark = _chimp_task_mark;
+    chimp_gc_make_root (NULL, chimp_task_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
     chimp_class_add_native_method (chimp_task_class, "join", _chimp_task_join);
     return CHIMP_TRUE;
