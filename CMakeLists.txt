@@ -14,9 +14,9 @@ find_package (Threads REQUIRED)
 #
 set (VALGRIND_HOME "$ENV{VALGRIND_HOME}")
 
-if (DEFINED VALGRIND_HOME)
+if (VALGRIND_HOME)
     message (STATUS "VALGRIND_HOME: ${VALGRIND_HOME}")
-endif (DEFINED VALGRIND_HOME)
+endif (VALGRIND_HOME)
 
 find_path(VALGRIND_INCLUDE_DIR memcheck.h
   /usr/include /usr/include/valgrind /usr/local/include /usr/local/include/valgrind
@@ -27,12 +27,12 @@ find_path(VALGRIND_INCLUDE_DIR memcheck.h
 #
 set (CMAKE_C_FLAGS "$ENV{CFLAGS}")
 
-if (DEFINED VALGRIND_INCLUDE_DIR)
+if (VALGRIND_INCLUDE_DIR)
     message (STATUS "memcheck.h [valgrind] found in ${VALGRIND_INCLUDE_DIR}")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_VALGRIND=1 -I${VALGRIND_INCLUDE_DIR}")
-else (DEFINED VALGRIND_INCLUDE_DIR)
+else (VALGRIND_INCLUDE_DIR)
     message (STATUS "memcheck.h [valgrind] not found (valgrind warnings ahoy)")
-endif (DEFINED VALGRIND_INCLUDE_DIR)
+endif (VALGRIND_INCLUDE_DIR)
 
 set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
 set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
