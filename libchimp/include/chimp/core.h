@@ -40,7 +40,7 @@ struct _ChimpRef;
 #define SIGN(x) ((x > 0) - (x < 0))
 
 chimp_bool_t
-chimp_core_startup (void *stack_start);
+chimp_core_startup (const char *path, void *stack_start);
 
 void
 chimp_core_shutdown (void);
@@ -50,6 +50,8 @@ chimp_bug (const char *filename, int lineno, const char *format, ...);
 
 chimp_bool_t
 chimp_is_builtin (struct _ChimpRef *name);
+
+extern struct _ChimpRef *chimp_module_path;
 
 #define CHIMP_BUG(fmt, ...) \
     chimp_bug (__FILE__, __LINE__, (fmt), ## __VA_ARGS__)

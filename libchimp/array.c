@@ -169,7 +169,6 @@ chimp_array_str (ChimpRef *self)
     char *data;
     size_t i, j;
 
-
     item_strs = chimp_array_new ();
     if (item_strs == NULL) {
         return NULL;

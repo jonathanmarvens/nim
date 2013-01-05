@@ -73,6 +73,10 @@ ChimpRef *chimp_nil = NULL;
 ChimpRef *chimp_true = NULL;
 ChimpRef *chimp_false = NULL;
 ChimpRef *chimp_builtins = NULL;
+ChimpRef *chimp_module_path = NULL;
+
+static ChimpRef *
+_chimp_module_make_path (const char *path);
 
 /* XXX clean me up -- strndup is a GNU extension */
 static char *
@@ -325,7 +329,7 @@ chimp_core_init_builtins (void)
 }
 
 chimp_bool_t
-chimp_core_startup (void *stack_start)
+chimp_core_startup (const char *path, void *stack_start)
 {
     main_task = chimp_task_new_main (stack_start);
     if (main_task == NULL) {
@@ -415,6 +419,12 @@ chimp_core_startup (void *stack_start)
 
     if (!chimp_core_init_builtins ()) goto error;
 
+    chimp_module_path = _chimp_module_make_path (path);
+    if (chimp_module_path == NULL)
+        goto error;
+    if (!chimp_gc_make_root (NULL, chimp_module_path))
+        goto error;
+
     if (!chimp_task_main_ready ()) goto error;
 
     return CHIMP_TRUE;
@@ -472,4 +482,49 @@ chimp_is_builtin (ChimpRef *name)
         return CHIMP_TRUE;
     }
 }
+
+static ChimpRef *
+_chimp_module_make_path (const char *path)
+{
+    size_t i, j;
+    size_t len;
+    ChimpRef *result = chimp_array_new ();
+    
+    if (path == NULL) {
+        /* TODO generate default path */
+        return result;
+    }
+
+    len = strlen (path);
+
+    /* XXX this works, but this is totally crap */
+    for (i = j = 0; i < len; j++) {
+        if (path[j] == ':' || path[j] == '\0') {
+            char *s;
+            size_t l;
+            ChimpRef *entry;
+
+            l = j - i;
+            if (l == 0) continue;
+
+            s = strndup (path + i, l);
+            if (s == NULL) {
+                return NULL;
+            }
+
+            entry = chimp_str_new_take (s, l);
+            if (entry == NULL) {
+                free (s);
+                return NULL;
+            }
+            if (!chimp_array_push (result, entry)) {
+                return NULL;
+            }
+            i = j + 1;
+        }
+    }
+
+    return result;
+}
+
 

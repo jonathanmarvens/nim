@@ -25,7 +25,8 @@
 #include "chimp/compile.h"
 
 ChimpRef *chimp_module_class = NULL;
-static ChimpRef *chimp_builtin_modules = NULL;
+static ChimpRef *cache = NULL;
+static ChimpRef *builtin_modules = NULL;
 
 static ChimpRef *
 chimp_module_init (ChimpRef *self, ChimpRef *args)
@@ -105,8 +106,22 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
     int rc;
     ChimpRef *mod;
 
-    /* TODO cache loaded modules */
     /* TODO circular references ... */
+
+    if (cache == NULL) {
+        cache = chimp_hash_new ();
+        if (cache == NULL) {
+            return NULL;
+        }
+        chimp_gc_make_root (NULL, cache);
+    }
+    rc = chimp_hash_get (cache, name, &mod);
+    if (rc == 0) {
+        return mod;
+    }
+    else if (rc == -1) {
+        return NULL;
+    }
 
     if (path != NULL) {
         for (i = 0; i < CHIMP_ARRAY_SIZE(path); i++) {
@@ -124,14 +139,20 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
                 if (mod == NULL) {
                     return NULL;
                 }
+                if (!chimp_hash_put (cache, name, mod)) {
+                    return NULL;
+                }
                 return mod;
             }
         }
     }
 
-    rc = chimp_hash_get (chimp_builtin_modules, name, &mod);
+    rc = chimp_hash_get (builtin_modules, name, &mod);
 
     if (rc == 0) {
+        if (!chimp_hash_put (cache, name, mod)) {
+            return NULL;
+        }
         return mod;
     }
     else if (rc == 1) {
@@ -139,7 +160,7 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
         return NULL;
     }
     else {
-        CHIMP_BUG ("bad key in chimp_builtin_modules?");
+        CHIMP_BUG ("bad key in builtin_modules?");
         return NULL;
     }
 }
@@ -211,15 +232,15 @@ chimp_module_add_local_str (
 chimp_bool_t
 chimp_module_add_builtin (ChimpRef *module)
 {
-    if (chimp_builtin_modules == NULL) {
-        chimp_builtin_modules = chimp_hash_new ();
-        if (chimp_builtin_modules == NULL) {
+    if (builtin_modules == NULL) {
+        builtin_modules = chimp_hash_new ();
+        if (builtin_modules == NULL) {
             return CHIMP_FALSE;
         }
-        chimp_gc_make_root (NULL, chimp_builtin_modules);
+        chimp_gc_make_root (NULL, builtin_modules);
     }
     if (!chimp_hash_put (
-            chimp_builtin_modules, CHIMP_MODULE_NAME(module), module)) {
+            builtin_modules, CHIMP_MODULE_NAME(module), module)) {
         return CHIMP_FALSE;
     }
     return CHIMP_TRUE;

@@ -28,7 +28,7 @@ main (int argc, char **argv)
 {
     int rc;
 
-    if (!chimp_core_startup ((void *)&rc)) {
+    if (!chimp_core_startup (getenv ("CHIMP_PATH"), (void *)&rc)) {
         fprintf (stderr, "error: unable to initialize chimp core\n");
         return 1;
     }
