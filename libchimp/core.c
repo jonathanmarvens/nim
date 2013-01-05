@@ -398,11 +398,20 @@ chimp_core_startup (void *stack_start)
     */
     if (!chimp_ast_class_bootstrap ()) goto error;
 
-    chimp_task_add_module (NULL, chimp_init_io_module ());
-    chimp_task_add_module (NULL, chimp_init_assert_module ());
-    chimp_task_add_module (NULL, chimp_init_os_module ());
-    chimp_task_add_module (NULL, chimp_init_gc_module ());
-    chimp_task_add_module (NULL, chimp_init_net_module ());
+    if (!chimp_module_add_builtin (chimp_init_io_module ()))
+        goto error;
+
+    if (!chimp_module_add_builtin (chimp_init_assert_module ()))
+        goto error;
+
+    if (!chimp_module_add_builtin (chimp_init_os_module ()))
+        goto error;
+
+    if (!chimp_module_add_builtin (chimp_init_gc_module ()))
+        goto error;
+
+    if (!chimp_module_add_builtin (chimp_init_net_module ()))
+        goto error;
 
     if (!chimp_core_init_builtins ()) goto error;
 

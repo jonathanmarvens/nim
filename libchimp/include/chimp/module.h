@@ -36,6 +36,9 @@ chimp_bool_t
 chimp_module_class_bootstrap (void);
 
 ChimpRef *
+chimp_module_load (ChimpRef *name, ChimpRef *path);
+
+ChimpRef *
 chimp_module_new (ChimpRef *name, ChimpRef *locals);
 
 ChimpRef *
@@ -61,6 +64,9 @@ chimp_module_add_local_str (
     const char *name,
     ChimpRef *value
 );
+
+chimp_bool_t
+chimp_module_add_builtin (ChimpRef *module);
 
 #define CHIMP_MODULE(ref) CHIMP_CHECK_CAST(ChimpModule, (ref), chimp_module_class)
 #define CHIMP_MODULE_NAME(ref) (CHIMP_MODULE(ref)->name)

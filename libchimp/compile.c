@@ -1297,11 +1297,13 @@ chimp_compile_ast_decl_use (ChimpCodeCompiler *c, ChimpRef *decl)
     ChimpRef *module = CHIMP_COMPILER_MODULE(c);
     ChimpRef *import;
     ChimpRef *name;
+    /* TODO path should come from core bootstrap stuff */
+    ChimpRef *path = NULL;
 
     name = CHIMP_AST_DECL(decl)->use.name;
-    import = chimp_task_find_module (NULL, name);
+    import = chimp_module_load (name, path);
+
     if (import == NULL) {
-        /* TODO load new module from file */
         return CHIMP_FALSE;
     }
 

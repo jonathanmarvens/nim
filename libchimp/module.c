@@ -16,12 +16,16 @@
  *                                                                           *
  *****************************************************************************/
 
+#include <sys/stat.h>
+
 #include "chimp/module.h"
 #include "chimp/array.h"
 #include "chimp/object.h"
 #include "chimp/str.h"
+#include "chimp/compile.h"
 
 ChimpRef *chimp_module_class = NULL;
+static ChimpRef *chimp_builtin_modules = NULL;
 
 static ChimpRef *
 chimp_module_init (ChimpRef *self, ChimpRef *args)
@@ -95,6 +99,52 @@ chimp_module_class_bootstrap (void)
 }
 
 ChimpRef *
+chimp_module_load (ChimpRef *name, ChimpRef *path)
+{
+    size_t i;
+    int rc;
+    ChimpRef *mod;
+
+    /* TODO cache loaded modules */
+    /* TODO circular references ... */
+
+    if (path != NULL) {
+        for (i = 0; i < CHIMP_ARRAY_SIZE(path); i++) {
+            ChimpRef *element = CHIMP_ARRAY_ITEM(path, i);
+            ChimpRef *filename = chimp_str_new_format (
+                "%s/%s.chimp", CHIMP_STR_DATA(element), CHIMP_STR_DATA(name));
+            struct stat st;
+
+            if (stat (CHIMP_STR_DATA(filename), &st) != 0) {
+                continue;
+            }
+
+            if (S_ISREG(st.st_mode)) {
+                mod = chimp_compile_file (name, CHIMP_STR_DATA(filename));
+                if (mod == NULL) {
+                    return NULL;
+                }
+                return mod;
+            }
+        }
+    }
+
+    rc = chimp_hash_get (chimp_builtin_modules, name, &mod);
+
+    if (rc == 0) {
+        return mod;
+    }
+    else if (rc == 1) {
+        CHIMP_BUG ("module not found: %s", CHIMP_STR_DATA(name));
+        return NULL;
+    }
+    else {
+        CHIMP_BUG ("bad key in chimp_builtin_modules?");
+        return NULL;
+    }
+}
+
+ChimpRef *
 chimp_module_new (ChimpRef *name, ChimpRef *locals)
 {
     if (locals == NULL) {
@@ -156,5 +206,22 @@ chimp_module_add_local_str (
     }
 
     return chimp_module_add_local (self, nameref, value);
+}
+
+chimp_bool_t
+chimp_module_add_builtin (ChimpRef *module)
+{
+    if (chimp_builtin_modules == NULL) {
+        chimp_builtin_modules = chimp_hash_new ();
+        if (chimp_builtin_modules == NULL) {
+            return CHIMP_FALSE;
+        }
+        chimp_gc_make_root (NULL, chimp_builtin_modules);
+    }
+    if (!chimp_hash_put (
+            chimp_builtin_modules, CHIMP_MODULE_NAME(module), module)) {
+        return CHIMP_FALSE;
+    }
+    return CHIMP_TRUE;
 }
 
