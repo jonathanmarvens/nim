@@ -28,15 +28,18 @@ extern "C" {
 
 typedef struct _ChimpTest {
     ChimpAny base;
+    ChimpRef *name;
 } ChimpTest;
 
 chimp_bool_t
 chimp_test_class_bootstrap (void);
 
 ChimpRef *
-chimp_test_new (void);
+chimp_test_new (ChimpRef *name);
 
 #define CHIMP_TEST(ref) CHIMP_CHECK_CAST(ChimpTest, (ref), chimp_test_class)
+
+#define CHIMP_TEST_NAME(ref) (CHIMP_TEST(ref)->name)
 
 CHIMP_EXTERN_CLASS(test);
 

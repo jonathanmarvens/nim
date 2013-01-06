@@ -20,6 +20,7 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 #include "chimp/str.h"
+#include "chimp/test.h"
 #include "chimp/vm.h"
 
 static ChimpRef *
@@ -28,12 +29,13 @@ _chimp_unit_test(ChimpRef *self, ChimpRef *args)
     fprintf (stdout, ".");
 
     // TODO: Size/argument validation on the incoming args
-    // ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
+    ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 1);
 
-    // TODO: What if fn takes arguments? We're never passing anything...
-    // TODO: How do we get the assertion results from the test?
-    if (chimp_object_call (fn, chimp_array_new()) == NULL) {
+    ChimpRef *fn_args = chimp_array_new();
+    chimp_array_push(fn_args, chimp_test_new(name));
+
+    if (chimp_object_call (fn, fn_args) == NULL) {
         return NULL;
     }
 
