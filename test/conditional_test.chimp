@@ -3,8 +3,6 @@ use os;
 use chimpunit;
 
 main argv {
-  io.print("Running Chimp Tests");
-
   chimpunit.test("if positive", fn { |t|
     var executed = false;
     if true {
@@ -18,6 +16,18 @@ main argv {
     if false {
       t.fail("Executed false branch!");
     }
+  });
+
+  chimpunit.test("else", fn { |t|
+    var executed = false;
+    if false {
+      t.fail("Executed false branch!");
+    }
+    else {
+      executed = true;
+    }
+
+    t.equals(true, executed);
   });
 
   io.print("");

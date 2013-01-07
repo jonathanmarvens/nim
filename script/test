@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+echo "Running Chimp Tests"
+find test -name *.chimp -exec ./chimp '{}' \;
