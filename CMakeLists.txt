@@ -131,11 +131,11 @@ add_library (libchimp STATIC
   libchimp/vm.c
   libchimp/error.c
   libchimp/modules/net.c
-  libchimp/modules/assertmod.c
-  libchimp/modules/chimpunitmod.c
-  libchimp/modules/gcmod.c
-  libchimp/modules/iomod.c
-  libchimp/modules/osmod.c)
+  libchimp/modules/assert.c
+  libchimp/modules/chimpunit.c
+  libchimp/modules/gc.c
+  libchimp/modules/io.c
+  libchimp/modules/os.c)
 #
 # Default behaviour is to generate liblibchimp.a ...
 #
