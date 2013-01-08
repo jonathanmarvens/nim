@@ -1,0 +1,48 @@
+use io;
+use chimpunit;
+
+main argv {
+  chimpunit.test("int array comparison", fn { |t|
+    t.equals([1, 2, 3], [1, 2, 3]);
+    t.not_equals([1, 2, 3], [3, 2, 1]);
+    t.not_equals([1, 2, 3], [1, 2, 3, 4]);
+  });
+
+  chimpunit.test("string array comparison", fn { |t|
+    t.equals(["a", "b", "c"], ["a", "b", "c"]);
+    t.not_equals(["a", "b", "c"], ["c", "b", "a"]);
+    t.not_equals(["a", "b", "c"], ["a", "b", "c", "d"]);
+  });
+
+  chimpunit.test("mismatched comparison", fn { |t|
+    t.not_equals([1], ["1"]);
+  });
+
+  chimpunit.test("contains", fn { |t|
+    t.equals(true,  [1, 2, 3].contains(2));
+    t.equals(false, [1, 2, 3].contains(5));
+  });
+
+  chimpunit.test("map", fn { |t|
+    var result = [1, 2, 3].map(str);
+    t.equals(["1", "2", "3"], result);
+  });
+
+  chimpunit.test("each", fn { |t|
+    var sum = 0;
+    [1, 2, 3].each(fn { |i| sum = sum + i; });
+    t.equals(6, sum);
+  });
+
+  chimpunit.test("filter", fn { |t|
+    var result = [1, 2, 3].filter(fn { |i| i >= 2; });
+    t.equals([2, 3], result);
+  });
+
+  chimpunit.test("join", fn { |t|
+    var result = ["1", "2", "3"].join(",");
+    t.equals("1,2,3", result);
+  });
+
+  io.print("");
+}

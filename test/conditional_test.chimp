@@ -1,5 +1,4 @@
 use io;
-use os;
 use chimpunit;
 
 main argv {

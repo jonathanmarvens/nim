@@ -311,6 +311,33 @@ _chimp_array_mark (ChimpGC *gc, ChimpRef *self)
     }
 }
 
+static ChimpCmpResult
+_chimp_array_cmp(ChimpRef *left, ChimpRef *right)
+{
+    size_t lsize = CHIMP_ARRAY_SIZE(left);
+    size_t rsize = CHIMP_ARRAY_SIZE(right);
+
+    if (lsize != rsize)
+    {
+        return CHIMP_CMP_NOT_IMPL;
+    }
+    else
+    {
+        int i;
+        for (i = 0; i < lsize; i++) {
+            ChimpRef *lval = CHIMP_ARRAY_ITEM(left, i);
+            ChimpRef *rval = CHIMP_ARRAY_ITEM(right, i);
+
+            ChimpCmpResult r = chimp_object_cmp (lval, rval);
+            if (r != CHIMP_CMP_EQ)
+            {
+                return r;
+            }
+        }
+        return CHIMP_CMP_EQ;
+    }
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -323,6 +350,7 @@ chimp_array_class_bootstrap (void)
     CHIMP_CLASS(chimp_array_class)->dtor = _chimp_array_dtor;
     CHIMP_CLASS(chimp_array_class)->getitem = _chimp_array_getitem;
     CHIMP_CLASS(chimp_array_class)->mark = _chimp_array_mark;
+    CHIMP_CLASS(chimp_array_class)->cmp = _chimp_array_cmp;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
