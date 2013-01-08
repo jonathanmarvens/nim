@@ -16,33 +16,32 @@
  *                                                                           *
  *****************************************************************************/
 
-#ifndef _CHIMP_MODULES_H_INCLUDED_
-#define _CHIMP_MODULES_H_INCLUDED_
+#ifndef _CHIMP_TEST_H_INCLUDED_
+#define _CHIMP_TEST_H_INCLUDED_
 
-#include <chimp/any.h>
 #include <chimp/gc.h>
+#include <chimp/any.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ChimpRef *
-chimp_init_io_module (void);
+typedef struct _ChimpTest {
+    ChimpAny base;
+    ChimpRef *name;
+} ChimpTest;
+
+chimp_bool_t
+chimp_test_class_bootstrap (void);
 
 ChimpRef *
-chimp_init_assert_module (void);
+chimp_test_new (ChimpRef *name);
 
-ChimpRef *
-chimp_init_unit_module (void);
+#define CHIMP_TEST(ref) CHIMP_CHECK_CAST(ChimpTest, (ref), chimp_test_class)
 
-ChimpRef *
-chimp_init_os_module (void);
+#define CHIMP_TEST_NAME(ref) (CHIMP_TEST(ref)->name)
 
-ChimpRef *
-chimp_init_gc_module (void);
-
-ChimpRef *
-chimp_init_net_module (void);
+CHIMP_EXTERN_CLASS(test);
 
 #ifdef __cplusplus
 };

@@ -126,11 +126,13 @@ add_library (libchimp STATIC
   libchimp/str.c
   libchimp/symtable.c
   libchimp/task.c
+  libchimp/test.c
   libchimp/var.c
   libchimp/vm.c
   libchimp/error.c
   libchimp/modules/net.c
   libchimp/modules/assertmod.c
+  libchimp/modules/chimpunitmod.c
   libchimp/modules/gcmod.c
   libchimp/modules/iomod.c
   libchimp/modules/osmod.c)
@@ -149,5 +151,7 @@ add_executable (test-native
   EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 target_link_libraries (test-native libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} check)
-add_custom_target (test test-native DEPENDS test-native)
 
+add_custom_target (test test-native
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/script/test
+  DEPENDS test-native)

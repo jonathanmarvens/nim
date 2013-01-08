@@ -20,80 +20,39 @@
 #include "chimp/object.h"
 #include "chimp/array.h"
 #include "chimp/str.h"
+#include "chimp/test.h"
 #include "chimp/vm.h"
 
 static ChimpRef *
-_chimp_assert_equal (ChimpRef *self, ChimpRef *args)
+_chimp_unit_test(ChimpRef *self, ChimpRef *args)
 {
-    ChimpCmpResult r;
-    ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
-    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 1);
+    fprintf (stdout, ".");
 
-    r = chimp_object_cmp (left, right);
+    // TODO: Size/argument validation on the incoming args
+    ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
+    ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 1);
 
-    if (r == CHIMP_CMP_ERROR) {
+    ChimpRef *fn_args = chimp_array_new();
+    chimp_array_push(fn_args, chimp_test_new(name));
+
+    if (chimp_object_call (fn, fn_args) == NULL) {
         return NULL;
     }
-    if (r != CHIMP_CMP_EQ) {
-        fprintf (stderr, "assertion failed: expected %s to not be equal to %s\n",
-            CHIMP_STR_DATA(chimp_object_str(left)),
-            CHIMP_STR_DATA(chimp_object_str(right)));
-        exit(1);
-    }
-    else {
-        return chimp_nil;
-    }
-}
 
-static ChimpRef *
-_chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
-{
-    ChimpCmpResult r;
-    ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
-    ChimpRef *right = CHIMP_ARRAY_ITEM(args, 1);
-
-    r = chimp_object_cmp (left, right);
-
-    if (r == CHIMP_CMP_ERROR) {
-        return NULL;
-    }
-    if (r == CHIMP_CMP_EQ) {
-        /* TODO complain */
-        return NULL;
-    }
-    else {
-        return chimp_nil;
-    }
+    return chimp_nil;
 }
 
 ChimpRef *
-_chimp_assert_fail (ChimpRef *self, ChimpRef *args)
-{
-    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
-    fprintf (stderr, "assertion failed: %s\n",
-        CHIMP_STR_DATA(chimp_object_str(msg)));
-    exit(1);
-}
-
-ChimpRef *
-chimp_init_assert_module (void)
+chimp_init_unit_module (void)
 {
     ChimpRef *mod;
 
-    mod = chimp_module_new_str ("assert", NULL);
+    mod = chimp_module_new_str ("chimpunit", NULL);
     if (mod == NULL) {
         return NULL;
     }
 
-    if (!chimp_module_add_method_str (mod, "eq", _chimp_assert_equal)) {
-        return NULL;
-    }
-
-    if (!chimp_module_add_method_str (mod, "neq", _chimp_assert_not_equal)) {
-        return NULL;
-    }
-
-    if (!chimp_module_add_method_str (mod, "fail", _chimp_assert_fail)) {
+    if (!chimp_module_add_method_str (mod, "test", _chimp_unit_test)) {
         return NULL;
     }
 

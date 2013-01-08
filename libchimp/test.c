@@ -16,14 +16,33 @@
  *                                                                           *
  *****************************************************************************/
 
-#include "chimp/any.h"
-#include "chimp/object.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "chimp/array.h"
+#include "chimp/object.h"
+#include "chimp/test.h"
 #include "chimp/str.h"
-#include "chimp/vm.h"
+#include "chimp/class.h"
+#include "chimp/ast.h"
+
+ChimpRef *chimp_test_class = NULL;
 
 static ChimpRef *
-_chimp_assert_equal (ChimpRef *self, ChimpRef *args)
+_chimp_test_init (ChimpRef *self, ChimpRef *args)
+{
+    return self;
+}
+
+static void
+_chimp_failed_test(ChimpRef *self)
+{
+    fprintf (stderr, "\nTest failed: %s\n",
+        CHIMP_STR_DATA(CHIMP_TEST_NAME(self)));
+}
+
+static ChimpRef *
+_chimp_test_equals (ChimpRef *self, ChimpRef *args)
 {
     ChimpCmpResult r;
     ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
@@ -35,7 +54,8 @@ _chimp_assert_equal (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
     if (r != CHIMP_CMP_EQ) {
-        fprintf (stderr, "assertion failed: expected %s to not be equal to %s\n",
+        _chimp_failed_test(self);
+        fprintf (stderr, "assertion failed: expected %s to be equal to %s\n",
             CHIMP_STR_DATA(chimp_object_str(left)),
             CHIMP_STR_DATA(chimp_object_str(right)));
         exit(1);
@@ -46,7 +66,7 @@ _chimp_assert_equal (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
-_chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
+_chimp_test_not_equals (ChimpRef *self, ChimpRef *args)
 {
     ChimpCmpResult r;
     ChimpRef *left = CHIMP_ARRAY_ITEM(args, 0);
@@ -58,45 +78,46 @@ _chimp_assert_not_equal (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
     if (r == CHIMP_CMP_EQ) {
-        /* TODO complain */
-        return NULL;
+        _chimp_failed_test(self);
+        fprintf (stderr, "assertion failed: expected %s to be not equal to %s\n",
+            CHIMP_STR_DATA(chimp_object_str(left)),
+            CHIMP_STR_DATA(chimp_object_str(right)));
+        exit(1);
     }
     else {
         return chimp_nil;
     }
 }
 
-ChimpRef *
-_chimp_assert_fail (ChimpRef *self, ChimpRef *args)
+static ChimpRef *
+_chimp_test_fail (ChimpRef *self, ChimpRef *args)
 {
-    ChimpRef *msg = CHIMP_ARRAY_ITEM(args, 0);
-    fprintf (stderr, "assertion failed: %s\n",
-        CHIMP_STR_DATA(chimp_object_str(msg)));
+    _chimp_failed_test(self);
+    fprintf (stderr, "%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, 0)));
     exit(1);
+    return NULL;
+}
+
+chimp_bool_t
+chimp_test_class_bootstrap (void)
+{
+    chimp_test_class =
+        chimp_class_new (CHIMP_STR_NEW ("test"), NULL, sizeof(ChimpTest));
+    if (chimp_test_class == NULL) {
+        return CHIMP_FALSE;
+    }
+    CHIMP_CLASS(chimp_test_class)->init = _chimp_test_init;
+    chimp_gc_make_root (NULL, chimp_test_class);
+    chimp_class_add_native_method (chimp_test_class, "equals",     _chimp_test_equals);
+    chimp_class_add_native_method (chimp_test_class, "not_equals", _chimp_test_not_equals);
+    chimp_class_add_native_method (chimp_test_class, "fail",       _chimp_test_fail);
+    return CHIMP_TRUE;
 }
 
 ChimpRef *
-chimp_init_assert_module (void)
+chimp_test_new (ChimpRef *name)
 {
-    ChimpRef *mod;
-
-    mod = chimp_module_new_str ("assert", NULL);
-    if (mod == NULL) {
-        return NULL;
-    }
-
-    if (!chimp_module_add_method_str (mod, "eq", _chimp_assert_equal)) {
-        return NULL;
-    }
-
-    if (!chimp_module_add_method_str (mod, "neq", _chimp_assert_not_equal)) {
-        return NULL;
-    }
-
-    if (!chimp_module_add_method_str (mod, "fail", _chimp_assert_fail)) {
-        return NULL;
-    }
-
-    return mod;
+    ChimpRef* ref = chimp_class_new_instance (chimp_test_class, NULL);
+    CHIMP_TEST(ref)->name = name;
+    return ref;
 }
-

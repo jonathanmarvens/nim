@@ -26,6 +26,7 @@
 #include "chimp/array.h"
 #include "chimp/method.h"
 #include "chimp/task.h"
+#include "chimp/test.h"
 #include "chimp/hash.h"
 #include "chimp/frame.h"
 #include "chimp/ast.h"
@@ -296,7 +297,6 @@ _chimp_array_range(ChimpRef* a, ChimpRef *args)
     return result;
 }
 
-
 static ChimpTaskInternal *main_task = NULL;
 
 static chimp_bool_t
@@ -319,7 +319,8 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "object", chimp_object_class);
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
-    chimp_hash_put_str (chimp_builtins, "error", chimp_error_class);
+    chimp_hash_put_str (chimp_builtins, "error",  chimp_error_class);
+    chimp_hash_put_str (chimp_builtins, "test",   chimp_test_class);
 
     CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
     CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
@@ -366,6 +367,7 @@ chimp_core_startup (const char *path, void *stack_start)
     if (!chimp_int_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
     if (!chimp_hash_class_bootstrap ()) goto error;
+    if (!chimp_test_class_bootstrap()) goto error;
 
     chimp_nil_class = chimp_class_new (
         CHIMP_STR_NEW("nil"), chimp_object_class, sizeof(ChimpAny));
@@ -406,6 +408,9 @@ chimp_core_startup (const char *path, void *stack_start)
         goto error;
 
     if (!chimp_module_add_builtin (chimp_init_assert_module ()))
+        goto error;
+
+    if (!chimp_module_add_builtin (chimp_init_unit_module ()))
         goto error;
 
     if (!chimp_module_add_builtin (chimp_init_os_module ()))
