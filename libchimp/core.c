@@ -320,7 +320,6 @@ chimp_core_init_builtins (void)
     chimp_hash_put_str (chimp_builtins, "class",  chimp_class_class);
     chimp_hash_put_str (chimp_builtins, "method", chimp_method_class);
     chimp_hash_put_str (chimp_builtins, "error",  chimp_error_class);
-    chimp_hash_put_str (chimp_builtins, "test",   chimp_test_class);
 
     CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
     CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
