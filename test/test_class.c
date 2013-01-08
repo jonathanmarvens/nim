@@ -16,15 +16,14 @@
  *                                                                           *
  *****************************************************************************/
 
-#define CHIMP_TEST_INSTANCE_CHECK(inst, klass, gc_type) \
+#define CHIMP_TEST_INSTANCE_CHECK(inst, klass) \
     fail_unless ((inst) != NULL, "calling %s constructor failed", CHIMP_STR_DATA(CHIMP_CLASS_NAME(klass))); \
-    fail_unless (CHIMP_ANY_TYPE((inst)) == (gc_type), "object should be GC type #%d", (gc_type)); \
     fail_unless (CHIMP_ANY_CLASS(inst) == (klass), "object is not an instance of %s", CHIMP_STR_DATA(CHIMP_CLASS_NAME(klass)));
 
 void
 test_class_setup (void)
 {
-    fail_unless (chimp_core_startup (stack_base), "core_startup failed");
+    fail_unless (chimp_core_startup (NULL, stack_base), "core_startup failed");
 }
 
 void
@@ -38,7 +37,7 @@ START_TEST(calling_object_class_should_create_an_object_instance)
     ChimpRef *instance;
 
     instance = chimp_object_call (chimp_object_class, chimp_array_new ());
-    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_object_class, CHIMP_VALUE_TYPE_OBJECT);
+    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_object_class);
 }
 END_TEST
 
@@ -50,7 +49,7 @@ START_TEST(calling_class_class_should_create_a_new_class)
     chimp_array_push (args, chimp_nil);
 
     instance = chimp_object_call (chimp_class_class, args);
-    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_class_class, CHIMP_VALUE_TYPE_CLASS);
+    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_class_class);
 }
 END_TEST
 
@@ -59,7 +58,7 @@ START_TEST(calling_str_class_should_create_a_str_instance)
     ChimpRef *instance;
 
     instance = chimp_object_call (chimp_str_class, chimp_array_new ());
-    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_str_class, CHIMP_VALUE_TYPE_STR);
+    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_str_class);
 }
 END_TEST
 
@@ -68,16 +67,16 @@ START_TEST(calling_hash_class_should_create_a_hash_instance)
     ChimpRef *instance;
     
     instance = chimp_object_call (chimp_hash_class, chimp_array_new ());
-    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_hash_class, CHIMP_VALUE_TYPE_HASH);
+    CHIMP_TEST_INSTANCE_CHECK(instance, chimp_hash_class);
 }
 END_TEST
 
 START_TEST(instances_of_new_classes_should_use_super_class)
 {
     const char *instance_class_name;
-    ChimpRef *klass = chimp_class_new (CHIMP_STR_NEW ("testing"), NULL);
+    ChimpRef *klass = chimp_class_new (CHIMP_STR_NEW ("testing"), NULL, 128);
     ChimpRef *instance = chimp_object_call (klass, chimp_array_new ());
-    CHIMP_TEST_INSTANCE_CHECK(instance, klass, CHIMP_VALUE_TYPE_OBJECT);
+    CHIMP_TEST_INSTANCE_CHECK(instance, klass);
     instance_class_name =
         CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(instance)));
     fail_unless (strcmp ("testing", instance_class_name) == 0,

@@ -19,7 +19,7 @@
 void
 test_str_setup (void)
 {
-    fail_unless (chimp_core_startup (stack_base), "core_startup failed");
+    fail_unless (chimp_core_startup (NULL, stack_base), "core_startup failed");
 }
 
 void
