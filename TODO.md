@@ -9,6 +9,11 @@
   rarely kosher to send closures to other tasks. (n.b. we can't send any
   kind of method between tasks atm -- perhaps best to keep it that way?)
 * Constants/read-only vars: accessible between tasks without message passing.
+* Partial application.
+  * For a function "foo a, b, c, d" we can partially apply fn arguments with
+    syntax like "var f = foo(1, 2, _, 4);", where f is a fn with arity 1.
+    Then we can call `f` using "f(3);" to evaluate "foo(1, 2, 3, 4)".
+  * The wildcard syntax (`_`) is already used for pattern matching.
 * Verify scoping rules using the symtable.
   * Identifiers should not be used/referenced before declared ('var' keyword)
   * Ensure variables in the outer scope are not accessible inside spawn blocks
