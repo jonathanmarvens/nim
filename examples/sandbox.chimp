@@ -126,8 +126,5 @@ main argv {
   io.print(arr);
 
   io.print([1, 2, 3].join(", "));
-
-  io.print(os.basename("/path/to/foo.txt"));
-  io.print(os.dirname("/path/to/foo.txt"));
 }
 

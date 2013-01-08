@@ -96,8 +96,28 @@ _chimp_test_fail (ChimpRef *self, ChimpRef *args)
 {
     _chimp_failed_test(self);
     CHIMP_BUG("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, 0)));
-    exit(1);
     return NULL;
+}
+
+static ChimpRef *
+_chimp_test_is_nil (ChimpRef *self, ChimpRef *args)
+{
+    if (CHIMP_ARRAY_ITEM(args, 0) != chimp_nil) {
+        CHIMP_BUG("assertion failed: expected nil, but got %s",
+                CHIMP_STR_DATA(chimp_object_str(CHIMP_ARRAY_ITEM(args, 0))));
+        return NULL;
+    }
+    return chimp_nil;
+}
+
+static ChimpRef *
+_chimp_test_is_not_nil (ChimpRef *self, ChimpRef *args)
+{
+    if (CHIMP_ARRAY_ITEM(args, 0) == chimp_nil) {
+        CHIMP_BUG("assertion failed: expected non-nil value, but got nil");
+        return NULL;
+    }
+    return chimp_nil;
 }
 
 chimp_bool_t
@@ -112,6 +132,8 @@ chimp_test_class_bootstrap (void)
     chimp_gc_make_root (NULL, chimp_test_class);
     chimp_class_add_native_method (chimp_test_class, "equals",     _chimp_test_equals);
     chimp_class_add_native_method (chimp_test_class, "not_equals", _chimp_test_not_equals);
+    chimp_class_add_native_method (chimp_test_class, "is_nil",     _chimp_test_is_nil);
+    chimp_class_add_native_method (chimp_test_class, "is_not_nil", _chimp_test_is_not_nil);
     chimp_class_add_native_method (chimp_test_class, "fail",       _chimp_test_fail);
     return CHIMP_TRUE;
 }

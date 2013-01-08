@@ -1,0 +1,27 @@
+use os;
+use chimpunit;
+
+main argv {
+  var path = "/path/to/foo.txt";
+
+  chimpunit.test("os.basename", fn { |t|
+    t.equals("foo.txt", os.basename(path));
+  });
+
+  chimpunit.test("os.dirname", fn { |t|
+    t.equals("/path/to", os.dirname(path));
+  });
+
+  chimpunit.test("os.dirname with relative path 1", fn { |t|
+    t.equals("", os.dirname("foo.txt"));
+  });
+
+  chimpunit.test("os.dirname with relative path 2", fn { |t|
+    t.equals("..", os.dirname("../foo.txt"));
+  });
+
+  chimpunit.test("os.getenv", fn { |t|
+    t.is_not_nil(os.getenv("HOME"));
+  });
+}
+
