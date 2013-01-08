@@ -55,7 +55,7 @@ _chimp_test_equals (ChimpRef *self, ChimpRef *args)
     }
     if (r != CHIMP_CMP_EQ) {
         _chimp_failed_test(self);
-        fprintf (stderr, "assertion failed: expected %s to be equal to %s\n",
+        CHIMP_BUG("assertion failed: expected %s to be equal to %s\n",
             CHIMP_STR_DATA(chimp_object_str(left)),
             CHIMP_STR_DATA(chimp_object_str(right)));
         exit(1);
@@ -79,7 +79,7 @@ _chimp_test_not_equals (ChimpRef *self, ChimpRef *args)
     }
     if (r == CHIMP_CMP_EQ) {
         _chimp_failed_test(self);
-        fprintf (stderr, "assertion failed: expected %s to be not equal to %s\n",
+        CHIMP_BUG("assertion failed: expected %s to be not equal to %s\n",
             CHIMP_STR_DATA(chimp_object_str(left)),
             CHIMP_STR_DATA(chimp_object_str(right)));
         exit(1);
@@ -93,7 +93,7 @@ static ChimpRef *
 _chimp_test_fail (ChimpRef *self, ChimpRef *args)
 {
     _chimp_failed_test(self);
-    fprintf (stderr, "%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, 0)));
+    CHIMP_BUG("%s\n", CHIMP_STR_DATA(CHIMP_ARRAY_ITEM(args, 0)));
     exit(1);
     return NULL;
 }
