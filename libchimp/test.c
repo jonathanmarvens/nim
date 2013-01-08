@@ -31,6 +31,8 @@ ChimpRef *chimp_test_class = NULL;
 static ChimpRef *
 _chimp_test_init (ChimpRef *self, ChimpRef *args)
 {
+    ChimpRef *name = CHIMP_ARRAY_ITEM(args, 0);
+    CHIMP_TEST(self)->name = name;
     return self;
 }
 
@@ -117,7 +119,5 @@ chimp_test_class_bootstrap (void)
 ChimpRef *
 chimp_test_new (ChimpRef *name)
 {
-    ChimpRef* ref = chimp_class_new_instance (chimp_test_class, NULL);
-    CHIMP_TEST(ref)->name = name;
-    return ref;
+    return chimp_class_new_instance (chimp_test_class, name, NULL);
 }
