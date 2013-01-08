@@ -1,6 +1,10 @@
 # General
 * Fix broken examples.
 * Forward declarations.
+* Potential GC bugs related to optimizations resulting in local variables
+  not having space on the stack. See boehm's GC & others:
+  https://github.com/ivmai/bdwgc/
+  http://timetobleed.com/the-broken-promises-of-mrireeyarv/
 * Use CHIMP\_SUPER(self) to invoke super class slots for e.g. init, dtor, etc.
 * Allow (de)serialization of custom types to allow these objects to be sent
   as messages between tasks where safe (e.g. net.socket).
