@@ -49,6 +49,43 @@ _chimp_os_sleep (ChimpRef *ref, ChimpRef *args)
     return chimp_nil;
 }
 
+static ChimpRef *
+_chimp_os_basename (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *path = CHIMP_ARRAY_ITEM(args, 0);
+    size_t len = CHIMP_STR_SIZE(path);
+    const char *s = CHIMP_STR_DATA(path) + len;
+
+    if (len > 0) len--;
+    while (len > 0) {
+        if (*s == '/') {
+            s++;
+            break;
+        }
+        s--;
+        len--;
+    }
+
+    return chimp_str_new (s, CHIMP_STR_SIZE(path) - len);
+}
+
+static ChimpRef *
+_chimp_os_dirname (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *path = CHIMP_ARRAY_ITEM(args, 0);
+    size_t i;
+    const char *begin = CHIMP_STR_DATA(path);
+    const char *end = begin + CHIMP_STR_SIZE(path);
+
+    for (i = 0; i < CHIMP_STR_SIZE(path); i++) {
+        end--;
+        if (*end == '/') {
+            return chimp_str_new (begin, (size_t) (end - begin));
+        }
+    }
+    return CHIMP_STR_NEW ("");
+}
+
 ChimpRef *
 chimp_init_os_module (void)
 {
@@ -64,6 +101,14 @@ chimp_init_os_module (void)
     }
 
     if (!chimp_module_add_method_str (os, "sleep", _chimp_os_sleep)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "basename", _chimp_os_basename)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "dirname", _chimp_os_dirname)) {
         return NULL;
     }
 
