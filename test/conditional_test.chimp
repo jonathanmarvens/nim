@@ -28,6 +28,4 @@ main argv {
 
     t.equals(true, executed);
   });
-
-  io.print("");
 }

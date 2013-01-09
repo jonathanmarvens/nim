@@ -31,16 +31,33 @@ ChimpRef *chimp_test_class = NULL;
 static ChimpRef *
 _chimp_test_init (ChimpRef *self, ChimpRef *args)
 {
-    ChimpRef *name = CHIMP_ARRAY_ITEM(args, 0);
-    CHIMP_TEST(self)->name = name;
+    CHIMP_TEST(self)->name = CHIMP_STR_NEW("");
+    CHIMP_TEST(self)->passed = 0;
+    CHIMP_TEST(self)->failed = 0;
     return self;
+}
+static void
+_chimp_test_output_stats (ChimpRef *self, FILE* dest)
+{
+    fprintf(dest, "\nPassed: %lld, Failed: %lld\n",
+        CHIMP_TEST(self)->passed,
+        CHIMP_TEST(self)->failed);
+}
+
+static void
+_chimp_test_dtor (ChimpRef *self)
+{
+    _chimp_test_output_stats(self, stdout);
 }
 
 static void
 _chimp_failed_test(ChimpRef *self)
 {
-    fprintf (stderr, "\nTest failed: %s\n",
+    fprintf (stderr, "\nTest failed: %s",
         CHIMP_STR_DATA(CHIMP_TEST_NAME(self)));
+
+    CHIMP_TEST(self)->failed++;
+    _chimp_test_output_stats(self, stderr);
 }
 
 static ChimpRef *
@@ -129,6 +146,7 @@ chimp_test_class_bootstrap (void)
         return CHIMP_FALSE;
     }
     CHIMP_CLASS(chimp_test_class)->init = _chimp_test_init;
+    CHIMP_CLASS(chimp_test_class)->dtor = _chimp_test_dtor;
     chimp_gc_make_root (NULL, chimp_test_class);
     chimp_class_add_native_method (chimp_test_class, "equals",     _chimp_test_equals);
     chimp_class_add_native_method (chimp_test_class, "not_equals", _chimp_test_not_equals);
@@ -139,7 +157,7 @@ chimp_test_class_bootstrap (void)
 }
 
 ChimpRef *
-chimp_test_new (ChimpRef *name)
+chimp_test_new (void)
 {
-    return chimp_class_new_instance (chimp_test_class, name, NULL);
+    return chimp_class_new_instance (chimp_test_class, NULL);
 }

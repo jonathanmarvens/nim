@@ -31,6 +31,4 @@ main argv {
     t.equals(range(5, 0, -1), [5, 4, 3, 2, 1]);
     t.equals(range(4, -4, -2), [4, 2, 0, -2]);
   });
-
-  io.print("");
 }

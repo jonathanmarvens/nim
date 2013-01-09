@@ -43,6 +43,4 @@ main argv {
     var result = ["1", "2", "3"].join(",");
     t.equals("1,2,3", result);
   });
-
-  io.print("");
 }

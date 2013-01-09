@@ -23,6 +23,8 @@
 #include "chimp/test.h"
 #include "chimp/vm.h"
 
+static ChimpRef *test_runner = NULL;
+
 static ChimpRef *
 _chimp_unit_test(ChimpRef *self, ChimpRef *args)
 {
@@ -32,12 +34,17 @@ _chimp_unit_test(ChimpRef *self, ChimpRef *args)
     ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 1);
 
-    ChimpRef *fn_args = chimp_array_new();
-    chimp_array_push(fn_args, chimp_test_new(name));
-
-    if (chimp_object_call (fn, fn_args) == NULL) {
-        return NULL;
+    if (test_runner == NULL)
+    {
+        test_runner = chimp_test_new();
     }
+    CHIMP_TEST(test_runner)->name = name;
+
+    ChimpRef *fn_args = chimp_array_new();
+    chimp_array_push(fn_args, test_runner);
+
+    chimp_object_call (fn, fn_args);
+    CHIMP_TEST(test_runner)->passed++;
 
     return chimp_nil;
 }
