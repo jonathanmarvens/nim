@@ -471,6 +471,11 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
         return chimp_symtable_add (self, name, CHIMP_SYM_BUILTIN);
     }
 
+    if (strcmp (CHIMP_STR_DATA(name), "__file__") == 0 ||
+        strcmp (CHIMP_STR_DATA(name), "__line__") == 0) {
+        return chimp_symtable_add (self, name, CHIMP_SYM_SPECIAL);
+    }
+
     CHIMP_BUG ("unknown symbol: %s", CHIMP_STR_DATA(name));
     return CHIMP_FALSE;
 }

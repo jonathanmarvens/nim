@@ -1507,9 +1507,24 @@ chimp_compile_ast_expr_getitem (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_ident (ChimpCodeCompiler *c, ChimpRef *expr)
 {
+    ChimpRef *id = CHIMP_AST_EXPR(expr)->ident.id;
+    const ChimpAstNodeLocation *loc = &CHIMP_AST_EXPR(expr)->location;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
-    if (chimp_code_pushname (code, CHIMP_AST_EXPR(expr)->ident.id) < 0) {
-        return CHIMP_FALSE;
+    if (strcmp (CHIMP_STR_DATA (id), "__file__") == 0) {
+        /* XXX loc->filename == NULL here. why?!? */
+        if (!chimp_code_pushconst (code, CHIMP_SYMTABLE(c->symtable)->filename)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else if (strcmp (CHIMP_STR_DATA (id), "__line__") == 0) {
+        if (!chimp_code_pushconst (code, chimp_int_new (loc->first_line))) {
+            return CHIMP_FALSE;
+        }
+    }
+    else {
+        if (!chimp_code_pushname (code, id)) {
+            return CHIMP_FALSE;
+        }
     }
     return CHIMP_TRUE;
 }

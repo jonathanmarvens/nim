@@ -29,6 +29,7 @@ enum {
     CHIMP_SYM_DECL    = 0x0001, /* symbol explicitly introduced via a decl */
     CHIMP_SYM_BUILTIN = 0x0002, /* builtin */
     CHIMP_SYM_FREE    = 0x0004, /* free var */
+    CHIMP_SYM_SPECIAL = 0x0008, /* special/virtual var (e.g. __file__) */
     CHIMP_SYM_MODULE  = 0x1000, /* symbol declared at the module level */
     CHIMP_SYM_CLASS   = 0x2000, /* symbol declared at the class level */
     CHIMP_SYM_SPAWN   = 0x4000, /* symbol declared inside a spawn block */
