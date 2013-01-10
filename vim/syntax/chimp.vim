@@ -8,12 +8,12 @@ if exists("b:current_syntax")
     finish
 endif
 
-syn keyword chimpKeyword nil use ret var and or panic fn spawn while not _
-syn keyword chimpKeyword receive match class this break
+syn keyword chimpKeyword nil use ret var and or fn spawn while not _
+syn keyword chimpKeyword match class this break
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
 syn keyword chimpType str int hash object array error
-syn keyword chimpSpecial init recv self range
+syn keyword chimpSpecial init recv self range __file__ __line__
 syn match chimpString '"[^"]*"'
 syn match chimpComment '#.*$'
 syn match chimpInt '[0-9][0-9]*'
