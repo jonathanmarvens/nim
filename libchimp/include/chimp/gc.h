@@ -25,6 +25,30 @@
 extern "C" {
 #endif
 
+#if ((defined __x86_64) || \
+        (defined __x86_64__) || \
+        (defined __amd64__) || \
+        (defined __amd64) || \
+        (defined _M_X64) || \
+        (defined _M_AMD64)) && \
+    (defined __GNUC__)
+#define CHIMP_ARCH_X86_64
+#define CHIMP_ARCH "x86-64"
+#elif ((defined i386) || \
+        (defined __i386) || \
+        (defined __i386__) || \
+        (defined _M_IX86) || \
+        (defined __X86__) || \
+        (defined _X86_) || \
+        (defined __INTEL__)) && \
+    (defined __GNUC__)
+#define CHIMP_ARCH_X86_32
+#define CHIMP_ARCH "x86"
+#else
+#define CHIMP_ARCH_UNKNOWN
+#define CHIMP_ARCH "unknown"
+#endif
+
 struct _ChimpLWHash;
 
 typedef struct _ChimpGC ChimpGC;

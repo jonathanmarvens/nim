@@ -388,6 +388,35 @@ chimp_gc_collect (ChimpGC *gc)
     ChimpRef *base;
     size_t i;
     ChimpRef *ref;
+    /* save registers to the stack */
+#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
+    void *regs[14];
+    __asm__("movq %rax, 8(%rsp)");
+    __asm__("movq %rbx, 16(%rsp)");
+    __asm__("movq %rcx, 24(%rsp)");
+    __asm__("movq %rdx, 32(%rsp)");
+    __asm__("movq %rsi, 40(%rsp)");
+    __asm__("movq %rdi, 48(%rsp)");
+    __asm__("movq %r8, 56(%rsp)");
+    __asm__("movq %r9, 64(%rsp)");
+    __asm__("movq %r10, 72(%rsp)");
+    __asm__("movq %r11, 80(%rsp)");
+    __asm__("movq %r12, 88(%rsp)");
+    __asm__("movq %r13, 96(%rsp)");
+    __asm__("movq %r14, 104(%rsp)");
+    __asm__("movq %r15, 112(%rsp)");
+#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
+    void *regs[6];
+    /* XXX untested */
+    __asm__("movl %eax, 8(%esp)");
+    __asm__("movl %ebx, 16(%esp)");
+    __asm__("movl %ecx, 24(%esp)");
+    __asm__("movl %edx, 32(%esp)");
+    __asm__("movl %esi, 40(%esp)");
+    __asm__("movl %edi, 48(%esp)");
+#else
+#warning "Unknown or unsupported architecture: GC can't grok registers"
+#endif
     
     if (gc == NULL) {
         gc = CHIMP_CURRENT_GC;
