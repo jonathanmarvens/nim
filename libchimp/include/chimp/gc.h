@@ -49,6 +49,10 @@ extern "C" {
 #define CHIMP_ARCH "unknown"
 #endif
 
+/* TODO sniff OS in build scripts */
+#define CHIMP_OS "*nix"
+#define CHIMP_VERSION "0.0.1"
+
 struct _ChimpLWHash;
 
 typedef struct _ChimpGC ChimpGC;

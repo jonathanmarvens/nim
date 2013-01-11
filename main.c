@@ -72,6 +72,7 @@ real_main (int argc, char **argv)
     ChimpRef *main_method;
     ChimpRef *args;
     if (argc < 2) {
+        fprintf (stderr, "chimp v%s [%s/%s]\n", CHIMP_VERSION, CHIMP_OS, CHIMP_ARCH);
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         return 1;
     }
