@@ -385,35 +385,39 @@ chimp_gc_sweep (ChimpGC *gc)
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
+    /* regs **MUST** be first variable declared in this function */
+    void *regs[16];
     ChimpRef *base;
     size_t i;
     ChimpRef *ref;
     /* save registers to the stack */
 #if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
-    void *regs[14];
-    __asm__("movq %rax, 8(%rsp)");
-    __asm__("movq %rbx, 16(%rsp)");
-    __asm__("movq %rcx, 24(%rsp)");
-    __asm__("movq %rdx, 32(%rsp)");
-    __asm__("movq %rsi, 40(%rsp)");
-    __asm__("movq %rdi, 48(%rsp)");
-    __asm__("movq %r8, 56(%rsp)");
-    __asm__("movq %r9, 64(%rsp)");
-    __asm__("movq %r10, 72(%rsp)");
-    __asm__("movq %r11, 80(%rsp)");
-    __asm__("movq %r12, 88(%rsp)");
-    __asm__("movq %r13, 96(%rsp)");
-    __asm__("movq %r14, 104(%rsp)");
-    __asm__("movq %r15, 112(%rsp)");
+    __asm__("movq %rax, -8(%rbp)");
+    __asm__("movq %rbx, -16(%rbp)");
+    __asm__("movq %rcx, -24(%rbp)");
+    __asm__("movq %rdx, -32(%rbp)");
+    __asm__("movq %rsi, -40(%rbp)");
+    __asm__("movq %rdi, -48(%rbp)");
+    __asm__("movq %r8, -56(%rbp)");
+    __asm__("movq %r9, -64(%rbp)");
+    __asm__("movq %r10, -72(%rbp)");
+    __asm__("movq %r11, -80(%rbp)");
+    __asm__("movq %r12, -88(%rbp)");
+    __asm__("movq %r13, -96(%rbp)");
+    __asm__("movq %r14, -104(%rbp)");
+    __asm__("movq %r15, -112(%rbp)");
+    __asm__("movq %rbp, -120(%rbp)");
+    __asm__("movq %rsp, -128(%rbp)");
 #elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
-    void *regs[6];
     /* XXX untested */
-    __asm__("movl %eax, 8(%esp)");
-    __asm__("movl %ebx, 16(%esp)");
-    __asm__("movl %ecx, 24(%esp)");
-    __asm__("movl %edx, 32(%esp)");
-    __asm__("movl %esi, 40(%esp)");
-    __asm__("movl %edi, 48(%esp)");
+    __asm__("movl %eax, -4(%ebp)");
+    __asm__("movl %ebx, -8(%ebp)");
+    __asm__("movl %ecx, -16(%ebp)");
+    __asm__("movl %edx, -20(%ebp)");
+    __asm__("movl %esi, -24(%ebp)");
+    __asm__("movl %edi, -28(%ebp)");
+    __asm__("movl %ebp, -32(%ebp)");
+    __asm__("movl %esp, -36(%ebp)");
 #else
 #warning "Unknown or unsupported architecture: GC can't grok registers"
 #endif
