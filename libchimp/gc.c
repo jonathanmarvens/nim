@@ -382,14 +382,25 @@ chimp_gc_sweep (ChimpGC *gc)
     return freed;
 }
 
+#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
+#define CHIMP_GC_GET_STACK_END(ptr, guess) \
+    __asm__("movq %%rsp, %0" : "=r" (ptr))
+#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
+#define CHIMP_GC_GET_STACK_END(ptr, guess) \
+    __asm__("movq %%esp, %0" : "=r" (end))
+#else
+#warning "Unknown or unsupported architecture: GC must guess at stack end"
+#define CHIMP_GC_GET_STACK_END(ptr, guess) (end) = (guess)
+#endif
+
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
     /* regs **MUST** be first variable declared in this function */
     void *regs[16];
-    ChimpRef *base;
     size_t i;
     ChimpRef *ref;
+    ChimpRef *base;
     /* save registers to the stack */
 #if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
     __asm__("movq %rax, -8(%rbp)");
@@ -441,7 +452,10 @@ chimp_gc_collect (ChimpGC *gc)
     chimp_task_mark (gc, CHIMP_CURRENT_TASK);
 
     if (gc->stack_start != NULL) {
-        void *ref_p = &base;
+        void *ref_p;
+        
+        CHIMP_GC_GET_STACK_END(ref_p, &base);
+
         /* XXX stack may grow in the other direction on some archs. */
         while (ref_p <= gc->stack_start) {
             /* STFU valgrind. */
