@@ -144,6 +144,9 @@ set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
 add_executable (chimp main.c)
 target_link_libraries (chimp libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable (chasm chasm.c)
+target_link_libraries (chasm libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
 #
 # TODO test for the presence of check
 #
