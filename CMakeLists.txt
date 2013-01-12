@@ -104,6 +104,10 @@ add_custom_command (
 # ---- </TEST-DRIVER> ----
 #
 
+add_custom_target (uv
+    COMMAND make
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv)
+
 include_directories ("${CMAKE_CURRENT_BINARY_DIR}/libchimp/include" "${PROJECT_SOURCE_DIR}/libchimp/include")
 add_library (libchimp STATIC
   ${PARSER_C}
@@ -140,6 +144,8 @@ add_library (libchimp STATIC
 # Default behaviour is to generate liblibchimp.a ...
 #
 set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
+set_target_properties (libchimp PROPERTIES COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv/include")
+add_dependencies (libchimp uv)
 
 add_executable (chimp main.c)
 target_link_libraries (chimp libchimp ${FLEX_LIBRARIES} ${BISON_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
