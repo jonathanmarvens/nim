@@ -398,6 +398,7 @@ chimp_gc_collect (ChimpGC *gc)
 {
     /* regs **MUST** be first variable declared in this function */
     void *regs[16];
+    void *regs_ptr;
     size_t i;
     ChimpRef *ref;
     ChimpRef *base;
@@ -433,6 +434,10 @@ chimp_gc_collect (ChimpGC *gc)
 #warning "Unknown or unsupported architecture: GC can't grok registers"
 #endif
     
+    regs_ptr = regs;
+    base = NULL;
+    base = base;
+
     if (gc == NULL) {
         gc = CHIMP_CURRENT_GC;
     }
