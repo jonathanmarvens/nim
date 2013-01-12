@@ -1,0 +1,20 @@
+#.use os
+#.use io
+#.local foo
+
+pushname str
+
+#
+# temp = ["Hello World"][0]
+#
+pushconst "Hello World"
+makearray 1
+pushconst 0
+getitem
+
+#
+# str(temp)
+#
+call 1
+ret
+
