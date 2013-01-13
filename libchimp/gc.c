@@ -396,30 +396,32 @@ chimp_gc_sweep (ChimpGC *gc)
 chimp_bool_t
 chimp_gc_collect (ChimpGC *gc)
 {
-    /* regs **MUST** be first variable declared in this function */
-    void *regs[16];
-    void *regs_ptr;
     size_t i;
     ChimpRef *ref;
     ChimpRef *base;
     /* save registers to the stack */
-#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__) && 0
-    __asm__("movq %rax, -8(%rbp)");
-    __asm__("movq %rbx, -16(%rbp)");
-    __asm__("movq %rcx, -24(%rbp)");
-    __asm__("movq %rdx, -32(%rbp)");
-    __asm__("movq %rsi, -40(%rbp)");
-    __asm__("movq %rdi, -48(%rbp)");
-    __asm__("movq %r8, -56(%rbp)");
-    __asm__("movq %r9, -64(%rbp)");
-    __asm__("movq %r10, -72(%rbp)");
-    __asm__("movq %r11, -80(%rbp)");
-    __asm__("movq %r12, -88(%rbp)");
-    __asm__("movq %r13, -96(%rbp)");
-    __asm__("movq %r14, -104(%rbp)");
-    __asm__("movq %r15, -112(%rbp)");
-    __asm__("movq %rbp, -120(%rbp)");
-    __asm__("movq %rsp, -128(%rbp)");
+#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
+    void *regs[16];
+    __asm__ ("push %rax;");
+    __asm__ (
+         "movq %%rbx, 8(%%rax);"
+         "movq %%rcx, 16(%%rax);"
+         "movq %%rdx, 24(%%rax);"
+         "movq %%rsi, 32(%%rax);"
+         "movq %%rdi, 40(%%rax);"
+         "movq %%r8,  48(%%rax);"
+         "movq %%r9,  56(%%rax);"
+         "movq %%r10, 64(%%rax);"
+         "movq %%r11, 72(%%rax);"
+         "movq %%r12, 80(%%rax);"
+         "movq %%r13, 88(%%rax);"
+         "movq %%r14, 96(%%rax);"
+         "movq %%r15, 104(%%rax);"
+         "pop %%rbx;"
+         "movq %%rbx, 112(%%rax);"
+         :
+         : "a" (regs)
+         : "%rbx");
 #elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__) && 0
     /* XXX untested */
     __asm__("movl %eax, -4(%ebp)");
@@ -434,7 +436,6 @@ chimp_gc_collect (ChimpGC *gc)
 #warning "Unknown or unsupported architecture: GC can't grok registers"
 #endif
     
-    regs_ptr = regs;
     base = NULL;
     base = base;
 

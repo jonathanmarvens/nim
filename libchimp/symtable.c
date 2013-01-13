@@ -118,7 +118,6 @@ _chimp_symtable_entry_init (ChimpRef *self, ChimpRef *args)
     ChimpRef *symtable;
     ChimpRef *scope;
     ChimpRef *parent;
-    ChimpRef *symbols;
 
     if (!chimp_method_parse_args (
             args, "oooI", &symtable, &parent, &scope, &flags)) {
@@ -129,12 +128,7 @@ _chimp_symtable_entry_init (ChimpRef *self, ChimpRef *args)
     CHIMP_SYMTABLE_ENTRY(self)->symtable = symtable;
     CHIMP_SYMTABLE_ENTRY(self)->scope = scope;
     CHIMP_SYMTABLE_ENTRY(self)->parent = parent;
-#if 0
-    symbols = chimp_hash_new ();
-    CHIMP_SYMTABLE_ENTRY(self)->symbols = symbols;
-#else
     CHIMP_SYMTABLE_ENTRY(self)->symbols = chimp_hash_new ();
-#endif
     if (CHIMP_SYMTABLE_ENTRY(self)->symbols == NULL) {
         CHIMP_BUG ("failed to allocate symbols hash");
         return NULL;
