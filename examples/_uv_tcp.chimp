@@ -34,9 +34,9 @@ main argv {
     c.write(msg);
     c.on_read(fn { |chunk|
       io.write(chunk);
-      c.close();
     });
     c.on_end(fn {
+      c.close();
       io.print("client disconnected");
     });
   });
