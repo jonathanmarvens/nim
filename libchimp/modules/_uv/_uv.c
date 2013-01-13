@@ -158,6 +158,7 @@ _chimp_uv_tcp_dtor (ChimpRef *self)
 {
     if (CHIMP_UV_TCP(self)->live) {
         uv_close ((uv_handle_t *)(&CHIMP_UV_TCP(self)->tcp), NULL);
+        CHIMP_UV_TCP(self)->tcp.data = NULL;
         CHIMP_UV_TCP(self)->live = CHIMP_FALSE;
     }
 }
@@ -262,6 +263,44 @@ _chimp_uv_tcp_close (ChimpRef *self, ChimpRef *args)
 }
 
 static void
+_chimp_uv_tcp_write_end (uv_write_t *req, int status)
+{
+    free (req);
+}
+
+static ChimpRef *
+_chimp_uv_tcp_write (ChimpRef *self, ChimpRef *args)
+{
+    uv_buf_t buf[1];
+    ChimpRef *data;
+    uv_write_t *req;
+
+    if (!chimp_method_parse_args (args, "o", &data)) {
+        return NULL;
+    }
+
+    req = malloc (sizeof *req);
+    if (req == NULL) {
+        CHIMP_BUG ("failed to allocate uv_write_t");
+        return NULL;
+    }
+
+    buf[0].base = CHIMP_STR_DATA(data);
+    buf[0].len = CHIMP_STR_SIZE(data);
+    /* XXX at a glance, uv_write doesn't seem to stomp on uv_buf_t.data, but
+     *     nothing in the interface seems to guarantee this...
+     */
+    req->data = data;
+
+    if (uv_write (
+            req, (uv_stream_t *)&CHIMP_UV_TCP(self)->tcp, buf, 1, _chimp_uv_tcp_write_end) != 0) {
+        CHIMP_BUG ("uv_write failed");
+        return NULL;
+    }
+    return chimp_nil;
+}
+
+static void
 _chimp_uv_tcp_mark (ChimpGC *gc, ChimpRef *self)
 {
     chimp_gc_mark_ref (gc, CHIMP_UV_TCP(self)->connection_cb);
@@ -283,6 +322,9 @@ _chimp_init_uv_tcp_class (void)
         return NULL;
     }
     if (!chimp_class_add_native_method (klass, "listen", _chimp_uv_tcp_listen)) {
+        return NULL;
+    }
+    if (!chimp_class_add_native_method (klass, "write", _chimp_uv_tcp_write)) {
         return NULL;
     }
     if (!chimp_class_add_native_method (klass, "close", _chimp_uv_tcp_close)) {
