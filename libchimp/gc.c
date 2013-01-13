@@ -422,16 +422,23 @@ chimp_gc_collect (ChimpGC *gc)
          :
          : "a" (regs)
          : "%rbx");
-#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__) && 0
+#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
     /* XXX untested */
-    __asm__("movl %eax, -4(%ebp)");
-    __asm__("movl %ebx, -8(%ebp)");
-    __asm__("movl %ecx, -16(%ebp)");
-    __asm__("movl %edx, -20(%ebp)");
-    __asm__("movl %esi, -24(%ebp)");
-    __asm__("movl %edi, -28(%ebp)");
-    __asm__("movl %ebp, -32(%ebp)");
-    __asm__("movl %esp, -36(%ebp)");
+    void *regs[8];
+    __asm__ ("push %eax;");
+    __asm__ (
+        "movl %ebx, 4(%%eax);"
+        "movl %ecx, 8(%%eax);"
+        "movl %edx, 12(%%eax);"
+        "movl %esi, 16(%%eax);"
+        "movl %edi, 20(%%eax);"
+        "movl %ebp, 24(%%eax);"
+        "movl %esp, 28(%%eax);"
+        "pop %ebx;"
+        "movl %ebx, 32(%%eax);"
+        :
+        : "a" (regs)
+        : "%ebx");
 #else
 #warning "Unknown or unsupported architecture: GC can't grok registers"
 #endif
