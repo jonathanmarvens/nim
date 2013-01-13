@@ -1,6 +1,10 @@
 #!/bin/bash
 
+APPDIR="$(dirname "$0")/.."
+APPDIR="$(cd "$APPDIR" && pwd)"
+
 set -e
 
 echo "Running Chimp Tests"
-find test -name *.chimp -exec ./chimp '{}' \;
+find "$APPDIR/test" -name '*.chimp' -exec "$APPDIR/chimp" '{}' \;
+
