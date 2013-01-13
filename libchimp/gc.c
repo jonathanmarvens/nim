@@ -387,10 +387,10 @@ chimp_gc_sweep (ChimpGC *gc)
     __asm__("movq %%rsp, %0" : "=r" (ptr))
 #elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
 #define CHIMP_GC_GET_STACK_END(ptr, guess) \
-    __asm__("movq %%esp, %0" : "=r" (end))
+    __asm__("movq %%esp, %0" : "=r" (ptr))
 #else
 #warning "Unknown or unsupported architecture: GC must guess at stack end"
-#define CHIMP_GC_GET_STACK_END(ptr, guess) (end) = (guess)
+#define CHIMP_GC_GET_STACK_END(ptr, guess) (ptr) = (guess)
 #endif
 
 chimp_bool_t
@@ -403,7 +403,7 @@ chimp_gc_collect (ChimpGC *gc)
     ChimpRef *ref;
     ChimpRef *base;
     /* save registers to the stack */
-#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
+#if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__) && 0
     __asm__("movq %rax, -8(%rbp)");
     __asm__("movq %rbx, -16(%rbp)");
     __asm__("movq %rcx, -24(%rbp)");
@@ -420,7 +420,7 @@ chimp_gc_collect (ChimpGC *gc)
     __asm__("movq %r15, -112(%rbp)");
     __asm__("movq %rbp, -120(%rbp)");
     __asm__("movq %rsp, -128(%rbp)");
-#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
+#elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__) && 0
     /* XXX untested */
     __asm__("movl %eax, -4(%ebp)");
     __asm__("movl %ebx, -8(%ebp)");
