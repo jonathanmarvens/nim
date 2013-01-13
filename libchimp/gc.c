@@ -387,7 +387,7 @@ chimp_gc_sweep (ChimpGC *gc)
     __asm__("movq %%rsp, %0" : "=r" (ptr))
 #elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
 #define CHIMP_GC_GET_STACK_END(ptr, guess) \
-    __asm__("movq %%esp, %0" : "=r" (ptr))
+    __asm__("movl %%esp, %0" : "=r" (ptr))
 #else
 #warning "Unknown or unsupported architecture: GC must guess at stack end"
 #define CHIMP_GC_GET_STACK_END(ptr, guess) (ptr) = (guess)
