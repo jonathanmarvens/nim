@@ -29,6 +29,14 @@ endif()
 
 message (STATUS "librt: ${LIBRT_LIBRARIES}")
 
+if (APPLE)
+  find_library (COREFOUNDATION_LIBRARY CoreFoundation)
+  message (STATUS "CoreFoundation: ${COREFOUNDATION_LIBRARY}")
+
+  find_library (CORESERVICES_LIBRARY CoreServices)
+  message (STATUS "CoreServices: ${CORESERVICES_LIBRARY}")
+endif()
+
 #
 # Find valgrind
 #
@@ -180,6 +188,8 @@ set (CHIMP_LIBRARIES
     ${BISON_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${PROJECT_BINARY_DIR}/libchimp/modules/_uv/libuv/libuv.a
+    ${COREFOUNDATION_LIBRARY}
+    ${CORESERVICES_LIBRARY}
     ${LIBRT_LIBRARIES})
 
 add_executable (chimp main.c)
