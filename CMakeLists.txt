@@ -124,9 +124,13 @@ add_custom_command (
 # ---- </TEST-DRIVER> ----
 #
 
-add_custom_target (uv
-    COMMAND make
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv)
+add_custom_target (uv make
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv"
+    VERBATIM)
+
+add_custom_target (uv-clean make clean
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv"
+    VERBATIM)
 
 include_directories ("${CMAKE_CURRENT_BINARY_DIR}/libchimp/include" "${PROJECT_SOURCE_DIR}/libchimp/include")
 add_library (libchimp STATIC
@@ -195,3 +199,4 @@ target_link_libraries (test-native ${CHIMP_LIBRARIES} check)
 add_custom_target (test test-native
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/script/test
   DEPENDS test-native)
+
