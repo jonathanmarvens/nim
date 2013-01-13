@@ -271,9 +271,10 @@ _chimp_uv_tcp_write_end (uv_write_t *req, int status)
 static ChimpRef *
 _chimp_uv_tcp_write (ChimpRef *self, ChimpRef *args)
 {
-    uv_buf_t buf[1];
+    uv_buf_t buf;
     ChimpRef *data;
     uv_write_t *req;
+    uv_stream_t *stream;
 
     if (!chimp_method_parse_args (args, "o", &data)) {
         return NULL;
@@ -285,15 +286,15 @@ _chimp_uv_tcp_write (ChimpRef *self, ChimpRef *args)
         return NULL;
     }
 
-    buf[0].base = CHIMP_STR_DATA(data);
-    buf[0].len = CHIMP_STR_SIZE(data);
+    buf.base = CHIMP_STR_DATA(data);
+    buf.len = CHIMP_STR_SIZE(data);
     /* XXX at a glance, uv_write doesn't seem to stomp on uv_buf_t.data, but
      *     nothing in the interface seems to guarantee this...
      */
     req->data = data;
 
-    if (uv_write (
-            req, (uv_stream_t *)&CHIMP_UV_TCP(self)->tcp, buf, 1, _chimp_uv_tcp_write_end) != 0) {
+    stream = (uv_stream_t *)&CHIMP_UV_TCP(self)->tcp;
+    if (uv_write (req, stream, &buf, 1, _chimp_uv_tcp_write_end) != 0) {
         CHIMP_BUG ("uv_write failed");
         return NULL;
     }
