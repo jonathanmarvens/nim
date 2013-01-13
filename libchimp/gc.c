@@ -402,8 +402,8 @@ chimp_gc_collect (ChimpGC *gc)
     /* save registers to the stack */
 #if (defined CHIMP_ARCH_X86_64) && (defined __GNUC__)
     void *regs[16];
-    __asm__ ("push %rax;");
-    __asm__ (
+    __asm__ volatile ("push %rax;");
+    __asm__ volatile (
          "movq %%rbx, 8(%%rax);"
          "movq %%rcx, 16(%%rax);"
          "movq %%rdx, 24(%%rax);"
@@ -421,12 +421,12 @@ chimp_gc_collect (ChimpGC *gc)
          "movq %%rbx, 112(%%rax);"
          :
          : "a" (regs)
-         : "%rbx");
+         : "%rbx", "memory");
 #elif (defined CHIMP_ARCH_X86_32) && (defined __GNUC__)
     /* XXX untested */
     void *regs[8];
-    __asm__ ("push %eax;");
-    __asm__ (
+    __asm__ volatile ("push %eax;");
+    __asm__ volatile (
         "movl %ebx, 4(%%eax);"
         "movl %ecx, 8(%%eax);"
         "movl %edx, 12(%%eax);"
@@ -438,7 +438,7 @@ chimp_gc_collect (ChimpGC *gc)
         "movl %ebx, 32(%%eax);"
         :
         : "a" (regs)
-        : "%ebx");
+        : "%ebx", "memory");
 #else
 #warning "Unknown or unsupported architecture: GC can't grok registers"
 #endif
