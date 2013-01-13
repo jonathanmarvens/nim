@@ -2,11 +2,34 @@ use io;
 use _uv;
 
 main argv {
+  var port = 43456;
+
+  #
+  # for kicks, we'll serve our response messages from a background task.
+  #
+  var msg_svc = spawn {
+    while true {
+      match recv() {
+        t { t.send("Hello World"); }
+      }
+    }
+  };
+
+  #
+  # get the default event loop & bind a TCP socket.
+  #
   var loop = _uv.default_loop();
   var srv = loop.tcp();
-  srv.bind(43456).listen(fn { |c|
-    io.print(str("connection: ", c));
-    c.write("Hello, World");
+  srv.bind(port).listen(fn { |c|
+    #
+    # client accepted! let the background task know we want a message.
+    #
+    msg_svc.send(self());
+
+    #
+    # send the message & close the socket.
+    #
+    c.write(recv());
     c.close();
   });
 
@@ -16,6 +39,9 @@ main argv {
   #
   srv = nil;
 
+  #
+  # serve forever.
+  #
   loop.run();
 }
 
