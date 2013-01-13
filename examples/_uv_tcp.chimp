@@ -20,6 +20,7 @@ main argv {
   #
   var loop = _uv.default_loop();
   var srv = loop.tcp();
+  io.print(str("starting server on port ", port));
   srv.bind(port).listen(fn { |c|
     #
     # client accepted! let the background task know we want a message.
@@ -31,7 +32,13 @@ main argv {
     # send the message & close the socket.
     #
     c.write(msg);
-    c.close();
+    c.on_read(fn { |chunk|
+      io.write(chunk);
+      c.close();
+    });
+    c.on_end(fn {
+      io.print("client disconnected");
+    });
   });
 
   #
