@@ -25,11 +25,12 @@ main argv {
     # client accepted! let the background task know we want a message.
     #
     msg_svc.send(self());
+    var msg = recv();
 
     #
     # send the message & close the socket.
     #
-    c.write(recv());
+    c.write(msg);
     c.close();
   });
 
