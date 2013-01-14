@@ -153,6 +153,7 @@ add_library (libchimp STATIC
   libchimp/gc.c
   libchimp/hash.c
   libchimp/int.c
+  libchimp/float.c
   libchimp/lwhash.c
   libchimp/method.c
   libchimp/module.c

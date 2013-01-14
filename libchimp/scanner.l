@@ -6,6 +6,7 @@
 #include "chimp/_parser_ext.h"
 #include "chimp/_parser.h"
 #include "chimp/int.h"
+#include "chimp/float.h"
 
 #define CHIMP_REF_TOKEN(token, r) yylval->ref = (r); return (token);
 #define CHIMP_TOKEN(token) return (token);
@@ -79,4 +80,5 @@
 "break"                     { CHIMP_TOKEN(TOK_BREAK) }
 ["][^"]*["]                 { CHIMP_REF_TOKEN(TOK_STR, chimp_str_new (yytext + 1, yyleng - 2)) }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (yytext, yyleng)) }
-[+-]?[0-9]+                   { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }
+[+-]?[0-9]+                 { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }
+[+-]?[0-9]*\.?[0-9]*        { CHIMP_REF_TOKEN(TOK_FLOAT, chimp_float_new (strtod(yytext, NULL))) }
