@@ -367,6 +367,60 @@ _chimp_array_add (ChimpRef *self, ChimpRef *other)
     }
 }
 
+static void
+_chimp_array_remove_at_internal (ChimpRef *self, size_t index)
+{
+    if (CHIMP_ARRAY_SIZE(self) > index) {
+        memmove (
+            CHIMP_ARRAY(self)->items + index,
+            CHIMP_ARRAY(self)->items + index + 1,
+            sizeof(ChimpRef*) * (CHIMP_ARRAY_SIZE(self) - index - 1)
+        );
+    }
+    CHIMP_ARRAY(self)->size--;
+}
+
+static ChimpRef *
+_chimp_array_remove (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *other;
+    size_t i;
+    if (!chimp_method_parse_args (args, "o", &other)) {
+        return NULL;
+    }
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        int rc = chimp_object_cmp (CHIMP_ARRAY_ITEM(self, i), other);
+        if (rc == CHIMP_CMP_EQ) {
+            _chimp_array_remove_at_internal (self, i);
+            return chimp_true;
+        }
+        else if (rc == CHIMP_CMP_ERROR) {
+            return NULL;
+        }
+    }
+    return chimp_false;
+}
+
+static ChimpRef *
+_chimp_array_remove_at (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *removed;
+    int64_t pos;
+    if (!chimp_method_parse_args (args, "I", &pos)) {
+        return NULL;
+    }
+    if (pos < 0) {
+        pos = CHIMP_ARRAY_SIZE(self) + pos;
+    }
+    if (pos < 0 || pos >= CHIMP_ARRAY_SIZE(self)) {
+        CHIMP_BUG ("invalid array index: %zu", (intmax_t) pos);
+        return NULL;
+    }
+    removed = CHIMP_ARRAY_ITEM(self, (size_t) pos);
+    _chimp_array_remove_at_internal (self, (size_t) pos);
+    return removed;
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -390,6 +444,8 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
     chimp_class_add_native_method (chimp_array_class, "size", _chimp_array_size);
     chimp_class_add_native_method (chimp_array_class, "join", _chimp_array_join);
+    chimp_class_add_native_method (chimp_array_class, "remove", _chimp_array_remove);
+    chimp_class_add_native_method (chimp_array_class, "remove_at", _chimp_array_remove_at);
     return CHIMP_TRUE;
 }
 

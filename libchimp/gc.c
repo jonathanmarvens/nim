@@ -365,9 +365,6 @@ chimp_gc_sweep (ChimpGC *gc)
             kept++;
         }
         else {
-            if (CHIMP_ANY_CLASS (ref) == chimp_class_class) {
-                CHIMP_BUG ("collected class: %s", CHIMP_STR_DATA (CHIMP_CLASS (ref)->name));
-            }
             chimp_gc_value_dtor (gc, ref);
             ref->next = free_;
             free_ = ref;

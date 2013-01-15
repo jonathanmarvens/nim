@@ -47,4 +47,22 @@ main argv {
     var result = [1, 2, 3] + [4, 5, 6];
     t.equals(result, [1, 2, 3, 4, 5, 6]);
   });
+
+  chimpunit.test("remove element", fn { |t|
+    var items = ["a", "b", "c"];
+    t.equals(items.remove("b"), true);
+    t.equals(items, ["a", "c"]);
+    t.equals(items.remove("c"), true);
+    t.equals(items, ["a"]);
+    t.equals(items.remove(nil), false);
+    t.equals(items.remove("a"), true);
+    t.equals(items, []);
+  });
+
+  chimpunit.test("remove element at index", fn { |t|
+    var items = [1, 2, 3];
+    t.equals(items.remove_at(0), 1);
+    t.equals(items.remove_at(1), 3);
+    t.equals(items.remove_at(0), 2);
+  });
 }
