@@ -207,7 +207,7 @@ add_executable (test-native
   ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 target_link_libraries (test-native ${CHIMP_LIBRARIES} check)
 
-add_custom_target (test test-native
+add_custom_target (test test-native chimp
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/script/test
   DEPENDS test-native)
 
