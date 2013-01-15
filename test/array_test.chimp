@@ -64,5 +64,6 @@ main argv {
     t.equals(items.remove_at(0), 1);
     t.equals(items.remove_at(1), 3);
     t.equals(items.remove_at(0), 2);
+    t.equals(items.size(), 0);
   });
 }
