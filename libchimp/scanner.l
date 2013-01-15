@@ -27,6 +27,8 @@
 /* prefer a fast scanner to a small one */
 %option full
 
+%x IN_STRING
+
 %%
 
 [#][^\n]*                   { /* do nothing (comment) */ }
@@ -78,7 +80,16 @@
 "else"                      { CHIMP_TOKEN(TOK_ELSE) }
 "while"                     { CHIMP_TOKEN(TOK_WHILE) }
 "break"                     { CHIMP_TOKEN(TOK_BREAK) }
-["][^"]*["]                 { CHIMP_REF_TOKEN(TOK_STR, chimp_str_new (yytext + 1, yyleng - 2)) }
+\"                          { BEGIN(IN_STRING); yylval->ref = chimp_str_new ("", 0); }
+<IN_STRING>\"               { BEGIN(INITIAL); CHIMP_REF_TOKEN(TOK_STR, yylval->ref); }
+<IN_STRING>\\r              { chimp_str_append_char (yylval->ref, '\r'); }
+<IN_STRING>\\n              { chimp_str_append_char (yylval->ref, '\n'); }
+<IN_STRING>\\t              { chimp_str_append_char (yylval->ref, '\t'); }
+<IN_STRING>\\b              { chimp_str_append_char (yylval->ref, '\b'); }
+<IN_STRING>\\f              { chimp_str_append_char (yylval->ref, '\f'); }
+<IN_STRING>[^\\\n\"]+       { chimp_str_append_strn (yylval->ref, yytext, yyleng); }
+<IN_STRING>\\(.|\n)         { chimp_str_append_char (yylval->ref, yytext[1]); }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (yytext, yyleng)) }
 [+-]?[0-9]+                 { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }
 [+-]?[0-9]*\.?[0-9]*        { CHIMP_REF_TOKEN(TOK_FLOAT, chimp_float_new (strtod(yytext, NULL))) }
+

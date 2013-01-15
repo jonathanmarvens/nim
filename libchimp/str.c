@@ -138,6 +138,21 @@ chimp_str_append (ChimpRef *self, ChimpRef *append_me)
 chimp_bool_t
 chimp_str_append_str (ChimpRef *self, const char *s)
 {
+    /* XXX inefficient */
     return chimp_str_append (self, chimp_str_new (s, strlen(s)));
+}
+
+chimp_bool_t
+chimp_str_append_strn (ChimpRef *self, const char *s, size_t n)
+{
+    /* XXX inefficient */
+    return chimp_str_append (self, chimp_str_new (s, n));
+}
+
+chimp_bool_t
+chimp_str_append_char (ChimpRef *self, char c)
+{
+    /* XXX inefficient */
+    return chimp_str_append (self, chimp_str_new (&c, 1));
 }
 
