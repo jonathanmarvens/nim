@@ -752,31 +752,42 @@ chimp_compile_ast_stmt_simple_pattern_test (
 {
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
 
-    /*
-     * do the types match?
+    /* XXX the class comparison code path should be moved elsewhere:
+     *     pretty sure it's only used by a pattern test for `nil`
      */
-    if (!chimp_code_dup (code)) {
-        return CHIMP_FALSE;
-    }
+    if (value == NULL) {
+        /*
+         * no value provided. do the types match?
+         */
+        if (!chimp_code_dup (code)) {
+            return CHIMP_FALSE;
+        }
 
-    if (!chimp_code_getclass (code)) {
-        return CHIMP_FALSE;
-    }
+        if (!chimp_code_getclass (code)) {
+            return CHIMP_FALSE;
+        }
 
-    if (!chimp_code_pushname (code,
-            chimp_str_new (class_name, strlen(class_name)))) {
-        return CHIMP_FALSE;
-    }
+        /* XXX the `nil` class isn't exposed at the language level */
+        if (strcmp (class_name, "nil") == 0) {
+            if (!chimp_code_pushconst (code, chimp_nil_class)) {
+                return CHIMP_FALSE;
+            }
+        }
+        else if (!chimp_code_pushname (code,
+                chimp_str_new (class_name, strlen(class_name)))) {
+            return CHIMP_FALSE;
+        }
 
-    if (!chimp_code_eq (code)) {
-        return CHIMP_FALSE;
-    }
+        if (!chimp_code_eq (code)) {
+            return CHIMP_FALSE;
+        }
 
-    if (!chimp_code_jumpiffalse (code, next_label)) {
-        return CHIMP_FALSE;
-    }
+        if (!chimp_code_jumpiffalse (code, next_label)) {
+            return CHIMP_FALSE;
+        }
 
-    if (value != NULL) {
+    }
+    else /* if (value != NULL) */ {
         /*
          * okay, so the types match. are the values equivalent?
          */
