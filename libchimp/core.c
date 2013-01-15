@@ -38,6 +38,7 @@
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
+        chimp_gc_make_root ((gc), (c)); \
         CHIMP_ANY(c)->klass = chimp_class_class; \
         CHIMP_CLASS(c)->super = (sup); \
         CHIMP_CLASS(c)->name = chimp_gc_new_object ((gc)); \
@@ -49,7 +50,6 @@
             return CHIMP_FALSE; \
         } \
         CHIMP_STR(CHIMP_CLASS(c)->name)->size = sizeof(n)-1; \
-        chimp_gc_make_root ((gc), (c)); \
     } while (0)
 
 #define CHIMP_BOOTSTRAP_CLASS_L2(gc, c) \
@@ -330,6 +330,22 @@ chimp_core_init_builtins (void)
     return CHIMP_TRUE;
 }
 
+static void
+_chimp_class_mark (ChimpGC *gc, ChimpRef *self)
+{
+    CHIMP_SUPER (self)->mark (gc, self);
+
+    chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->super);
+    chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->name);
+    chimp_gc_mark_lwhash (gc, CHIMP_CLASS(self)->methods);
+}
+
+static ChimpRef *
+_chimp_str_size (ChimpRef *self, ChimpRef *args)
+{
+    return chimp_int_new (CHIMP_STR_SIZE(self));
+}
+
 chimp_bool_t
 chimp_core_startup (const char *path, void *stack_start)
 {
@@ -348,6 +364,7 @@ chimp_core_startup (const char *path, void *stack_start)
     CHIMP_CLASS(chimp_object_class)->getattr = _chimp_object_getattr;
     CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_class_class, "class", chimp_object_class);
     CHIMP_CLASS(chimp_class_class)->getattr = chimp_class_getattr;
+    CHIMP_CLASS(chimp_class_class)->mark = _chimp_class_mark;
     CHIMP_BOOTSTRAP_CLASS_L1(NULL, chimp_str_class, "str", chimp_object_class);
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
@@ -376,7 +393,7 @@ chimp_core_startup (const char *path, void *stack_start)
     if (chimp_nil_class == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil_class);
     CHIMP_CLASS(chimp_nil_class)->str = chimp_nil_str;
-    chimp_nil = chimp_class_new_instance (chimp_nil_class);
+    chimp_nil = chimp_class_new_instance (chimp_nil_class, NULL);
     if (chimp_nil == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_nil);
 
@@ -428,6 +445,11 @@ chimp_core_startup (const char *path, void *stack_start)
         goto error;
 
     if (!chimp_core_init_builtins ()) goto error;
+
+    /* XXX got to be a better place for this ... */
+    if (!chimp_class_add_native_method (chimp_str_class, "size", _chimp_str_size)) {
+        return CHIMP_FALSE;
+    }
 
     chimp_module_path = _chimp_module_make_path (path);
     if (chimp_module_path == NULL)

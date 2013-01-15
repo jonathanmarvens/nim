@@ -242,16 +242,6 @@ chimp_class_str (ChimpRef *self)
         "<class '", CHIMP_STR_DATA(CHIMP_CLASS(self)->name), "'>", NULL);
 }
 
-static void
-_chimp_class_mark (ChimpGC *gc, ChimpRef *self)
-{
-    CHIMP_SUPER (self)->mark (gc, self);
-
-    chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->super);
-    chimp_gc_mark_ref (gc, CHIMP_CLASS(self)->name);
-    chimp_gc_mark_lwhash (gc, CHIMP_CLASS(self)->methods);
-}
-
 chimp_bool_t
 _chimp_bootstrap_L3 (void)
 {
@@ -259,7 +249,6 @@ _chimp_bootstrap_L3 (void)
     CHIMP_CLASS(chimp_class_class)->call = chimp_class_call;
     CHIMP_CLASS(chimp_class_class)->dtor = chimp_class_dtor;
     CHIMP_CLASS(chimp_class_class)->str = chimp_class_str;
-    CHIMP_CLASS(chimp_class_class)->mark = _chimp_class_mark;
 
     CHIMP_CLASS(chimp_object_class)->methods = chimp_lwhash_new ();
     CHIMP_CLASS(chimp_object_class)->call = chimp_class_call;

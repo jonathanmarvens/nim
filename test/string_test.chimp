@@ -1,0 +1,8 @@
+use chimpunit;
+
+main argv {
+  chimpunit.test("string escapes", fn { |t|
+    t.equals("abcdef\n".size(), 7);
+  });
+}
+
