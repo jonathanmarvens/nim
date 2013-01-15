@@ -625,6 +625,25 @@ _chimp_task_str (ChimpRef *self)
     return chimp_str_new_format ("<task id:0x%X>", CHIMP_TASK(self)->priv);
 }
 
+static ChimpCmpResult
+_chimp_task_cmp (ChimpRef *self, ChimpRef *other)
+{
+    if (CHIMP_ANY_CLASS(self) == CHIMP_ANY_CLASS(other)) {
+        if (CHIMP_TASK(self)->priv == CHIMP_TASK(other)->priv) {
+            return CHIMP_CMP_EQ;
+        }
+        else if (CHIMP_TASK(self)->priv < CHIMP_TASK(other)->priv) {
+            return CHIMP_CMP_LT;
+        }
+        else /* if (CHIMP_TASK(self)->priv > CHIMP_TASK(other)->priv) */ {
+            return CHIMP_CMP_GT;
+        }
+    }
+    else {
+        return CHIMP_CMP_NOT_IMPL;
+    }
+}
+
 chimp_bool_t
 chimp_task_class_bootstrap (void)
 {
@@ -636,6 +655,7 @@ chimp_task_class_bootstrap (void)
     CHIMP_CLASS(chimp_task_class)->init = _chimp_task_init;
     CHIMP_CLASS(chimp_task_class)->dtor = _chimp_task_dtor;
     CHIMP_CLASS(chimp_task_class)->str  = _chimp_task_str;
+    CHIMP_CLASS(chimp_task_class)->cmp  = _chimp_task_cmp;
     CHIMP_CLASS(chimp_task_class)->mark = _chimp_task_mark;
     chimp_gc_make_root (NULL, chimp_task_class);
     chimp_class_add_native_method (chimp_task_class, "send", _chimp_task_send);
