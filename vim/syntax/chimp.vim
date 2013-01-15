@@ -15,6 +15,7 @@ syn keyword chimpConditional if else
 syn keyword chimpType str int float hash object array error 
 syn keyword chimpSpecial init recv self range __file__ __line__
 syn match chimpString '"[^"]*"'
+syn region chimpString start=+\z(["]\)+ end=+\z1+
 syn match chimpComment '#.*$'
 syn match chimpInt '[0-9][0-9]*'
 syn match chimpFunction '^[a-zA-Z_][a-zA-Z0-9_]*'
