@@ -87,8 +87,8 @@
 <IN_STRING>\\t              { chimp_str_append_char (yylval->ref, '\t'); }
 <IN_STRING>\\b              { chimp_str_append_char (yylval->ref, '\b'); }
 <IN_STRING>\\f              { chimp_str_append_char (yylval->ref, '\f'); }
-<IN_STRING>[^\\\n\"]+       { chimp_str_append_strn (yylval->ref, yytext, yyleng); }
 <IN_STRING>\\(.|\n)         { chimp_str_append_char (yylval->ref, yytext[1]); }
+<IN_STRING>[^\\\"]+       { chimp_str_append_strn (yylval->ref, yytext, yyleng); }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (yytext, yyleng)) }
 [+-]?[0-9]+                 { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }
 [+-]?[0-9]*\.?[0-9]*        { CHIMP_REF_TOKEN(TOK_FLOAT, chimp_float_new (strtod(yytext, NULL))) }

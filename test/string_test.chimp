@@ -4,5 +4,9 @@ main argv {
   chimpunit.test("string escapes", fn { |t|
     t.equals("abcdef\n".size(), 7);
   });
+  chimpunit.test("newline in string", fn { |t|
+    t.equals("abcdef
+foo", "abcdef\nfoo");
+  });
 }
 
