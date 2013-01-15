@@ -196,6 +196,22 @@ _chimp_socket_shutdown (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_socket_send (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *data;
+    int rc;
+
+    if (!chimp_method_parse_args (args, "o", &data)) {
+        return NULL;
+    }
+
+    rc = send (CHIMP_NET_SOCKET (self)->fd,
+                CHIMP_STR_DATA(data), CHIMP_STR_SIZE(data), 0);
+
+    return chimp_int_new (rc);
+}
+
+static ChimpRef *
 _chimp_socket_recv (ChimpRef *self, ChimpRef *args)
 {
     int32_t size;
@@ -293,6 +309,11 @@ _chimp_socket_class_bootstrap (void)
 
         if (!chimp_class_add_native_method (
                 net_socket_class, "recv", _chimp_socket_recv)) {
+            return CHIMP_FALSE;
+        }
+
+        if (!chimp_class_add_native_method (
+                net_socket_class, "send", _chimp_socket_send)) {
             return CHIMP_FALSE;
         }
 
