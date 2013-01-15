@@ -338,6 +338,35 @@ _chimp_array_cmp(ChimpRef *left, ChimpRef *right)
     }
 }
 
+static ChimpRef *
+_chimp_array_add (ChimpRef *self, ChimpRef *other)
+{
+    if (CHIMP_ANY_CLASS(self) == CHIMP_ANY_CLASS(other)) {
+        size_t i;
+        size_t required_capacity =
+            CHIMP_ARRAY_SIZE(self) + CHIMP_ARRAY_SIZE(other);
+        ChimpRef *new = chimp_array_new_with_capacity (required_capacity);
+        if (new == NULL) {
+            CHIMP_BUG ("could not allocate array");
+            return NULL;
+        }
+        for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+            CHIMP_ARRAY(new)->items[i] = CHIMP_ARRAY_ITEM(self, i);
+        }
+        for (; i < required_capacity; i++) {
+            CHIMP_ARRAY(new)->items[i] =
+                CHIMP_ARRAY_ITEM(other, i - CHIMP_ARRAY_SIZE(self));
+        }
+        CHIMP_ARRAY(new)->size = required_capacity;
+        return new;
+    }
+    else {
+        CHIMP_BUG ("cannot add array and %s type",
+                CHIMP_CLASS_NAME (CHIMP_ANY_CLASS(other)));
+        return NULL;
+    }
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -351,6 +380,7 @@ chimp_array_class_bootstrap (void)
     CHIMP_CLASS(chimp_array_class)->getitem = _chimp_array_getitem;
     CHIMP_CLASS(chimp_array_class)->mark = _chimp_array_mark;
     CHIMP_CLASS(chimp_array_class)->cmp = _chimp_array_cmp;
+    CHIMP_CLASS(chimp_array_class)->add = _chimp_array_add;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
@@ -408,14 +438,34 @@ chimp_array_new_var (ChimpRef *a, ...)
     return ref;
 }
 
+#if 0
+static chimp_bool_t
+chimp_array_ensure_capacity (ChimpRef *self, size_t capacity)
+{
+    if (CHIMP_ARRAY(self)->capacity < capacity) {
+        ChimpRef **items;
+        items = CHIMP_REALLOC(
+            ChimpRef *, arr->items, sizeof(*arr->items) * new_capacity);
+        if (items == NULL) {
+            return CHIMP_FALSE;
+        }
+        arr->items = items;
+        arr->capacity = capacity;
+    }
+    return CHIMP_TRUE;
+}
+#endif
+
 static chimp_bool_t
 chimp_array_grow (ChimpRef *self)
 {
     ChimpRef **items;
     ChimpArray *arr = CHIMP_ARRAY(self);
     if (arr->size >= arr->capacity) {
-        size_t new_capacity = (arr->capacity == 0 ? 10 : (size_t)(arr->capacity * 1.8));
-        items = CHIMP_REALLOC(ChimpRef *, arr->items, sizeof(*arr->items) * new_capacity);
+        size_t new_capacity =
+            (arr->capacity == 0 ? 10 : (size_t)(arr->capacity * 1.8));
+        items = CHIMP_REALLOC(
+            ChimpRef *, arr->items, sizeof(*arr->items) * new_capacity);
         if (items == NULL) {
             return CHIMP_FALSE;
         }

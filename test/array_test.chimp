@@ -42,4 +42,9 @@ main argv {
     var result = ["1", "2", "3"].join(",");
     t.equals("1,2,3", result);
   });
+
+  chimpunit.test("concatenation with `+`", fn { |t|
+    var result = [1, 2, 3] + [4, 5, 6];
+    t.equals(result, [1, 2, 3, 4, 5, 6]);
+  });
 }
