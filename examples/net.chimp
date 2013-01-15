@@ -11,7 +11,8 @@ main argv {
     var task = spawn {
       var sck = net.socket(recv());
       io.print(sck.recv(8192));
-      sck.shutdown (net.SHUT_RD);
+      sck.send("hello there\n");
+      sck.shutdown (net.SHUT_WR);
       while true {
         if sck.recv(8192) == "" {
           break;
