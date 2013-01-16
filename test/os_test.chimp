@@ -13,7 +13,7 @@ main argv {
   });
 
   chimpunit.test("os.dirname with relative path 1", fn { |t|
-    t.equals("", os.dirname("foo.txt"));
+    t.equals(".", os.dirname("foo.txt"));
   });
 
   chimpunit.test("os.dirname with relative path 2", fn { |t|
@@ -22,6 +22,18 @@ main argv {
 
   chimpunit.test("os.getenv", fn { |t|
     t.is_not_nil(os.getenv("HOME"));
+  });
+
+  chimpunit.test("os.glob", fn { |t|
+    var basedir = str(os.dirname(__file__), "/../");
+    #
+    # glob results are sorted.
+    #
+    var expected = [
+      str(basedir, "chasm.c"),
+      str(basedir, "main.c")
+    ];
+    t.equals(os.glob(str(basedir, "*.c")), expected);
   });
 }
 

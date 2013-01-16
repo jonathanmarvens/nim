@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <glob.h>
 
 #include "chimp/any.h"
 #include "chimp/object.h"
@@ -83,7 +84,44 @@ _chimp_os_dirname (ChimpRef *self, ChimpRef *args)
             return chimp_str_new (begin, (size_t) (end - begin));
         }
     }
-    return CHIMP_STR_NEW ("");
+    return CHIMP_STR_NEW (".");
+}
+
+static ChimpRef *
+_chimp_os_glob (ChimpRef *self, ChimpRef *args)
+{
+    const char *pattern;
+    glob_t res;
+    ChimpRef *arr;
+    size_t i;
+
+    if (!chimp_method_parse_args (args, "s", &pattern)) {
+        return NULL;
+    }
+
+    if (glob (pattern, 0, NULL, &res) != 0) {
+        CHIMP_BUG ("glob() failed");
+        return NULL;
+    }
+
+    arr = chimp_array_new_with_capacity (res.gl_pathc);
+    if (arr == NULL) {
+        globfree (&res);
+        return NULL;
+    }
+
+    for (i = 0; i < res.gl_pathc; i++) {
+        CHIMP_ARRAY(arr)->items[i] =
+            chimp_str_new (res.gl_pathv[i], strlen (res.gl_pathv[i]));
+        if (CHIMP_ARRAY(arr)->items[i] == NULL) {
+            return NULL;
+        }
+    }
+    CHIMP_ARRAY(arr)->size = res.gl_pathc;
+
+    globfree (&res);
+
+    return arr;
 }
 
 ChimpRef *
@@ -109,6 +147,10 @@ chimp_init_os_module (void)
     }
 
     if (!chimp_module_add_method_str (os, "dirname", _chimp_os_dirname)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "glob", _chimp_os_glob)) {
         return NULL;
     }
 
