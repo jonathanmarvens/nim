@@ -34,9 +34,10 @@ _chimp_unit_test(ChimpRef *self, ChimpRef *args)
     ChimpRef *name = chimp_object_str (CHIMP_ARRAY_ITEM(args, 0));
     ChimpRef *fn = CHIMP_ARRAY_ITEM(args, 1);
 
-    if (test_runner == NULL)
-    {
+    if (test_runner == NULL) {
         test_runner = chimp_test_new();
+        /* XXX hack to avoid premature collection by the GC */
+        chimp_gc_make_root (NULL, test_runner);
     }
     CHIMP_TEST(test_runner)->name = name;
 
