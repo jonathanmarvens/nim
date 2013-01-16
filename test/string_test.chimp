@@ -30,5 +30,9 @@ foo", "abcdef\nfoo");
     t.equals(s.substr(0, -1), "bert banan");
     t.equals(s.substr(s.index(" ") + 1), "banana");
   });
+  chimpunit.test("split", fn { |t|
+    var arr = "1, 2, 3";
+    t.equals(arr.split(", "), ["1", "2", "3"]);
+  });
 }
 

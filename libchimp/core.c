@@ -419,6 +419,46 @@ _chimp_str_substr (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_str_split (ChimpRef *self, ChimpRef *args)
+{
+    const char *begin;
+    const char *end;
+    const char *sep;
+    size_t seplen;
+    ChimpRef *arr;
+
+    if (!chimp_method_parse_args (args, "s", &sep)) {
+        return NULL;
+    }
+
+    /* XXX could pull this directly from the str object */
+    seplen = strlen (sep);
+
+    arr = chimp_array_new ();
+    if (arr == NULL) {
+        return NULL;
+    }
+
+    begin = CHIMP_STR_DATA(self);
+    while (*begin) {
+        ChimpRef *ref;
+        end = strstr (begin, sep);
+        if (end == NULL) {
+            end = CHIMP_STR_DATA(self) + CHIMP_STR_SIZE(self);
+        }
+        ref = chimp_str_new (begin, (size_t)(end - begin));
+        if (ref == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (arr, ref)) {
+            return NULL;
+        }
+        begin = end + seplen;
+    }
+    return arr;
+}
+
+static ChimpRef *
 _chimp_str_add (ChimpRef *self, ChimpRef *other)
 {
     ChimpRef *other_str = chimp_object_str (other);
@@ -545,6 +585,10 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_class_add_native_method (chimp_str_class, "substr", _chimp_str_substr)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "split", _chimp_str_split)) {
         return CHIMP_FALSE;
     }
 
