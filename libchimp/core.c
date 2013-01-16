@@ -16,6 +16,8 @@
  *                                                                           *
  *****************************************************************************/
 
+#include <ctype.h>
+
 #include "chimp/core.h"
 #include "chimp/gc.h"
 #include "chimp/object.h"
@@ -347,6 +349,32 @@ _chimp_str_size (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_str_trim (ChimpRef *self, ChimpRef *args)
+{
+    size_t i, j;
+
+    for (i = 0; i < CHIMP_STR_SIZE(self); i++) {
+        if (!isspace (CHIMP_STR(self)->data[i])) {
+            break;
+        }
+    }
+
+    if (CHIMP_STR_SIZE(self) > 0) {
+        for (j = CHIMP_STR_SIZE(self)-1; j > i; j--) {
+            if (!isspace (CHIMP_STR(self)->data[j])) {
+                j++;
+                break;
+            }
+        }
+    }
+    else {
+        j = 0;
+    }
+
+    return chimp_str_new (CHIMP_STR_DATA(self) + i, j - i);
+}
+
+static ChimpRef *
 _chimp_str_add (ChimpRef *self, ChimpRef *other)
 {
     ChimpRef *other_str = chimp_object_str (other);
@@ -461,6 +489,10 @@ chimp_core_startup (const char *path, void *stack_start)
 
     /* XXX got to be a better place for this ... */
     if (!chimp_class_add_native_method (chimp_str_class, "size", _chimp_str_size)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "trim", _chimp_str_trim)) {
         return CHIMP_FALSE;
     }
 

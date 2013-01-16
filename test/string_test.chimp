@@ -11,5 +11,10 @@ foo", "abcdef\nfoo");
   chimpunit.test("concatenation with `+`", fn { |t|
     t.equals("foo" + "bar", "foobar");
   });
+  chimpunit.test("trim", fn { |t|
+    t.equals("foo ".trim(), "foo");
+    t.equals("  bar".trim(), "bar");
+    t.equals("  baz  ".trim(), "baz");
+  });
 }
 
