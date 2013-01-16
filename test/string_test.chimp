@@ -23,5 +23,12 @@ foo", "abcdef\nfoo");
     t.equals(s.index("t"), 2);
     t.equals(s.index("b"), -1);
   });
+  chimpunit.test("substr", fn { |t|
+    var s = "bert banana";
+    t.equals(s.substr(0, 4), "bert");
+    t.equals(s.substr(-6), "banana");
+    t.equals(s.substr(0, -1), "bert banan");
+    t.equals(s.substr(s.index(" ") + 1), "banana");
+  });
 }
 

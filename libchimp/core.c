@@ -392,6 +392,33 @@ _chimp_str_trim (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_str_substr (ChimpRef *self, ChimpRef *args)
+{
+    int64_t i, j;
+    ChimpRef *jobj = NULL;
+
+    if (!chimp_method_parse_args (args, "I|o", &i, &jobj)) {
+        return NULL;
+    }
+
+    if (i < 0) {
+        i += CHIMP_STR_SIZE(self);
+    }
+
+    if (jobj == NULL) {
+        j = CHIMP_STR_SIZE(self);
+    }
+    else {
+        j = CHIMP_INT(jobj)->value;
+        if (j < 0) {
+            j += CHIMP_STR_SIZE(self);
+        }
+    }
+
+    return chimp_str_new (CHIMP_STR_DATA(self) + i, j - i);
+}
+
+static ChimpRef *
 _chimp_str_add (ChimpRef *self, ChimpRef *other)
 {
     ChimpRef *other_str = chimp_object_str (other);
@@ -514,6 +541,10 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_class_add_native_method (chimp_str_class, "index", _chimp_str_index)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "substr", _chimp_str_substr)) {
         return CHIMP_FALSE;
     }
 
