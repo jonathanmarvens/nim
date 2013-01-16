@@ -19,6 +19,7 @@
 #include <chimp.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <ctype.h>
 
 typedef enum _ChimpArgType {
     CHIMP_ARG_NONE,
@@ -203,7 +204,6 @@ _parse_const_int (const char **ptr, ChimpRef **value)
 static chimp_bool_t
 _parse_const (const char **ptr, ChimpRef **value)
 {
-    const char *begin;
     const char *p = *ptr;
     _skip_whitespace (&p);
     if (*p == '"') {
