@@ -109,5 +109,25 @@ main argv {
     }
     t.equals(matched, true);
   });
+
+  chimpunit.test("match str against array", fn { |t|
+    var x = "foo";
+    var y = 0;
+    match x {
+      ["foo", bar] { y = 1; }
+      "foo" { y = 2; }
+    }
+    t.equals(y, 2);
+  });
+
+  chimpunit.test("match array against str", fn { |t|
+    var x = ["foo", "bar"];
+    var y = 0;
+    match x {
+      ["foo", bar] { y = 1; }
+      "foo" { y = 2; }
+    }
+    t.equals(y, 1);
+  });
 }
 
