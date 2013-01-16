@@ -153,7 +153,7 @@ chimp_method_parse_args (ChimpRef *args, const char *fmt, ...)
     for (i = 0; i < len; i++) {
         if (n >= nmax) {
             /* XXX the second part of this test is a huge hack */
-            if (!optional && fmt[0] != '|') {
+            if (!optional && fmt[i] != '|') {
                 CHIMP_BUG ("not enough arguments");
                 goto error;
             }
