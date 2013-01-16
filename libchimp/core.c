@@ -346,6 +346,18 @@ _chimp_str_size (ChimpRef *self, ChimpRef *args)
     return chimp_int_new (CHIMP_STR_SIZE(self));
 }
 
+static ChimpRef *
+_chimp_str_add (ChimpRef *self, ChimpRef *other)
+{
+    ChimpRef *other_str = chimp_object_str (other);
+    if (other_str == NULL) {
+        CHIMP_BUG ("could not convert to str");
+        return NULL;
+    }
+    return chimp_str_new_concat (
+        CHIMP_STR_DATA(self), CHIMP_STR_DATA(other_str), NULL);
+}
+
 chimp_bool_t
 chimp_core_startup (const char *path, void *stack_start)
 {
@@ -369,6 +381,7 @@ chimp_core_startup (const char *path, void *stack_start)
     CHIMP_CLASS(chimp_str_class)->cmp = chimp_str_cmp;
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
     CHIMP_CLASS(chimp_str_class)->mark = _chimp_object_mark;
+    CHIMP_CLASS(chimp_str_class)->add  = _chimp_str_add;
 
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);

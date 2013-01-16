@@ -8,5 +8,8 @@ main argv {
     t.equals("abcdef
 foo", "abcdef\nfoo");
   });
+  chimpunit.test("concatenation with `+`", fn { |t|
+    t.equals("foo" + "bar", "foobar");
+  });
 }
 
