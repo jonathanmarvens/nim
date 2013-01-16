@@ -16,5 +16,12 @@ foo", "abcdef\nfoo");
     t.equals("  bar".trim(), "bar");
     t.equals("  baz  ".trim(), "baz");
   });
+  chimpunit.test("index", fn { |t|
+    var s = "cat";
+    t.equals(s.index("a"), 1);
+    t.equals(s.index("c"), 0);
+    t.equals(s.index("t"), 2);
+    t.equals(s.index("b"), -1);
+  });
 }
 

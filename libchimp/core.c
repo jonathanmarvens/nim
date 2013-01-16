@@ -349,6 +349,23 @@ _chimp_str_size (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_str_index (ChimpRef *self, ChimpRef *args)
+{
+    const char *needle;
+    const char *res;
+    if (!chimp_method_parse_args (args, "s", &needle)) {
+        return NULL;
+    }
+    res = strstr (CHIMP_STR_DATA(self), needle);
+    if (res == NULL) {
+        return chimp_int_new (-1);
+    }
+    else {
+        return chimp_int_new ((size_t)(res - CHIMP_STR_DATA(self)));
+    }
+}
+
+static ChimpRef *
 _chimp_str_trim (ChimpRef *self, ChimpRef *args)
 {
     size_t i, j;
@@ -493,6 +510,10 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_class_add_native_method (chimp_str_class, "trim", _chimp_str_trim)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "index", _chimp_str_index)) {
         return CHIMP_FALSE;
     }
 
