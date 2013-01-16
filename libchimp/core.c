@@ -29,7 +29,6 @@
 #include "chimp/array.h"
 #include "chimp/method.h"
 #include "chimp/task.h"
-#include "chimp/test.h"
 #include "chimp/hash.h"
 #include "chimp/frame.h"
 #include "chimp/ast.h"
@@ -511,7 +510,6 @@ chimp_core_startup (const char *path, void *stack_start)
     if (!chimp_float_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
     if (!chimp_hash_class_bootstrap ()) goto error;
-    if (!chimp_test_class_bootstrap()) goto error;
 
     chimp_nil_class = chimp_class_new (
         CHIMP_STR_NEW("nil"), chimp_object_class, sizeof(ChimpAny));

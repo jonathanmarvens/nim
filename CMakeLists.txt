@@ -163,7 +163,6 @@ add_library (libchimp STATIC
   libchimp/str.c
   libchimp/symtable.c
   libchimp/task.c
-  libchimp/test.c
   libchimp/var.c
   libchimp/vm.c
   libchimp/error.c

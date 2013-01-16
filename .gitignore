@@ -31,3 +31,4 @@ TAGS
 /a.out.dSYM
 /cmake_install.cmake
 /test-native
+chasm
