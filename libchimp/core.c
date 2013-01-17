@@ -106,8 +106,7 @@ chimp_str_cmp (ChimpRef *a, ChimpRef *b)
     }
 
     if (CHIMP_ANY_CLASS(a) != chimp_str_class) {
-        /* TODO this is almost certainly a bug */
-        return CHIMP_CMP_ERROR;
+        return CHIMP_CMP_LT;
     }
 
     /* TODO should probably be a subtype check? */
@@ -244,7 +243,8 @@ chimp_nil_str (ChimpRef *self)
 static ChimpRef *
 _chimp_task_recv (ChimpRef *self, ChimpRef *args)
 {
-    return chimp_task_recv (chimp_task_get_self (CHIMP_CURRENT_TASK));
+    ChimpRef *result = chimp_task_recv (chimp_task_get_self (CHIMP_CURRENT_TASK));
+    return result;
 }
 
 static ChimpRef *
