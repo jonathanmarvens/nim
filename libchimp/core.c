@@ -425,6 +425,8 @@ _chimp_str_split (ChimpRef *self, ChimpRef *args)
     const char *sep;
     size_t seplen;
     ChimpRef *arr;
+    const size_t len = CHIMP_STR_SIZE(self);
+    size_t n = 0;
 
     if (!chimp_method_parse_args (args, "s", &sep)) {
         return NULL;
@@ -439,20 +441,20 @@ _chimp_str_split (ChimpRef *self, ChimpRef *args)
     }
 
     begin = CHIMP_STR_DATA(self);
-    while (*begin) {
+    while (n < len) {
         ChimpRef *ref;
-        end = strstr (begin, sep);
+        end = strstr (begin + n, sep);
         if (end == NULL) {
             end = CHIMP_STR_DATA(self) + CHIMP_STR_SIZE(self);
         }
-        ref = chimp_str_new (begin, (size_t)(end - begin));
+        ref = chimp_str_new (begin + n, (size_t)(end - begin - n));
         if (ref == NULL) {
             return NULL;
         }
         if (!chimp_array_push (arr, ref)) {
             return NULL;
         }
-        begin = end + seplen;
+        n += CHIMP_STR_SIZE(ref) + seplen;
     }
     return arr;
 }
