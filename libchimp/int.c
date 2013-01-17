@@ -113,7 +113,7 @@ chimp_int_cmp (ChimpRef *left, ChimpRef *right)
     ChimpInt *b;
 
     if (CHIMP_ANY_CLASS(left) != chimp_int_class) {
-        return CHIMP_CMP_ERROR;
+        return CHIMP_CMP_LT;
     }
 
     if (CHIMP_ANY_CLASS(left) != CHIMP_ANY_CLASS(right)) {
