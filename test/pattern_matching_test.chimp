@@ -129,5 +129,16 @@ main argv {
     }
     t.equals(y, 1);
   });
+
+  chimpunit.test("match array against multiple", fn { |t|
+    var x = ["foo", "bar"];
+    var y = 0;
+    match x {
+      ["baz", z] { y = 1; }
+      ["foo", z] { y = 2; }
+      m { y = 3; }
+    }
+    t.equals(y, 2);
+  });
 }
 

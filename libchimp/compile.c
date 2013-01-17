@@ -508,6 +508,10 @@ chimp_compile_ast_stmt_array_pattern_test (
     ChimpRef *size;
     size_t i;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpLabel pop_label = CHIMP_LABEL_INIT;
+    ChimpLabel end_label = CHIMP_LABEL_INIT;
+
+    /* XXX need to free labels when things go bad */
 
     /* is the value an array ? */
     if (!chimp_code_dup (code)) {
@@ -577,7 +581,7 @@ chimp_compile_ast_stmt_array_pattern_test (
         CHIMP_BIND_PATH_ARRAY_INDEX(path, i);
 
         if (!chimp_compile_ast_stmt_pattern_test (
-                    c, item, path, vars, next_label)) {
+                    c, item, path, vars, &pop_label)) {
             return CHIMP_FALSE;
         }
 
@@ -585,6 +589,22 @@ chimp_compile_ast_stmt_array_pattern_test (
             return CHIMP_FALSE;
         }
     }
+
+    if (!chimp_code_jump (code, &end_label)) {
+        return CHIMP_FALSE;
+    }
+
+    chimp_code_use_label (code, &pop_label);
+
+    if (!chimp_code_pop (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_jump (code, next_label)) {
+        return CHIMP_FALSE;
+    }
+
+    chimp_code_use_label (code, &end_label);
 
     return CHIMP_TRUE;
 }
@@ -953,7 +973,7 @@ chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
             return CHIMP_FALSE;
         }
 
-        /* bind pattern vars (if any) */
+        /* pattern test succeeded: bind pattern vars (if any) */
         for (j = 0; j < bound.size; j++) {
             const ChimpBindPath *var_path = &bound.items[j].path;
 
@@ -991,6 +1011,11 @@ chimp_compile_ast_stmt_match (ChimpCodeCompiler *c, ChimpRef *stmt)
             if (!chimp_code_storename (code, bound.items[j].id)) {
                 return CHIMP_FALSE;
             }
+        }
+
+        /* pop the value we're testing off the stack */
+        if (!chimp_code_pop (code)) {
+            return CHIMP_FALSE;
         }
 
         /* successful match: execute the body */
