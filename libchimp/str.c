@@ -156,3 +156,9 @@ chimp_str_append_char (ChimpRef *self, char c)
     return chimp_str_append (self, chimp_str_new (&c, 1));
 }
 
+const char *
+chimp_str_data (ChimpRef *str)
+{
+    return CHIMP_STR_DATA(str);
+}
+
