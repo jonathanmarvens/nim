@@ -85,6 +85,9 @@ chimp_vm_pushconst (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         CHIMP_BUG ("unknown or missing const at pc=%d", pc);
         return CHIMP_FALSE;
     }
+#ifdef CHIMP_VM_DEBUG
+    printf ("PUSHCONST %s\n", CHIMP_STR_DATA (chimp_object_str (value)));
+#endif
     if (!chimp_vm_push(vm, value)) {
         CHIMP_BUG ("failed to push value at pc=%d", pc);
         return CHIMP_FALSE;
@@ -103,6 +106,10 @@ chimp_vm_storename (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
     value = chimp_vm_pop (vm);
+#ifdef CHIMP_VM_DEBUG
+    printf ("STORENAME %s -> %s\n",
+            CHIMP_STR_DATA(target), CHIMP_STR_DATA(chimp_object_str (value)));
+#endif
     if (value == NULL) {
         CHIMP_BUG ("empty stack during assignment to %s", CHIMP_STR_DATA(target));
         return CHIMP_FALSE;
@@ -199,6 +206,9 @@ chimp_vm_pushname (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         return CHIMP_FALSE;
     }
 
+#ifdef CHIMP_VM_DEBUG
+    printf ("PUSHNAME %s = %s\n", CHIMP_STR_DATA(name), CHIMP_STR_DATA(chimp_object_str (value)));
+#endif
     return chimp_vm_push (vm, value);
 }
 
@@ -221,6 +231,9 @@ chimp_vm_getattr (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     if (result == NULL) {
         return CHIMP_FALSE;
     }
+#ifdef CHIMP_VM_DEBUG
+    printf ("GETATTR %s = %s\n", CHIMP_STR_DATA(attr), CHIMP_STR_DATA (chimp_object_str (result)));
+#endif
     if (!chimp_vm_push (vm, result)) {
         return CHIMP_FALSE;
     }
@@ -253,6 +266,10 @@ chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
         CHIMP_BUG ("target is not callable");
         return CHIMP_FALSE;
     }
+#ifdef CHIMP_VM_DEBUG
+    printf ("CALL %zu = %s\n",
+        (intmax_t) nargs, CHIMP_STR_DATA(chimp_object_str (result)));
+#endif
     if (!chimp_vm_push (vm, result)) {
         return CHIMP_FALSE;
     }
@@ -379,6 +396,12 @@ chimp_vm_cmp (ChimpVM *vm)
         return CHIMP_FALSE;
     }
 
+#ifdef CHIMP_VM_DEBUG
+    printf ("CMP %s, %s\n",
+            CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(left))),
+            CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(right))));
+#endif
+
     actual = chimp_object_cmp (left, right);
     if (actual == CHIMP_CMP_ERROR) {
         CHIMP_BUG ("TODO raise an exception");
@@ -438,6 +461,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             case CHIMP_OPCODE_GETCLASS:
             {
                 ChimpRef *value = chimp_vm_pop (vm);
+#ifdef CHIMP_VM_DEBUG
+                printf ("GETCLASS = %s\n", CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(value))));
+#endif
                 if (value == NULL) {
                     CHIMP_BUG ("GETCLASS instruction failed");
                     return NULL;
@@ -480,6 +506,11 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     CHIMP_BUG ("GETITEM instruction failed 3");
                     return NULL;
                 }
+
+#ifdef CHIMP_VM_DEBUG
+                printf ("GETITEM = %s\n",
+                        CHIMP_STR_DATA(chimp_object_str (result)));
+#endif
 
                 if (!chimp_vm_push (vm, result)) {
                     CHIMP_BUG ("GETITEM instruction failed 4");
@@ -530,6 +561,11 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (top == NULL) {
                     return CHIMP_FALSE;
                 }
+
+#ifdef CHIMP_VM_DEBUG
+                printf ("DUP = %s\n",
+                        CHIMP_STR_DATA (chimp_object_str (top)));
+#endif
 
                 if (!chimp_vm_push (vm, top)) {
                     return CHIMP_FALSE;
@@ -592,6 +628,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                     return NULL;
                 }
                 if (chimp_vm_truthy (value)) {
+#ifdef CHIMP_VM_DEBUG
+                    printf ("JUMPIFTRUE %zu\n", (intmax_t) pc);
+#endif
                     pc = CHIMP_INSTR_ADDR(code, pc);
                 }
                 else {
@@ -608,6 +647,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 }
                 /* TODO test for non-truthiness */
                 if (value == chimp_false || value == chimp_nil) {
+#ifdef CHIMP_VM_DEBUG
+                    printf ("JUMPIFFALSE %zu\n", (intmax_t) pc);
+#endif
                     pc = CHIMP_INSTR_ADDR(code, pc);
                 }
                 else {
@@ -736,6 +778,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
             }
             case CHIMP_OPCODE_POP:
             {
+#ifdef CHIMP_VM_DEBUG
+                printf ("POP = %s\n", CHIMP_STR_DATA (chimp_object_str (chimp_vm_top (vm))));
+#endif
                 if (!chimp_vm_pop (vm)) {
                     return NULL;
                 }
