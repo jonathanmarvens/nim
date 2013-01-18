@@ -1,0 +1,14 @@
+#!/usr/local/bin/chimp
+
+use io;
+use os;
+use compiler;
+
+main argv {
+  io.print("Starting Chimp Runner");
+ 
+  os.glob(os.dirname(__file__) + "/../test/*.chimp").each(fn { |f|
+    var mod = compiler.compile(f);
+    mod.main();
+  });
+}

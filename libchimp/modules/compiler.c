@@ -21,11 +21,19 @@
 #include "chimp/array.h"
 #include "chimp/str.h"
 #include "chimp/vm.h"
+#include "chimp/compile.h"
 
 ChimpRef *
 _chimp_compiler_compile (ChimpRef *self, ChimpRef *args)
 {
-    return CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *filename = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *module = CHIMP_COMPILE_MODULE_FROM_FILE (NULL, CHIMP_STR_DATA(filename));
+    if (module == NULL) {
+        fprintf (stderr, "error: failed to compile %s\n", CHIMP_STR_DATA(filename));
+        return chimp_nil;
+    }
+
+    return module;
 }
 
 ChimpRef *
