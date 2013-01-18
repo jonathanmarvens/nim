@@ -1,0 +1,14 @@
+use chimpunit;
+
+main argv {
+  chimpunit.test("hash with string keys", fn { |t|
+    var h = {"foo": 1, "bar": 2};
+    t.equals(h["foo"], 1);
+    t.equals(h["bar"], 2);
+  });
+  chimpunit.test("hash to string", fn { |t|
+    var h = {};
+    t.equals(str(h), "{}");
+  });
+}
+

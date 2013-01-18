@@ -210,7 +210,9 @@ block : TOK_LBRACE stmts TOK_RBRACE { $$ = $2; }
       ;
 
 var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, NULL, &@$); }
-         | TOK_VAR ident TOK_ASSIGN expr { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, $4, &@$); }
+         | TOK_VAR ident TOK_ASSIGN expr {
+            $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, $4, &@$);
+         }
          ;
 
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3, &@$); }
@@ -361,7 +363,7 @@ bool : TOK_TRUE { $$ = chimp_ast_expr_new_bool (chimp_true, &@$); }
      ;
 
 hash : TOK_LBRACE hash_elements TOK_RBRACE { $$ = chimp_ast_expr_new_hash ($2, &@$); }
-     | TOK_LBRACE TOK_RBRACE { $$ = chimp_array_new (); }
+     | TOK_LBRACE TOK_RBRACE { $$ = chimp_ast_expr_new_hash (chimp_array_new (), &@$); }
      ;
 
 hash_elements : expr TOK_COLON expr opt_hash_elements_tail { $$ = $4; chimp_array_unshift ($$, $3); chimp_array_unshift ($$, $1); }
