@@ -1,0 +1,10 @@
+#!/usr/local/bin/chimp
+
+use io;
+use compiler;
+
+main argv {
+  var c = compiler.compile("A file");
+  io.print(c);
+}
+

@@ -16,43 +16,32 @@
  *                                                                           *
  *****************************************************************************/
 
-#ifndef _CHIMP_MODULES_H_INCLUDED_
-#define _CHIMP_MODULES_H_INCLUDED_
-
-#include <chimp/any.h>
-#include <chimp/gc.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "chimp/any.h"
+#include "chimp/object.h"
+#include "chimp/array.h"
+#include "chimp/str.h"
+#include "chimp/vm.h"
 
 ChimpRef *
-chimp_init_io_module (void);
+_chimp_compiler_compile (ChimpRef *self, ChimpRef *args)
+{
+    return CHIMP_ARRAY_ITEM(args, 0);
+}
 
 ChimpRef *
-chimp_init_assert_module (void);
+chimp_init_compiler_module (void)
+{
+    ChimpRef *mod;
 
-ChimpRef *
-chimp_init_unit_module (void);
+    mod = chimp_module_new_str ("compiler", NULL);
+    if (mod == NULL) {
+        return NULL;
+    }
 
-ChimpRef *
-chimp_init_os_module (void);
+    if (!chimp_module_add_method_str (mod, "compile", _chimp_compiler_compile)) {
+        return NULL;
+    }
 
-ChimpRef *
-chimp_init_gc_module (void);
-
-ChimpRef *
-chimp_init_net_module (void);
-
-ChimpRef *
-chimp_init_uv_module (void);
-
-ChimpRef *
-chimp_init_compiler_module (void);
-
-#ifdef __cplusplus
-};
-#endif
-
-#endif
+    return mod;
+}
 

@@ -172,6 +172,7 @@ add_library (libchimp STATIC
   libchimp/modules/gc.c
   libchimp/modules/io.c
   libchimp/modules/os.c
+  libchimp/modules/compiler.c
   libchimp/modules/_uv/_uv.c)
 #
 # Default behaviour is to generate liblibchimp.a ...
