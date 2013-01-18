@@ -378,7 +378,6 @@ _chimp_str_trim (ChimpRef *self, ChimpRef *args)
     if (CHIMP_STR_SIZE(self) > 0) {
         for (j = CHIMP_STR_SIZE(self)-1; j > i; j--) {
             if (!isspace (CHIMP_STR(self)->data[j])) {
-                j++;
                 break;
             }
         }
@@ -387,7 +386,7 @@ _chimp_str_trim (ChimpRef *self, ChimpRef *args)
         j = 0;
     }
 
-    return chimp_str_new (CHIMP_STR_DATA(self) + i, j - i);
+    return chimp_str_new (CHIMP_STR_DATA(self) + i, j + 1 - i);
 }
 
 static ChimpRef *

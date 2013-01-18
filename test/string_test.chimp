@@ -15,6 +15,7 @@ foo", "abcdef\nfoo");
     t.equals("foo ".trim(), "foo");
     t.equals("  bar".trim(), "bar");
     t.equals("  baz  ".trim(), "baz");
+    t.equals("/".trim(), "/");
   });
   chimpunit.test("index", fn { |t|
     var s = "cat";
