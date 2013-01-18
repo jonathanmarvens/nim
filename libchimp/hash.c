@@ -160,6 +160,26 @@ _chimp_hash_mark (ChimpGC *gc, ChimpRef *self)
     }
 }
 
+static ChimpRef *
+_chimp_hash_items (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    ChimpRef *items = chimp_array_new ();
+    for (i = 0; i < CHIMP_HASH(self)->size; i++) {
+        ChimpRef *item =
+            chimp_array_new_var (
+                    CHIMP_HASH(self)->keys[i],
+                    CHIMP_HASH(self)->values[i], NULL);
+        if (item == NULL) {
+            return NULL;
+        }
+        if (!chimp_array_push (items, item)) {
+            return NULL;
+        }
+    }
+    return items;
+}
+
 chimp_bool_t
 chimp_hash_class_bootstrap (void)
 {
@@ -176,6 +196,7 @@ chimp_hash_class_bootstrap (void)
     chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);
     chimp_class_add_native_method (chimp_hash_class, "size", _chimp_hash_size);
+    chimp_class_add_native_method (chimp_hash_class, "items", _chimp_hash_items);
     return CHIMP_TRUE;
 }
 
