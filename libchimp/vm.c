@@ -804,6 +804,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 }
 
                 result = chimp_object_add (left, right);
+#ifdef CHIMP_VM_DEBUG
+                printf ("ADD = %s\n", CHIMP_STR_DATA (chimp_object_str (result)));
+#endif
                 if (!chimp_vm_push (vm, result)) {
                     return NULL;
                 }
@@ -830,6 +833,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (!chimp_vm_push (vm, result)) {
                     return NULL;
                 }
+#ifdef CHIMP_VM_DEBUG
+                printf ("SUB = %s\n", CHIMP_STR_DATA (chimp_object_str (result)));
+#endif
                 pc++;
                 break;
             }
@@ -853,6 +859,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (!chimp_vm_push (vm, result)) {
                     return NULL;
                 }
+#ifdef CHIMP_VM_DEBUG
+                printf ("MUL = %s\n", CHIMP_STR_DATA (chimp_object_str (result)));
+#endif
                 pc++;
                 break;
             }
@@ -876,6 +885,9 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (!chimp_vm_push (vm, result)) {
                     return NULL;
                 }
+#ifdef CHIMP_VM_DEBUG
+                printf ("DIV = %s\n", CHIMP_STR_DATA (chimp_object_str (result)));
+#endif
                 pc++;
                 break;
             }
