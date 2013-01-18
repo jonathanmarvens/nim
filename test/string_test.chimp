@@ -40,5 +40,13 @@ foo", "abcdef\nfoo");
     var parts = reqline.split(" ");
     t.equals(parts, ["GET", "/", "HTTP/1.0"]);
   });
+  chimpunit.test("upper", fn { |t|
+    var s = "abcdef123";
+    t.equals(s.upper(), "ABCDEF123");
+  });
+  chimpunit.test("lower", fn { |t|
+    var s = "ABCDEF123";
+    t.equals(s.lower(), "abcdef123");
+  });
 }
 

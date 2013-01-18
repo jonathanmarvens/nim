@@ -459,6 +459,44 @@ _chimp_str_split (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_str_upper (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    char *data;
+    size_t len = CHIMP_STR_SIZE(self);
+    ChimpRef *str = chimp_str_new (CHIMP_STR_DATA(self), len);
+
+    data = CHIMP_STR_DATA(str);
+
+    for (i = 0; i < len; i++) {
+        if (data[i] >= 'a' && data[i] <= 'z') {
+            data[i] -= (char) 0x20;
+        }
+    }
+
+    return str;
+}
+
+static ChimpRef *
+_chimp_str_lower (ChimpRef *self, ChimpRef *args)
+{
+    size_t i;
+    char *data;
+    size_t len = CHIMP_STR_SIZE(self);
+    ChimpRef *str = chimp_str_new (CHIMP_STR_DATA(self), len);
+
+    data = CHIMP_STR_DATA(str);
+
+    for (i = 0; i < len; i++) {
+        if (data[i] >= 'A' && data[i] <= 'Z') {
+            data[i] += (char) 0x20;
+        }
+    }
+
+    return str;
+}
+
+static ChimpRef *
 _chimp_str_add (ChimpRef *self, ChimpRef *other)
 {
     ChimpRef *other_str = chimp_object_str (other);
@@ -588,6 +626,14 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_class_add_native_method (chimp_str_class, "split", _chimp_str_split)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "upper", _chimp_str_upper)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_class_add_native_method (chimp_str_class, "lower", _chimp_str_lower)) {
         return CHIMP_FALSE;
     }
 
