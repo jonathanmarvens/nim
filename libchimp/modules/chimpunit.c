@@ -46,9 +46,9 @@ _chimp_test_runner_init (ChimpRef *self, ChimpRef *args)
 static void
 _chimp_test_runner_output_stats (ChimpRef *self, FILE* dest)
 {
-    fprintf(dest, "\nPassed: %lld, Failed: %lld\n",
-        CHIMP_TEST(self)->passed,
-        CHIMP_TEST(self)->failed);
+    fprintf(dest, "\nPassed: %ju, Failed: %ju\n",
+        (intmax_t) CHIMP_TEST(self)->passed,
+        (intmax_t) CHIMP_TEST(self)->failed);
 }
 
 static void
