@@ -9,6 +9,6 @@ main argv {
  
   os.glob(os.dirname(__file__) + "/../test/*.chimp").each(fn { |f|
     var mod = compiler.compile(f);
-    mod.main();
+    mod.main([]);
   });
 }
