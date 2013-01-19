@@ -149,6 +149,7 @@ chimp_vm_resolvename (
                 return CHIMP_TRUE;
             }
         } while (i > 0);
+        frame = CHIMP_ARRAY_LAST (vm->frames);
     }
     else {
         frame = CHIMP_ARRAY_LAST (vm->frames);
