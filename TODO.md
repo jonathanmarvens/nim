@@ -43,8 +43,6 @@ macro from C?) -- we *should* be doing this already.
     returning from a test method?)
   * Show stacks on failure
 * More tests.
-* Make it possible to use other chimp source modules.
-  (e.g. 'use foo' compiles & loads 'foo.chimp')
 * 'use foo.bar;'
 * Less semicolons.
 * Revisit the bytecode format.
@@ -57,7 +55,6 @@ macro from C?) -- we *should* be doing this already.
 * Unary operators ++, --
 * Array slices.
 * File I/O (part of the os module?)
-* External modules (e.g. "use foo;" should import foo.chimp at compile time).
 * Sockets
 * Expose methods on more classes.
 * Rubyish symbols?
