@@ -79,4 +79,4 @@ macro from C?) -- we *should* be doing this already.
 # Windows
 * Bison & Flex are a pain with MSVC under windows. Options: MinGW? Lemon?
 * Some CMake quirks under Windows, too.
-
+* Working directory in path for module lookups on startup
