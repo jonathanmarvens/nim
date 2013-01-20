@@ -39,7 +39,6 @@ macro from C?) -- we *should* be doing this already.
 * slice syntax for arrays (arr[1:2])
 * Error handling. Differentiate between runtime/compile errors & chimp bugs.
 * Unit testing API.
-  * ChimpUnit runner (run multiple files, tally up results)
   * Don't die during assertions (exceptions? Other method for prematurely
     returning from a test method?)
   * Show stacks on failure

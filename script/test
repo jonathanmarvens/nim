@@ -5,6 +5,4 @@ APPDIR="$(cd "$APPDIR" && pwd)"
 
 set -e
 
-echo "Running Chimp Tests"
-find "$APPDIR/test" -name '*.chimp' -exec "$APPDIR/chimp" '{}' \;
-
+$APPDIR/chimp script/runner.chimp $APPDIR/test

@@ -5,9 +5,13 @@ use os;
 use compiler;
 
 main argv {
-  io.print("Starting Chimp Runner");
- 
-  os.glob(os.dirname(__file__) + "/../test/*.chimp").each(fn { |f|
+  var testdir = argv[1];
+  if testdir== nil {
+    testdir = os.dirname(__file__) + "/../test";
+  }
+
+  io.print("Starting Chimp Runner for " + testdir);
+  os.glob(testdir + "/*.chimp").each(fn { |f|
     var mod = compiler.compile(f);
     mod.main([]);
   });
