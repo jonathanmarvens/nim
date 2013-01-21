@@ -443,6 +443,22 @@ _chimp_array_slice(ChimpRef *self, ChimpRef *args)
     return result;
 }
 
+static ChimpRef *
+_chimp_array_unshift (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *arg;
+
+    if (!chimp_method_parse_args (args, "o", &arg)) {
+        return NULL;
+    }
+
+    if (!chimp_array_unshift (self, arg)) {
+        return NULL;
+    }
+
+    return chimp_nil;
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -461,6 +477,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (chimp_array_class, "unshift", _chimp_array_unshift);
     chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
     chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
     chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
@@ -546,6 +563,7 @@ chimp_array_grow (ChimpRef *self)
         items = CHIMP_REALLOC(
             ChimpRef *, arr->items, sizeof(*arr->items) * new_capacity);
         if (items == NULL) {
+            CHIMP_BUG ("failed to grow internal array buffer");
             return CHIMP_FALSE;
         }
         arr->items = items;
