@@ -173,13 +173,15 @@ add_library (libchimp STATIC
   libchimp/modules/io.c
   libchimp/modules/os.c
   libchimp/modules/compiler.c
-  libchimp/modules/_uv/_uv.c)
+  libchimp/modules/_uv/_uv.c
+  libchimp/modules/http/http.c
+  libchimp/modules/http/http-parser-1.0/http_parser.c)
 #
 # Default behaviour is to generate liblibchimp.a ...
 #
 set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
 set_target_properties (libchimp PROPERTIES
-    COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv/include")
+  COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv/include -I${PROJECT_SOURCE_DIR}/libchimp/modules/http/http-parser-1.0")
 
 add_dependencies (libchimp uv)
 

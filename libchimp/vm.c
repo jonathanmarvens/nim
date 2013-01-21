@@ -264,7 +264,8 @@ chimp_vm_call (ChimpVM *vm, ChimpRef *code, ChimpRef *locals, size_t pc)
     }
     result = chimp_object_call (target, args);
     if (result == NULL) {
-        CHIMP_BUG ("target is not callable");
+        CHIMP_BUG ("target (%s) is not callable",
+            CHIMP_STR_DATA(chimp_object_str (target)));
         return CHIMP_FALSE;
     }
 #ifdef CHIMP_VM_DEBUG

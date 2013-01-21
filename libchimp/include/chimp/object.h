@@ -67,6 +67,9 @@ ChimpRef *
 chimp_object_call (ChimpRef *target, ChimpRef *args);
 
 ChimpRef *
+chimp_object_call_method (ChimpRef *target, const char *name, ChimpRef *args);
+
+ChimpRef *
 chimp_object_getattr (ChimpRef *self, ChimpRef *name);
 
 ChimpRef *
