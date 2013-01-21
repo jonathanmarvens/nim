@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <inttypes.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "chimp/gc.h"
 #include "chimp/task.h"
@@ -117,6 +118,7 @@ chimp_task_thread_func (void *arg)
     /* TODO better error handling */
 
     ChimpTaskInternal *task = (ChimpTaskInternal *) arg;
+
     /* printf ("[%p] started\n", task); */
     task->gc = chimp_gc_new ((void *)&task);
     if (task->gc == NULL) {
@@ -293,10 +295,24 @@ chimp_task_new_from_internal (ChimpTaskInternal *priv)
 ChimpTaskInternal *
 chimp_task_new_main (void *stack_start)
 {
-    ChimpTaskInternal *task = CHIMP_MALLOC(ChimpTaskInternal, sizeof(*task));
+    sigset_t set;
+    ChimpTaskInternal *task;
+    
+    sigemptyset (&set);
+    sigaddset (&set, SIGPIPE);
+
+    if (pthread_sigmask (SIG_BLOCK, &set, NULL) != 0) {
+        CHIMP_BUG ("could not set signal mask on task thread");
+        return NULL;
+    }
+
+    signal (SIGPIPE, SIG_IGN);
+
+    task = CHIMP_MALLOC(ChimpTaskInternal, sizeof(*task));
     if (task == NULL) {
         return NULL;
     }
+
     main_task = task;
     memset (task, 0, sizeof (*task));
     task->flags = CHIMP_TASK_FLAG_MAIN;
