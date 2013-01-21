@@ -124,6 +124,40 @@ _chimp_os_glob (ChimpRef *self, ChimpRef *args)
     return arr;
 }
 
+static ChimpRef *
+_chimp_os_setuid (ChimpRef *self, ChimpRef *args)
+{
+    int64_t uid;
+
+    if (!chimp_method_parse_args (args, "I", &uid)) {
+        return NULL;
+    }
+
+    if (setuid ((uid_t) uid) != 0) {
+        return chimp_false;
+    }
+    else {
+        return chimp_true;
+    }
+}
+
+static ChimpRef *
+_chimp_os_setgid (ChimpRef *self, ChimpRef *args)
+{
+    int64_t gid;
+
+    if (!chimp_method_parse_args (args, "I", &gid)) {
+        return NULL;
+    }
+
+    if (setgid ((gid_t) gid) != 0) {
+        return chimp_false;
+    }
+    else {
+        return chimp_true;
+    }
+}
+
 ChimpRef *
 chimp_init_os_module (void)
 {
@@ -151,6 +185,14 @@ chimp_init_os_module (void)
     }
 
     if (!chimp_module_add_method_str (os, "glob", _chimp_os_glob)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "setuid", _chimp_os_setuid)) {
+        return NULL;
+    }
+
+    if (!chimp_module_add_method_str (os, "setgid", _chimp_os_setgid)) {
         return NULL;
     }
 
