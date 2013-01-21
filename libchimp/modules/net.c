@@ -229,6 +229,7 @@ _chimp_socket_recv (ChimpRef *self, ChimpRef *args)
     }
 
     n = recv (CHIMP_NET_SOCKET (self)->fd, buf, size, 0);
+    /* XXX can't distinguish between an error and an EOF atm */
     if (n <= 0) {
         return CHIMP_STR_NEW ("");
     }

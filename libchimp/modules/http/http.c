@@ -60,22 +60,10 @@ _chimp_http_parser_on_message_begin (http_parser *p)
     ChimpRef *req;
     req = chimp_class_new_instance (chimp_http_request_class, NULL);
     if (req == NULL) {
+        CHIMP_BUG ("http.request instantiation failed");
         return 1;
     }
-    req = CHIMP_HTTP_PARSER(self)->request = req;
-    return 0;
-}
-
-static int
-_chimp_http_parser_on_path (http_parser *p, const char *data, size_t len)
-{
-    return 0;
-}
-
-static int
-_chimp_http_parser_on_query_string (
-    http_parser *p, const char *data, size_t len)
-{
+    CHIMP_HTTP_PARSER(self)->request = req;
     return 0;
 }
 
@@ -85,14 +73,9 @@ _chimp_http_parser_on_url (http_parser *p, const char *data, size_t len)
     ChimpRef *req = CHIMP_HTTP_PARSER(p->data)->request;
     CHIMP_HTTP_REQUEST(req)->url = chimp_str_new (data, len);
     if (CHIMP_HTTP_REQUEST(req)->url == NULL) {
+        CHIMP_BUG ("failed to set request url");
         return 1;
     }
-    return 0;
-}
-
-static int
-_chimp_http_parser_on_fragment (http_parser *p, const char *data, size_t len)
-{
     return 0;
 }
 
@@ -102,6 +85,7 @@ _chimp_http_parser_on_header_field (
 {
     CHIMP_HTTP_PARSER(p->data)->header = chimp_str_new (data, len);
     if (CHIMP_HTTP_PARSER(p->data)->header == NULL) {
+        CHIMP_BUG ("failed to allocate header");
         return 1;
     }
     return 0;
@@ -118,6 +102,7 @@ _chimp_http_parser_on_header_value (
     ChimpRef *self = p->data;
     ChimpRef *value = chimp_str_new (data, len);
     if (value == NULL) {
+        CHIMP_BUG ("failed to allocate header value");
         return 1;
     }
     
@@ -125,20 +110,24 @@ _chimp_http_parser_on_header_value (
     headers = CHIMP_HTTP_REQUEST(req)->headers;
     header = CHIMP_HTTP_PARSER(self)->header;
     if (chimp_hash_get (headers, header, &values) < 0) {
+        CHIMP_BUG ("failed to get header");
         return 1;
     }
     if (values != chimp_nil) {
         if (CHIMP_ANY_CLASS(values) == chimp_array_class) {
             if (!chimp_array_push (values, value)) {
+                CHIMP_BUG ("failed to push value onto header array");
                 return 1;
             }
         }
         else if (CHIMP_ANY_CLASS(values) == chimp_str_class) {
             values = chimp_array_new_var (values, value, NULL);
             if (values == NULL) {
+                CHIMP_BUG ("failed to convert header into array");
                 return 1;
             }
             if (!chimp_hash_put (headers, header, values)) {
+                CHIMP_BUG ("failed to set header");
                 return 1;
             }
         }
@@ -149,6 +138,7 @@ _chimp_http_parser_on_header_value (
     }
     else {
         if (!chimp_hash_put (headers, header, value)) {
+            CHIMP_BUG ("failed to set header");
             return 1;
         }
     }
@@ -172,12 +162,15 @@ _chimp_http_parser_on_body (http_parser *p, const char *data, size_t len)
     if (CHIMP_HTTP_REQUEST(req)->body == NULL) {
         CHIMP_HTTP_REQUEST(req)->body = chimp_str_new (data, len);
         if (CHIMP_HTTP_REQUEST(req)->body == NULL) {
+            CHIMP_BUG ("failed to allocate body");
             return 1;
         }
     }
     else {
-        if (!chimp_str_append_strn (CHIMP_HTTP_REQUEST(req)->body, data, len))
+        if (!chimp_str_append_strn (CHIMP_HTTP_REQUEST(req)->body, data, len)) {
+            CHIMP_BUG ("failed to append body content");
             return 1;
+        }
     }
     return 0;
 }
@@ -190,6 +183,7 @@ _chimp_http_parser_on_message_complete (http_parser *p)
     CHIMP_HTTP_REQUEST(req)->method =
         chimp_str_new (method_str, strlen (method_str));
     if (CHIMP_HTTP_REQUEST(req)->method == NULL) {
+        CHIMP_BUG ("failed to allocate method");
         return 1;
     }
     CHIMP_HTTP_REQUEST(req)->http_version = chimp_array_new_var (
@@ -198,6 +192,7 @@ _chimp_http_parser_on_message_complete (http_parser *p)
             NULL
         );
     if (CHIMP_HTTP_REQUEST(req)->http_version == NULL) {
+        CHIMP_BUG ("failed to allocate version");
         return 1;
     }
     CHIMP_HTTP_PARSER(p->data)->complete = CHIMP_TRUE;
@@ -213,10 +208,7 @@ _chimp_http_parser_init (ChimpRef *self, ChimpRef *args)
     conf = &CHIMP_HTTP_PARSER(self)->conf;
     memset (conf, 0, sizeof(*conf));
     conf->on_message_begin = _chimp_http_parser_on_message_begin;
-    conf->on_path = _chimp_http_parser_on_path;
-    conf->on_query_string = _chimp_http_parser_on_query_string;
     conf->on_url = _chimp_http_parser_on_url;
-    conf->on_fragment = _chimp_http_parser_on_fragment;
     conf->on_header_field = _chimp_http_parser_on_header_field;
     conf->on_header_value = _chimp_http_parser_on_header_value;
     conf->on_headers_complete = _chimp_http_parser_on_headers_complete;
@@ -246,7 +238,11 @@ _chimp_http_parser_parse_request (ChimpRef *self, ChimpRef *args)
     ChimpRef *req;
     http_parser *p = &CHIMP_HTTP_PARSER(self)->impl;
     http_parser_settings *conf = &CHIMP_HTTP_PARSER(self)->conf;
-    ChimpRef *sck = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *sck;
+    
+    if (!chimp_method_parse_args (args, "o", &sck)) {
+        return NULL;
+    }
     
     size = chimp_int_new (8192);
     if (size == NULL) {
@@ -263,13 +259,20 @@ _chimp_http_parser_parse_request (ChimpRef *self, ChimpRef *args)
             return NULL;
         }
         else if (CHIMP_STR_SIZE(data) == 0) {
+            http_parser_execute (p, conf, "", 0);
+            if (HTTP_PARSER_ERRNO(p) != HPE_OK) {
+                req = NULL;
+                CHIMP_BUG (http_errno_description (HTTP_PARSER_ERRNO(p)));
+                goto done;
+            }
             break;
         }
         size = CHIMP_STR_SIZE(data);
-        if (http_parser_execute (p, conf, CHIMP_STR_DATA(data), size) != size) {
+        http_parser_execute (p, conf, CHIMP_STR_DATA(data), size); 
+        if (HTTP_PARSER_ERRNO(p) != HPE_OK) {
             req = NULL;
+            CHIMP_BUG (http_errno_description (HTTP_PARSER_ERRNO(p)));
             goto done;
-            req = CHIMP_HTTP_PARSER(self)->request;
         }
     }
     req = CHIMP_HTTP_PARSER(self)->request;
@@ -277,7 +280,7 @@ done:
     CHIMP_HTTP_PARSER(self)->request = NULL;
     CHIMP_HTTP_PARSER(self)->header = NULL;
     CHIMP_HTTP_PARSER(self)->complete = CHIMP_FALSE;
-    return req;
+    return (req == NULL) ? chimp_nil : req;
 }
 
 static ChimpRef *
