@@ -176,6 +176,7 @@ _chimp_socket_close (ChimpRef *self, ChimpRef *args)
 {
     if (CHIMP_NET_SOCKET(self)->fd >= 0) {
         close (CHIMP_NET_SOCKET(self)->fd);
+        CHIMP_NET_SOCKET(self)->fd = -1;
     }
     return chimp_nil;
 }
