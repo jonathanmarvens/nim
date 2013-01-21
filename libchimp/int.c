@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
+#include "chimp/array.h"
 #include "chimp/int.h"
 #include "chimp/str.h"
 #include "chimp/class.h"
@@ -30,7 +31,13 @@ ChimpRef *chimp_int_class = NULL;
 static ChimpRef *
 _chimp_int_init (ChimpRef *self, ChimpRef *args)
 {
-    /* TODO convert str arg to int */
+    if (CHIMP_ARRAY_SIZE(args) > 0) {
+        const char *arg;
+        if (!chimp_method_parse_args (args, "s", &arg)) {
+            return NULL;
+        }
+        CHIMP_INT(self)->value = atoll (arg);
+    }
     return self;
 }
 
