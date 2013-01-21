@@ -36,6 +36,7 @@ typedef struct _ChimpHttpParser {
 } ChimpHttpParser;
 
 typedef struct _ChimpHttpRequest {
+    ChimpAny base;
     ChimpRef *method;
     ChimpRef *http_version;
     ChimpRef *url;
@@ -56,11 +57,12 @@ static int
 _chimp_http_parser_on_message_begin (http_parser *p)
 {
     ChimpRef *self = p->data;
-    ChimpRef *req = CHIMP_HTTP_PARSER(self)->request;
+    ChimpRef *req;
     req = chimp_class_new_instance (chimp_http_request_class, NULL);
-    if (CHIMP_HTTP_PARSER(self)->request == NULL) {
+    if (req == NULL) {
         return 1;
     }
+    req = CHIMP_HTTP_PARSER(self)->request = req;
     return 0;
 }
 
