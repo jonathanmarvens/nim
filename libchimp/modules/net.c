@@ -263,7 +263,9 @@ _chimp_socket_getattr (ChimpRef *self, ChimpRef *attr)
 static void
 _chimp_socket_dtor (ChimpRef *self)
 {
+#if 0
     _chimp_socket_close (self, NULL);
+#endif
 }
 
 static chimp_bool_t
