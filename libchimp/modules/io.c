@@ -17,6 +17,10 @@
  *****************************************************************************/
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "chimp/any.h"
 #include "chimp/object.h"
 #include "chimp/array.h"
@@ -124,8 +128,23 @@ _chimp_io_file_read (ChimpRef *self, ChimpRef *args)
     int64_t rsize;
     char *buf;
 
-    if (!chimp_method_parse_args (args, "I", &size)) {
-        return NULL;
+    if (CHIMP_ARRAY_SIZE(args) > 0) {
+        if (!chimp_method_parse_args (args, "I", &size)) {
+            return NULL;
+        }
+    }
+    else {
+        struct stat buf;
+        int fd = fileno (CHIMP_IO_FILE(self)->stream);
+        if (fd < 0) {
+            CHIMP_BUG ("fileno (...) failed");
+            return NULL;
+        }
+        if (fstat (fd, &buf) != 0) {
+            CHIMP_BUG ("fstat (...) failed");
+            return NULL;
+        }
+        size = buf.st_size;
     }
 
     if (CHIMP_IO_FILE(self)->stream == NULL) {
