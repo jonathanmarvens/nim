@@ -172,7 +172,6 @@ add_library (libchimp STATIC
   libchimp/modules/gc.c
   libchimp/modules/io.c
   libchimp/modules/os.c
-  libchimp/modules/compiler.c
   libchimp/modules/_uv/_uv.c
   libchimp/modules/http/http.c
   libchimp/modules/http/http-parser-2.0/http_parser.c)

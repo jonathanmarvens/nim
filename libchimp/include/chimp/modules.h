@@ -48,9 +48,6 @@ ChimpRef *
 chimp_init_uv_module (void);
 
 ChimpRef *
-chimp_init_compiler_module (void);
-
-ChimpRef *
 chimp_init_http_module (void);
 
 #ifdef __cplusplus

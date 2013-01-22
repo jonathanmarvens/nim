@@ -2,7 +2,6 @@
 
 use io;
 use os;
-use compiler;
 
 main argv {
   var testdir = argv[1];
@@ -12,7 +11,7 @@ main argv {
 
   io.print("Starting Chimp Runner for " + testdir);
   os.glob(testdir + "/*.chimp").each(fn { |f|
-    var mod = compiler.compile(f);
+    var mod = compile(f);
     mod.main([]);
   });
 }

@@ -13,7 +13,7 @@ syn keyword chimpKeyword match class this break
 syn keyword chimpBoolean true false
 syn keyword chimpConditional if else
 syn keyword chimpType str int float hash object array error method
-syn keyword chimpSpecial init recv self range __file__ __line__
+syn keyword chimpSpecial init recv self range __file__ __line__ compile
 syn match chimpString '"[^"]*"'
 syn region chimpString start=+\z(["]\)+ end=+\z1+
 syn match chimpComment '#.*$'

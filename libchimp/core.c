@@ -39,6 +39,7 @@
 #include "chimp/module.h"
 #include "chimp/modules.h"
 #include "chimp/symtable.h"
+#include "chimp/compile.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -304,6 +305,18 @@ _chimp_array_range(ChimpRef* a, ChimpRef *args)
 
 static ChimpTaskInternal *main_task = NULL;
 
+static ChimpRef *
+_chimp_compile (ChimpRef *self, ChimpRef *args)
+{
+    ChimpRef *filename = CHIMP_ARRAY_ITEM(args, 0);
+    ChimpRef *module = CHIMP_COMPILE_MODULE_FROM_FILE (NULL, CHIMP_STR_DATA(filename));
+    if (module == NULL) {
+        fprintf (stderr, "error: failed to compile %s\n", CHIMP_STR_DATA(filename));
+        return chimp_nil;
+    }
+    return module;
+}
+
 static chimp_bool_t
 chimp_core_init_builtins (void)
 {
@@ -330,6 +343,7 @@ chimp_core_init_builtins (void)
     CHIMP_BUILTIN_METHOD(_chimp_task_recv, "recv");
     CHIMP_BUILTIN_METHOD(_chimp_task_self, "self");
     CHIMP_BUILTIN_METHOD(_chimp_array_range, "range");
+    CHIMP_BUILTIN_METHOD(_chimp_compile, "compile");
 
     return CHIMP_TRUE;
 }
@@ -607,9 +621,6 @@ chimp_core_startup (const char *path, void *stack_start)
         goto error;
 
     if (!chimp_module_add_builtin (chimp_init_uv_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_compiler_module ()))
         goto error;
 
     if (!chimp_module_add_builtin (chimp_init_http_module ()))
