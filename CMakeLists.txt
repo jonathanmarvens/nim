@@ -197,9 +197,6 @@ set (CHIMP_LIBRARIES
 add_executable (chimp main.c)
 target_link_libraries (chimp ${CHIMP_LIBRARIES})
 
-add_executable (chasm chasm.c)
-target_link_libraries (chasm ${CHIMP_LIBRARIES})
-
 #
 # TODO test for the presence of check
 #
