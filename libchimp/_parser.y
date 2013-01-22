@@ -265,6 +265,7 @@ expr5: nil { $$ = $1; }
        | float { $$ = $1; }
        | ident { $$ = $1; }
        | bool { $$ = $1; }
+       | TOK_LBRACKET expr TOK_RBRACKET { $$ = $2; }
        ;
 
 opt_patterns: pattern opt_patterns { $$ = $2; chimp_array_unshift ($$, $1); }
