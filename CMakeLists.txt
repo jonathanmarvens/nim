@@ -5,6 +5,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (chimp)
 
+set (CHIMP_VERSION "0.0.1")
+
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
 find_package (Threads REQUIRED)
@@ -208,4 +210,7 @@ target_link_libraries (test-native ${CHIMP_LIBRARIES} check)
 add_custom_target (test test-native
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/script/test
   DEPENDS test-native chimp)
+
+add_custom_target (dist 
+    COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}/ master | gzip -9 >${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}.tar.gz)
 
