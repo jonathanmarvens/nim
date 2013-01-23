@@ -34,6 +34,7 @@ typedef struct _ChimpMsgCell {
         CHIMP_MSG_CELL_INT,
         CHIMP_MSG_CELL_STR,
         CHIMP_MSG_CELL_ARRAY,
+        CHIMP_MSG_CELL_METHOD,
         CHIMP_MSG_CELL_TASK
     } type;
     union {
@@ -46,7 +47,8 @@ typedef struct _ChimpMsgCell {
             struct _ChimpMsgCell *items;
             size_t                size;
         } array;
-        ChimpTaskInternal    *task;
+        ChimpRef          *method;
+        ChimpTaskInternal *task;
     };
 } ChimpMsgCell;
 
