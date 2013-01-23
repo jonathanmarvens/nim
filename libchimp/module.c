@@ -26,6 +26,7 @@
 
 ChimpRef *chimp_module_class = NULL;
 static ChimpRef *cache = NULL;
+static pthread_mutex_t cache_lock;
 static ChimpRef *builtin_modules = NULL;
 
 static ChimpRef *
@@ -87,6 +88,10 @@ _chimp_module_mark (ChimpGC *gc, ChimpRef *self)
 chimp_bool_t
 chimp_module_class_bootstrap (void)
 {
+    if (pthread_mutex_init (&cache_lock, NULL) != 0) {
+        return CHIMP_FALSE;
+    }
+
     chimp_module_class = chimp_class_new (CHIMP_STR_NEW ("module"), NULL, sizeof(ChimpModule));
     if (chimp_module_class == NULL) {
         return CHIMP_FALSE;
@@ -99,6 +104,52 @@ chimp_module_class_bootstrap (void)
     return CHIMP_TRUE;
 }
 
+chimp_bool_t
+_chimp_module_init_cache()
+{
+    chimp_bool_t result = CHIMP_FALSE;
+    if (cache == NULL) {
+        pthread_mutex_lock(&cache_lock);
+        cache = chimp_hash_new ();
+        if (cache == NULL) {
+            // CHIMP_BUG?
+            result = CHIMP_TRUE;
+        }
+        else
+        {
+            chimp_gc_make_root (NULL, cache);
+        }
+        pthread_mutex_unlock(&cache_lock);
+    }
+    return result;
+}
+
+chimp_bool_t
+_chimp_module_cache_get(ChimpRef *name, ChimpRef **mod)
+{
+    int rc;
+    pthread_mutex_lock(&cache_lock);
+    rc = chimp_hash_get (cache, name, mod);
+    pthread_mutex_unlock(&cache_lock);
+
+    if (rc == 0) {
+        return CHIMP_TRUE;
+    }
+    else if (rc == -1) {
+        return CHIMP_TRUE;
+    }
+    return CHIMP_FALSE;
+}
+
+chimp_bool_t
+_chimp_module_cache_put(ChimpRef *name, ChimpRef **mod)
+{
+    pthread_mutex_lock(&cache_lock);
+    chimp_bool_t result = !chimp_hash_put (cache, name, *mod);
+    pthread_mutex_unlock(&cache_lock);
+    return result;
+}
+
 ChimpRef *
 chimp_module_load (ChimpRef *name, ChimpRef *path)
 {
@@ -108,19 +159,12 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
 
     /* TODO circular references ... */
 
-    if (cache == NULL) {
-        cache = chimp_hash_new ();
-        if (cache == NULL) {
-            return NULL;
-        }
-        chimp_gc_make_root (NULL, cache);
-    }
-    rc = chimp_hash_get (cache, name, &mod);
-    if (rc == 0) {
-        return mod;
-    }
-    else if (rc == -1) {
+    if (_chimp_module_init_cache() == CHIMP_TRUE) {
         return NULL;
+    }
+
+    if (_chimp_module_cache_get(name, &mod) == CHIMP_TRUE) {
+        return mod;
     }
 
     if (path != NULL) {
@@ -139,7 +183,7 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
                 if (mod == NULL) {
                     return NULL;
                 }
-                if (!chimp_hash_put (cache, name, mod)) {
+                if (_chimp_module_cache_put(name, &mod) == CHIMP_TRUE) {
                     return NULL;
                 }
                 return mod;
@@ -150,7 +194,7 @@ chimp_module_load (ChimpRef *name, ChimpRef *path)
     rc = chimp_hash_get (builtin_modules, name, &mod);
 
     if (rc == 0) {
-        if (!chimp_hash_put (cache, name, mod)) {
+        if (_chimp_module_cache_put(name, &mod) == CHIMP_TRUE) {
             return NULL;
         }
         return mod;
