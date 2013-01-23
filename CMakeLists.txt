@@ -134,14 +134,6 @@ add_custom_command (
 # ---- </TEST-DRIVER> ----
 #
 
-add_custom_target (uv make
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv"
-    VERBATIM)
-
-add_custom_target (uv-clean make clean
-    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv"
-    VERBATIM)
-
 include_directories ("${CMAKE_CURRENT_BINARY_DIR}/libchimp/include" "${PROJECT_SOURCE_DIR}/libchimp/include")
 add_library (libchimp STATIC
   ${PARSER_C}
@@ -174,7 +166,6 @@ add_library (libchimp STATIC
   libchimp/modules/gc.c
   libchimp/modules/io.c
   libchimp/modules/os.c
-  libchimp/modules/_uv/_uv.c
   libchimp/modules/http/http.c
   libchimp/modules/http/http-parser-2.0/http_parser.c)
 #
@@ -182,16 +173,13 @@ add_library (libchimp STATIC
 #
 set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
 set_target_properties (libchimp PROPERTIES
-  COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/_uv/libuv/include -I${PROJECT_SOURCE_DIR}/libchimp/modules/http/http-parser-2.0")
-
-add_dependencies (libchimp uv)
+  COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/http/http-parser-2.0")
 
 set (CHIMP_LIBRARIES
     libchimp
     ${FLEX_LIBRARIES}
     ${BISON_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${PROJECT_BINARY_DIR}/libchimp/modules/_uv/libuv/libuv.a
     ${COREFOUNDATION_LIBRARY}
     ${CORESERVICES_LIBRARY}
     ${LIBRT_LIBRARIES})

@@ -620,9 +620,6 @@ chimp_core_startup (const char *path, void *stack_start)
     if (!chimp_module_add_builtin (chimp_init_net_module ()))
         goto error;
 
-    if (!chimp_module_add_builtin (chimp_init_uv_module ()))
-        goto error;
-
     if (!chimp_module_add_builtin (chimp_init_http_module ()))
         goto error;
 
