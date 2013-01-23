@@ -516,13 +516,13 @@ _chimp_str_lower (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_str_add (ChimpRef *self, ChimpRef *other)
 {
-    ChimpRef *other_str = chimp_object_str (other);
-    if (other_str == NULL) {
-        CHIMP_BUG ("could not convert to str");
+    if (CHIMP_ANY_CLASS(other) != chimp_str_class) {
+        CHIMP_BUG ("rhs of str `+` operator must also be a str");
         return NULL;
     }
+
     return chimp_str_new_concat (
-        CHIMP_STR_DATA(self), CHIMP_STR_DATA(other_str), NULL);
+        CHIMP_STR_DATA(self), CHIMP_STR_DATA(other), NULL);
 }
 
 chimp_bool_t
