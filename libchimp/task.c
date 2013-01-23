@@ -548,6 +548,12 @@ chimp_task_current (void)
     return (ChimpTaskInternal *) pthread_getspecific (current_task_key);
 }
 
+ChimpTaskInternal *
+chimp_task_main (void)
+{
+    return main_task;
+}
+
 ChimpRef *
 chimp_task_get_self (ChimpTaskInternal *task)
 {

@@ -69,6 +69,9 @@ chimp_task_mark (ChimpGC *gc, ChimpTaskInternal *task);
 ChimpTaskInternal *
 chimp_task_current (void);
 
+ChimpTaskInternal *
+chimp_task_main (void);
+
 ChimpRef *
 chimp_task_get_self (ChimpTaskInternal *task);
 
@@ -90,6 +93,8 @@ chimp_task_find_module (ChimpTaskInternal *task, ChimpRef *name);
 #define CHIMP_CURRENT_GC chimp_task_get_gc (chimp_task_current())
 #define CHIMP_CURRENT_VM chimp_task_get_vm (chimp_task_current())
 /* #define CHIMP_CURRENT_FRAME chimp_task_get_frame (chimp_task_current()) */
+
+#define CHIMP_MAIN_GC chimp_task_get_gc (chimp_task_main())
 
 #define CHIMP_PUSH_STACK_FRAME() \
     chimp_task_push_stack_frame (chimp_task_current ())
