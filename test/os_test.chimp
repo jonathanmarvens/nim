@@ -30,7 +30,6 @@ main argv {
     # glob results are sorted.
     #
     var expected = [
-      str(basedir, "chasm.c"),
       str(basedir, "main.c")
     ];
     t.equals(os.glob(str(basedir, "*.c")), expected);

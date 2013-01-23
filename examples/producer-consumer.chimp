@@ -49,12 +49,12 @@ consumer_task {
 }
 
 main argv {
-  var producer = spawn { producer_task(); };
+  var producer = spawn producer_task();
 
   var consumers = [];
   var i = 0;
   range(0, 2).each(fn { |i|
-    consumers.push(spawn { consumer_task(); });
+    consumers.push(spawn consumer_task());
   });
   consumers.each(fn { |c| c.send(producer); });
   consumers.each(fn { |c| c.join(); });

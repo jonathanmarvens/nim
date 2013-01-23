@@ -30,9 +30,6 @@
 #define CHIMP_SYMTABLE_ENTRY_IS_MODULE(ste) \
     CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, CHIMP_SYM_MODULE)
 
-#define CHIMP_SYMTABLE_ENTRY_IS_SPAWN(ste) \
-    CHIMP_SYMTABLE_ENTRY_CHECK_TYPE(ste, CHIMP_SYM_SPAWN)
-
 ChimpRef *chimp_symtable_class = NULL;
 ChimpRef *chimp_symtable_entry_class = NULL;
 
@@ -530,23 +527,18 @@ chimp_symtable_visit_expr_fn (ChimpRef *self, ChimpRef *expr)
 static chimp_bool_t
 chimp_symtable_visit_expr_spawn (ChimpRef *self, ChimpRef *expr)
 {
+    size_t i;
+    ChimpRef *target = CHIMP_AST_EXPR(expr)->spawn.target;
     ChimpRef *args = CHIMP_AST_EXPR(expr)->spawn.args;
-    ChimpRef *body = CHIMP_AST_EXPR(expr)->spawn.body;
 
-    if (!chimp_symtable_enter_scope (self, expr, CHIMP_SYM_SPAWN)) {
+    if (!chimp_symtable_visit_expr (self, target)) {
         return CHIMP_FALSE;
     }
 
-    if (!chimp_symtable_visit_decls (self, args)) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_symtable_visit_stmts_or_decls (self, body)) {
-        return CHIMP_FALSE;
-    }
-
-    if (!chimp_symtable_leave_scope (self)) {
-        return CHIMP_FALSE;
+    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+        if (!chimp_symtable_visit_expr (self, CHIMP_ARRAY_ITEM(args, i))) {
+            return CHIMP_FALSE;
+        }
     }
 
     return CHIMP_TRUE;
@@ -850,7 +842,6 @@ chimp_symtable_entry_sym_flags (
     ChimpRef *self, ChimpRef *name, int64_t *flags)
 {
     ChimpRef *ste = self;
-    chimp_bool_t crossed_spawn_boundary = CHIMP_FALSE;
     while (ste != chimp_nil) {
         ChimpRef *symbols = CHIMP_SYMTABLE_ENTRY(ste)->symbols;
         ChimpRef *ref;
@@ -858,26 +849,10 @@ chimp_symtable_entry_sym_flags (
         
         rc = chimp_hash_get (symbols, name, &ref);
         if (rc == 0) {
-            if (crossed_spawn_boundary &&
-                    !CHIMP_SYMTABLE_ENTRY_IS_MODULE(ste)) {
-                /* If we cross a 'spawn' while trying to find this symbol,
-                 * the only thing we can legitimately reference is something at
-                 * the (immutable) module level.
-                 *
-                 * Anything else is probably owned by another task & thus not
-                 * safe.
-                 */
-                CHIMP_BUG ("cannot refer to `%s` from another task",
-                        CHIMP_STR_DATA(name));
-                return CHIMP_FALSE;
-            }
             if (flags != NULL) {
                 *flags = CHIMP_INT(ref)->value;
             }
             return CHIMP_TRUE;
-        }
-        if (!crossed_spawn_boundary) {
-            crossed_spawn_boundary = CHIMP_SYMTABLE_ENTRY_IS_SPAWN(ste);
         }
         ste = CHIMP_SYMTABLE_ENTRY(ste)->parent;
     }

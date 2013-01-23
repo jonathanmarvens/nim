@@ -1885,24 +1885,42 @@ chimp_compile_ast_expr_fn (ChimpCodeCompiler *c, ChimpRef *expr)
 static chimp_bool_t
 chimp_compile_ast_expr_spawn (ChimpCodeCompiler *c, ChimpRef *expr)
 {
-    ChimpRef *method;
+    size_t i;
     ChimpRef *code = CHIMP_COMPILER_CODE(c);
+    ChimpRef *target = CHIMP_AST_EXPR(expr)->spawn.target;
+    ChimpRef *args = CHIMP_AST_EXPR(expr)->spawn.args;
 
-    method = chimp_compile_bytecode_method (
-        c,
-        expr,
-        CHIMP_AST_EXPR(expr)->fn.args,
-        CHIMP_AST_EXPR(expr)->fn.body
-    );
-    if (method == NULL) {
-        return CHIMP_FALSE;
-    }
-    
-    if (!chimp_code_pushconst (code, method)) {
+    if (!chimp_compile_ast_expr (c, target)) {
         return CHIMP_FALSE;
     }
 
     if (!chimp_code_spawn (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_dup (code)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_getattr (code, CHIMP_STR_NEW ("send"))) {
+        return CHIMP_FALSE;
+    }
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(args); i++) {
+        if (!chimp_compile_ast_expr (c, CHIMP_ARRAY_ITEM(args, i))) {
+            return CHIMP_FALSE;
+        }
+    }
+
+    if (!chimp_code_makearray (code, CHIMP_ARRAY_SIZE(args))) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_call (code, 1)) {
+        return CHIMP_FALSE;
+    }
+
+    if (!chimp_code_pop (code)) {
         return CHIMP_FALSE;
     }
 

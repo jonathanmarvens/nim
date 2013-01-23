@@ -147,8 +147,8 @@ chimp_task_thread_func (void *arg)
             return NULL;
         }
         task->self = taskobj;
-        args = chimp_array_new ();
         CHIMP_TASK_UNLOCK(task);
+        args = chimp_task_recv (task->self);
         if (chimp_vm_invoke (task->vm, task->method, args) == NULL) {
             chimp_task_unref (task);
             return NULL;

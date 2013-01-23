@@ -551,6 +551,10 @@ chimp_vm_eval_frame (ChimpVM *vm, ChimpRef *frame)
                 if (target == NULL) {
                     return CHIMP_FALSE;
                 }
+                if (CHIMP_METHOD_TYPE(target) == CHIMP_METHOD_TYPE_CLOSURE) {
+                    CHIMP_BUG ("cannot use the spawn keyword with a closure");
+                    return CHIMP_FALSE;
+                }
                 task = chimp_task_new (target);
                 if (task == NULL) {
                     return CHIMP_FALSE;

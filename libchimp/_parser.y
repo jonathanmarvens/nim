@@ -95,7 +95,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 %token <ref> TOK_INT "integer literal"
 %token <ref> TOK_FLOAT "float literal"
 
-%right TOK_NOT
+%right TOK_NOT TOK_SPAWN
 %nonassoc TOK_LSQBRACKET TOK_LBRACKET TOK_FULLSTOP
 %left TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
@@ -248,8 +248,10 @@ expr3: TOK_NOT expr2 { $$ = chimp_ast_expr_new_not ($2, &@$); }
      | TOK_FN TOK_LBRACE opt_stmts TOK_RBRACE {
         $$ = chimp_ast_expr_new_fn (chimp_array_new (), $3, &@$);
      }
-     | TOK_SPAWN TOK_LBRACE opt_stmts TOK_RBRACE {
-        $$ = chimp_ast_expr_new_spawn (chimp_array_new (), $3, &@$);
+     | TOK_SPAWN expr2 {
+        ChimpRef *target = CHIMP_AST_EXPR($2)->call.target;
+        ChimpRef *args = CHIMP_AST_EXPR($2)->call.args;
+        $$ = chimp_ast_expr_new_spawn(target, args, &@$);
      }
      | expr4 { $$ = $1; };
      ;
