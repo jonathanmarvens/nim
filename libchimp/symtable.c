@@ -463,7 +463,8 @@ chimp_symtable_visit_expr_ident (ChimpRef *self, ChimpRef *expr)
         if (rc == 0) {
             int type = CHIMP_SYMTABLE_ENTRY(ste)->flags &
                         CHIMP_SYM_TYPE_MASK;
-            if (ste != CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self)) {
+            if (ste != CHIMP_SYMTABLE_GET_CURRENT_ENTRY(self) &&
+                !CHIMP_SYMTABLE_ENTRY_IS_MODULE(ste)) {
                 return chimp_symtable_add (self, name, CHIMP_SYM_FREE | type);
             }
             return CHIMP_TRUE;
