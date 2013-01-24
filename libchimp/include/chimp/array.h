@@ -46,6 +46,9 @@ ChimpRef *
 chimp_array_new_var (ChimpRef *a, ...);
 
 chimp_bool_t
+chimp_array_insert (ChimpRef *self, int32_t pos, ChimpRef *value);
+
+chimp_bool_t
 chimp_array_unshift (ChimpRef *self, ChimpRef *value);
 
 chimp_bool_t

@@ -24,6 +24,27 @@
 
 ChimpRef *chimp_array_class = NULL;
 
+static int32_t
+_chimp_array_real_index (ChimpRef *self, int32_t pos)
+{
+    if (pos >= 0) {
+        if (pos < CHIMP_ARRAY_SIZE(self)) {
+            return pos;
+        }
+        else {
+            return -1;
+        }
+    }
+    else {
+        if ((size_t)(-pos) <= CHIMP_ARRAY_SIZE(self)) {
+            return CHIMP_ARRAY_SIZE(self) - (size_t)(-pos);
+        }
+        else {
+            return -1;
+        }
+    }
+}
+
 static ChimpRef *
 _chimp_array_push (ChimpRef *self, ChimpRef *args)
 {
@@ -218,6 +239,22 @@ chimp_array_str (ChimpRef *self)
     data[j] = '\0';
 
     return chimp_str_new_take (data, total_len-1);
+}
+
+static ChimpRef *
+_chimp_array_insert (ChimpRef *self, ChimpRef *args)
+{
+    int32_t pos;
+    ChimpRef *value;
+
+    if (!chimp_method_parse_args (args, "io", &pos, &value)) {
+        return NULL;
+    }
+
+    if (!chimp_array_insert (self, pos, value)) {
+        return NULL;
+    }
+    return chimp_nil;
 }
 
 static ChimpRef *
@@ -486,6 +523,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "remove", _chimp_array_remove);
     chimp_class_add_native_method (chimp_array_class, "remove_at", _chimp_array_remove_at);
     chimp_class_add_native_method (chimp_array_class, "slice", _chimp_array_slice);
+    chimp_class_add_native_method (chimp_array_class, "insert", _chimp_array_insert);
     return CHIMP_TRUE;
 }
 
@@ -573,6 +611,33 @@ chimp_array_grow (ChimpRef *self)
 }
 
 chimp_bool_t
+chimp_array_insert (ChimpRef *self, int32_t pos, ChimpRef *value)
+{
+    ChimpRef **items;
+    if (pos < 0 || pos > CHIMP_ARRAY_SIZE(self)) {
+        pos = _chimp_array_real_index (self, pos);
+        if (pos < 0) {
+            CHIMP_BUG ("invalid index into array: %d", pos);
+            return CHIMP_FALSE;
+        }
+    }
+    if (!chimp_array_grow (self)) {
+        return CHIMP_FALSE;
+    }
+    items = CHIMP_ARRAY(self)->items;
+    if (CHIMP_ARRAY_SIZE(self) - pos > 0) {
+        memmove (
+            items + pos + 1,
+            items + pos,
+            sizeof(*items) * (CHIMP_ARRAY_SIZE(self) - pos)
+        );
+    }
+    CHIMP_ARRAY(self)->size++;
+    items[pos] = value;
+    return CHIMP_TRUE;
+}
+
+chimp_bool_t
 chimp_array_unshift (ChimpRef *self, ChimpRef *value)
 {
     size_t i;
@@ -616,23 +681,11 @@ chimp_array_pop (ChimpRef *self)
 ChimpRef *
 chimp_array_get (ChimpRef *self, int32_t pos)
 {
-    ChimpArray *arr = CHIMP_ARRAY(self);
-    if (pos >= 0) {
-        if (pos < arr->size) {
-            return arr->items[pos];
-        }
-        else {
-            return chimp_nil;
-        }
+    pos = _chimp_array_real_index (self, pos);
+    if (pos < 0) {
+        return chimp_nil;
     }
-    else {
-        if ((size_t)(-pos) <= arr->size) {
-            return arr->items[arr->size - (size_t)(-pos)];
-        }
-        else {
-            return chimp_nil;
-        }
-    }
+    return CHIMP_ARRAY(self)->items[pos];
 }
 
 int32_t
