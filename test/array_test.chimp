@@ -34,7 +34,7 @@ main argv {
   });
 
   chimpunit.test("filter", fn { |t|
-    var result = [1, 2, 3].filter(fn { |i| i >= 2; });
+    var result = [1, 2, 3].filter(fn { |i| ret i >= 2; });
     t.equals([2, 3], result);
   });
 

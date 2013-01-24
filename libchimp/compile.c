@@ -1416,7 +1416,14 @@ chimp_compile_ast_stmt (ChimpCodeCompiler *c, ChimpRef *stmt)
 {
     switch (CHIMP_AST_STMT_TYPE(stmt)) {
         case CHIMP_AST_STMT_EXPR:
-            return chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->expr.expr);
+            if (!chimp_compile_ast_expr (c, CHIMP_AST_STMT(stmt)->expr.expr)) {
+                return CHIMP_FALSE;
+            }
+            /* clean up the stack when we're not saving the result */
+            if (!chimp_code_pop (CHIMP_COMPILER_CODE(c))) {
+                return CHIMP_FALSE;
+            }
+            return CHIMP_TRUE;
         case CHIMP_AST_STMT_ASSIGN:
             return chimp_compile_ast_stmt_assign (c, stmt);
         case CHIMP_AST_STMT_IF_:
