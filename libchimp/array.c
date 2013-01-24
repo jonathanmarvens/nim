@@ -481,6 +481,15 @@ _chimp_array_slice(ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_shift (ChimpRef *self, ChimpRef *args)
+{
+    if (!chimp_method_no_args (args)) {
+        return NULL;
+    }
+
+    return chimp_array_shift (self);
+}
+static ChimpRef *
 _chimp_array_unshift (ChimpRef *self, ChimpRef *args)
 {
     ChimpRef *arg;
@@ -514,6 +523,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);
     chimp_class_add_native_method (chimp_array_class, "map", _chimp_array_map);
+    chimp_class_add_native_method (chimp_array_class, "shift", _chimp_array_shift);
     chimp_class_add_native_method (chimp_array_class, "unshift", _chimp_array_unshift);
     chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
     chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
@@ -653,6 +663,22 @@ chimp_array_unshift (ChimpRef *self, ChimpRef *value)
     arr->items[0] = value;
     arr->size++;
     return CHIMP_TRUE;
+}
+
+ChimpRef *
+chimp_array_shift (ChimpRef *self)
+{
+    if (CHIMP_ARRAY_SIZE(self) > 0) {
+        ChimpRef **items = CHIMP_ARRAY(self)->items;
+        ChimpRef *first = CHIMP_ARRAY_ITEM(self, 0);
+        memmove (
+            items, items + 1, sizeof(*items) * (CHIMP_ARRAY_SIZE(self) -1));
+        CHIMP_ARRAY(self)->size--;
+        return first;
+    }
+    else {
+        return NULL;
+    }
 }
 
 chimp_bool_t

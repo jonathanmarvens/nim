@@ -83,4 +83,11 @@ main argv {
     items.insert(0, -1);
     t.equals([-1, 0, 3, 1, 4, 2, 5], items);
   });
+
+  chimpunit.test("shift", fn { |t|
+    var items = [0, 2, 4];
+    t.equals(items.shift(), 0);
+    t.equals(items.shift(), 2);
+    t.equals(items.shift(), 4);
+  });
 }
