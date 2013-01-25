@@ -67,7 +67,7 @@ _chimp_os_basename (ChimpRef *self, ChimpRef *args)
         len--;
     }
 
-    return chimp_str_new (s, CHIMP_STR_SIZE(path) - len);
+    return chimp_str_new (s, CHIMP_STR_SIZE(path) - len - 1);
 }
 
 static ChimpRef *
