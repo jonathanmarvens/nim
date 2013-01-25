@@ -40,6 +40,7 @@
 #include "chimp/modules.h"
 #include "chimp/symtable.h"
 #include "chimp/compile.h"
+#include "chimp/module_mgr.h"
 
 #define CHIMP_BOOTSTRAP_CLASS_L1(gc, c, n, sup) \
     do { \
@@ -308,8 +309,18 @@ static ChimpTaskInternal *main_task = NULL;
 static ChimpRef *
 _chimp_compile (ChimpRef *self, ChimpRef *args)
 {
-    ChimpRef *filename = CHIMP_ARRAY_ITEM(args, 0);
-    ChimpRef *module = CHIMP_COMPILE_MODULE_FROM_FILE (NULL, CHIMP_STR_DATA(filename));
+    ChimpRef *name;
+    ChimpRef *filename;
+    
+    if (CHIMP_ARRAY_SIZE(args) == 2) {
+        name = CHIMP_ARRAY_ITEM(args, 0);
+        filename = CHIMP_ARRAY_ITEM(args, 1);
+    }
+    else if (CHIMP_ARRAY_SIZE(args) == 1) {
+        name = filename = CHIMP_ARRAY_ITEM(args, 0);
+    }
+
+    ChimpRef *module = chimp_module_mgr_compile (name, filename);
     if (module == NULL) {
         fprintf (stderr, "error: failed to compile %s\n", CHIMP_STR_DATA(filename));
         return chimp_nil;
@@ -602,27 +613,6 @@ chimp_core_startup (const char *path, void *stack_start)
     */
     if (!chimp_ast_class_bootstrap ()) goto error;
 
-    if (!chimp_module_add_builtin (chimp_init_io_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_assert_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_unit_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_os_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_gc_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_net_module ()))
-        goto error;
-
-    if (!chimp_module_add_builtin (chimp_init_http_module ()))
-        goto error;
-
     if (!chimp_core_init_builtins ()) goto error;
 
     /* XXX got to be a better place for this ... */
@@ -662,6 +652,8 @@ chimp_core_startup (const char *path, void *stack_start)
 
     if (!chimp_task_main_ready ()) goto error;
 
+    if (!chimp_module_mgr_init ()) goto error;
+
     return CHIMP_TRUE;
 
 error:
@@ -675,6 +667,7 @@ void
 chimp_core_shutdown (void)
 {
     if (main_task != NULL) {
+        chimp_module_mgr_shutdown ();
         chimp_task_main_delete ();
         main_task = NULL;
         chimp_object_class = NULL;

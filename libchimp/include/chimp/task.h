@@ -52,6 +52,9 @@ void
 chimp_task_main_delete ();
 
 void
+chimp_task_join (ChimpTaskInternal *task);
+
+void
 chimp_task_ref (ChimpTaskInternal *task);
 
 void

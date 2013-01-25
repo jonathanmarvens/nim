@@ -30,6 +30,7 @@
 #include "chimp/task.h"
 #include "chimp/_parser.h"
 #include "chimp/symtable.h"
+#include "chimp/module_mgr.h"
 
 typedef enum _ChimpUnitType {
     CHIMP_UNIT_TYPE_CODE,
@@ -1353,7 +1354,7 @@ chimp_compile_ast_decl_use (ChimpCodeCompiler *c, ChimpRef *decl)
     ChimpRef *name;
 
     name = CHIMP_AST_DECL(decl)->use.name;
-    import = chimp_module_load (name, chimp_module_path);
+    import = chimp_module_mgr_load (name);
 
     if (import == NULL) {
         return CHIMP_FALSE;

@@ -955,17 +955,16 @@ chimp_vm_invoke (ChimpVM *vm, ChimpRef *method, ChimpRef *args)
     ChimpRef *frame;
     ChimpRef *ret;
 
+    if (!CHIMP_IS_BYTECODE_METHOD(method)) {
+        return chimp_object_call (method, args);
+    }
+
     if (vm == NULL) {
         vm = CHIMP_CURRENT_VM;
     }
 
     /* save the stack */
     stack_size = CHIMP_ARRAY_SIZE(vm->stack);
-
-    if (!CHIMP_IS_BYTECODE_METHOD(method)) {
-        CHIMP_BUG ("chimp_vm_invoke called on a non-method (or native method)");
-        return NULL;
-    }
 
     frame = chimp_frame_new (method);
     if (frame == NULL) {

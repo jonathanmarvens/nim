@@ -25,7 +25,9 @@
 #include "chimp/task.h"
 
 #define chimp_msg_int_cell_size(ref) sizeof(ChimpMsgCell)
+#define chimp_msg_nil_cell_size(ref) sizeof(ChimpMsgCell)
 #define chimp_msg_method_cell_size(ref) sizeof(ChimpMsgCell)
+#define chimp_msg_module_cell_size(ref) sizeof(ChimpMsgCell)
 #define chimp_msg_str_cell_size(ref) \
     (sizeof(ChimpMsgCell) + CHIMP_STR_SIZE(ref) + 1)
 
@@ -69,6 +71,12 @@ chimp_msg_value_cell_size (ChimpRef *ref)
     else if (klass == chimp_array_class) {
         return chimp_msg_array_cell_size (ref);
     }
+    else if (klass == chimp_nil_class) {
+        return chimp_msg_nil_cell_size (ref);
+    }
+    else if (klass == chimp_module_class) {
+        return chimp_msg_module_cell_size (ref);
+    }
     else if (klass == chimp_method_class) {
         return chimp_msg_method_cell_size (ref);
     }
@@ -80,6 +88,16 @@ chimp_msg_value_cell_size (ChimpRef *ref)
                 CHIMP_STR_DATA(CHIMP_CLASS_NAME(CHIMP_ANY_CLASS(ref))));
         return 0;
     }
+}
+
+static chimp_bool_t
+chimp_msg_nil_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *)buf;
+    cell->type = CHIMP_MSG_CELL_NIL;
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
 }
 
 static chimp_bool_t
@@ -128,6 +146,18 @@ chimp_msg_array_cell_encode (char **buf_ptr, ChimpRef *ref)
 }
 
 static chimp_bool_t
+chimp_msg_module_cell_encode (char **buf_ptr, ChimpRef *ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *) buf;
+    cell->type = CHIMP_MSG_CELL_MODULE;
+    cell->module = ref;
+    buf += sizeof(ChimpMsgCell);
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_msg_method_cell_encode (char **buf_ptr, ChimpRef *ref)
 {
     char *buf = *buf_ptr;
@@ -170,8 +200,18 @@ chimp_msg_value_cell_encode (char **buf_ptr, ChimpRef *ref)
             return CHIMP_FALSE;
         }
     }
+    else if (klass == chimp_nil_class) {
+        if (!chimp_msg_nil_cell_encode (buf_ptr, ref)) {
+            return CHIMP_FALSE;
+        }
+    }
     else if (klass == chimp_array_class) {
         if (!chimp_msg_array_cell_encode (buf_ptr, ref)) {
+            return CHIMP_FALSE;
+        }
+    }
+    else if (klass == chimp_module_class) {
+        if (!chimp_msg_module_cell_encode (buf_ptr, ref)) {
             return CHIMP_FALSE;
         }
     }
@@ -261,9 +301,20 @@ chimp_msg_array_cell_decode (char **buf_ptr, ChimpRef **ref)
 }
 
 static chimp_bool_t
+chimp_msg_module_cell_decode (char **buf_ptr, ChimpRef **ref)
+{
+    char *buf = *buf_ptr;
+    ChimpMsgCell *cell = (ChimpMsgCell *) buf;
+    ChimpRef *module = cell->module;
+    buf += sizeof(ChimpMsgCell);
+    *ref = module;
+    *buf_ptr = buf;
+    return CHIMP_TRUE;
+}
+
+static chimp_bool_t
 chimp_msg_method_cell_decode (char **buf_ptr, ChimpRef **ref)
 {
-    /* XXX */
     char *buf = *buf_ptr;
     ChimpMsgCell *cell = (ChimpMsgCell *) buf;
     ChimpRef *method = cell->method;
@@ -294,6 +345,12 @@ chimp_msg_value_cell_decode (char **buf_ptr, ChimpRef **ref)
     char *buf = *buf_ptr;
     ChimpMsgCell *cell = (ChimpMsgCell *)buf;
     switch (cell->type) {
+        case CHIMP_MSG_CELL_NIL:
+            {
+                (*buf_ptr) += sizeof(ChimpMsgCell);
+                *ref = chimp_nil;
+                break;
+            }
         case CHIMP_MSG_CELL_INT:
             {
                 *ref = chimp_int_new (cell->int_);
@@ -317,6 +374,13 @@ chimp_msg_value_cell_decode (char **buf_ptr, ChimpRef **ref)
         case CHIMP_MSG_CELL_ARRAY:
             {
                 if (!chimp_msg_array_cell_decode (buf_ptr, ref)) {
+                    return CHIMP_FALSE;
+                }
+                break;
+            }
+        case CHIMP_MSG_CELL_MODULE:
+            {
+                if (!chimp_msg_module_cell_decode (buf_ptr, ref)) {
                     return CHIMP_FALSE;
                 }
                 break;

@@ -31,9 +31,11 @@ extern "C" {
 
 typedef struct _ChimpMsgCell {
     enum {
+        CHIMP_MSG_CELL_NIL,
         CHIMP_MSG_CELL_INT,
         CHIMP_MSG_CELL_STR,
         CHIMP_MSG_CELL_ARRAY,
+        CHIMP_MSG_CELL_MODULE,
         CHIMP_MSG_CELL_METHOD,
         CHIMP_MSG_CELL_TASK
     } type;
@@ -48,6 +50,7 @@ typedef struct _ChimpMsgCell {
             size_t                size;
         } array;
         ChimpRef          *method;
+        ChimpRef          *module;
         ChimpTaskInternal *task;
     };
 } ChimpMsgCell;

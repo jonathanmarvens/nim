@@ -448,7 +448,13 @@ chimp_task_recv (ChimpRef *self)
 {
     ChimpMsgInternal *msg;
     ChimpRef *value;
-    ChimpTaskInternal *task = CHIMP_TASK(self)->priv;
+    ChimpTaskInternal *task;
+    
+    if (self == NULL) {
+        self = chimp_task_current ()->self;
+    }
+
+    task = CHIMP_TASK(self)->priv;
 
     CHIMP_TASK_LOCK(task);
 
@@ -511,7 +517,7 @@ chimp_task_cleanup (ChimpTaskInternal *task)
     CHIMP_FREE (task);
 }
 
-static void
+void
 chimp_task_join (ChimpTaskInternal *task)
 {
     CHIMP_TASK_LOCK(task);
