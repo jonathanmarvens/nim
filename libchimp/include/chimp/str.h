@@ -34,6 +34,9 @@ typedef struct _ChimpStr {
     size_t    size;
 } ChimpStr;
 
+int
+chimp_str_class_init_2 (void);
+
 ChimpRef *
 chimp_str_new (const char *data, size_t size);
 
