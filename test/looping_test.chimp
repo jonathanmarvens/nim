@@ -1,22 +1,22 @@
-use chimpunit;
+use chimpunit
 
 main argv {
   chimpunit.test("while", fn { |t|
-    var i = 0;
+    var i = 0
     while i < 5 {
-      i = i + 1;
+      i = i + 1
     }
-    t.equals(5, i);
-  });
+    t.equals(5, i)
+  })
 
   chimpunit.test("break it down", fn { |t|
-    var i = 0;
+    var i = 0
     while true {
-      i = i + 1;
+      i = i + 1
       if i == 10 {
-        break;
+        break
       }
     }
-    t.equals(10, i);
-  });
+    t.equals(10, i)
+  })
 }

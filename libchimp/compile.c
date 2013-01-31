@@ -2001,7 +2001,11 @@ error:
 extern int yyparse(void *scanner, ChimpRef *filename, ChimpRef **mod);
 extern void yylex_init (void **scanner);
 extern void yyset_in (FILE *stream, void *scanner);
+extern void yyset_debug (int enable, void *scanner);
 extern void yylex_destroy(void *scanner);
+#ifdef CHIMP_PARSER_DEBUG
+extern int yydebug;
+#endif
 
 static chimp_bool_t
 is_file (const char *filename, chimp_bool_t *result)
@@ -2048,6 +2052,10 @@ chimp_compile_file (ChimpRef *name, const char *filename)
     }
     yylex_init (&scanner);
     yyset_in (input, scanner);
+#ifdef CHIMP_PARSER_DEBUG
+    yyset_debug (1, scanner);
+    yydebug = 1;
+#endif
     rc = yyparse(scanner, filename_obj, &mod);
     fclose (input);
     yylex_destroy (scanner);

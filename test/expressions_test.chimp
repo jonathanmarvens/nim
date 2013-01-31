@@ -1,13 +1,13 @@
-use chimpunit;
+use chimpunit
 
 main argv {
   chimpunit.test("grouped expressions 1", fn { |t|
-    t.equals(9, (1 + 2) * 3);
-  });
+    t.equals(9, (1 + 2) * 3)
+  })
   chimpunit.test("grouped expressions 2", fn { |t|
-    t.equals(7, 1 + (2 * 3));
-  });
+    t.equals(7, 1 + (2 * 3))
+  })
   chimpunit.test("grouped expressions 3", fn { |t|
-    t.equals(47, 1 + (2 * (3 + (4 * 5))));
-  });
+    t.equals(47, 1 + (2 * (3 + (4 * 5))))
+  })
 }

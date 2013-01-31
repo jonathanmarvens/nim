@@ -7,6 +7,10 @@
 
 void yyerror(const ChimpAstNodeLocation *loc, void *scanner, ChimpRef *filename, ChimpRef **mod, const char *format, ...);
 
+#ifdef CHIMP_PARSER_DEBUG
+#define YYDEBUG 1
+#endif
+
 %}
 
 %union {
@@ -74,6 +78,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 %token TOK_NOT "`not`"
 %token TOK_MATCH "`match`"
 %token TOK_BREAK "`break`"
+%token TOK_NEWLINE "newline"
 %token TOK_UNDERSCORE "`_`"
 
 %token TOK_OR "`or`"
@@ -103,7 +108,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 %left TOK_ASTERISK TOK_SLASH
 
 %type <ref> module
-%type <ref> stmt simple_stmt compound_stmt
+%type <ref> stmt single_stmt simple_stmt compound_stmt
 %type <ref> var_decl assign
 %type <ref> stmts opt_stmts block else
 %type <ref> opt_expr expr expr2 expr3 expr4 expr5 
@@ -128,15 +133,19 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 module : opt_uses opt_decls { *mod = chimp_ast_mod_new_root (CHIMP_STR_NEW("main"), $1, $2, &@$); }
        ;
 
+opt_newline : TOK_NEWLINE
+            | /* empty */
+            ;
+
 opt_uses : use opt_uses { $$ = $2; chimp_array_unshift ($$, $1); }
          | /* empty */ { $$ = chimp_array_new (); }
          ;
 
-use : TOK_USE ident TOK_SEMICOLON { $$ = chimp_ast_decl_new_use (CHIMP_AST_EXPR($2)->ident.id, &@$); }
+use : TOK_USE ident TOK_NEWLINE { $$ = chimp_ast_decl_new_use (CHIMP_AST_EXPR($2)->ident.id, &@$); }
     ;
 
-opt_decls : func_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
-          | class_decl opt_decls { $$ = $2; chimp_array_unshift ($$, $1); }
+opt_decls : func_decl opt_newline opt_decls { $$ = $3; chimp_array_unshift ($$, $1); }
+          | class_decl opt_newline opt_decls { $$ = $3; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (); }
           ;
 
@@ -144,9 +153,9 @@ opt_class_decls : func_decl opt_class_decls { $$ = $2; chimp_array_unshift ($$, 
                 | /* empty */ { $$ = chimp_array_new (); }
                 ;
 
-class_decl : TOK_CLASS ident opt_extends TOK_LBRACE opt_class_decls TOK_RBRACE {
+class_decl : TOK_CLASS ident opt_extends TOK_LBRACE TOK_NEWLINE opt_class_decls TOK_RBRACE {
             $$ = chimp_ast_decl_new_class (
-                CHIMP_AST_EXPR($2)->ident.id, $3, $5, &@$);
+                CHIMP_AST_EXPR($2)->ident.id, $3, $6, &@$);
            }
            ;
 
@@ -161,8 +170,8 @@ type_name : ident TOK_FULLSTOP type_name {
           | ident { $$ = chimp_array_new_var (CHIMP_AST_EXPR($1)->ident.id, NULL); }
           ;
 
-func_decl : func_ident opt_params TOK_LBRACE opt_stmts TOK_RBRACE {
-            $$ = chimp_ast_decl_new_func (CHIMP_AST_EXPR($1)->ident.id, $2, $4, &@$);
+func_decl : func_ident opt_params TOK_LBRACE TOK_NEWLINE opt_stmts TOK_RBRACE {
+            $$ = chimp_ast_decl_new_func (CHIMP_AST_EXPR($1)->ident.id, $2, $5, &@$);
           }
           ;
 
@@ -184,8 +193,12 @@ opt_stmts : stmt opt_stmts { $$ = $2; chimp_array_unshift ($$, $1); }
           | /* empty */ { $$ = chimp_array_new (); }
           ;
 
-stmt : simple_stmt TOK_SEMICOLON { $$ = $1; }
-     | compound_stmt { $$ = $1; }
+single_stmt : simple_stmt { $$ = $1; }
+            | compound_stmt { $$ = $1; }
+            ;
+
+stmt : simple_stmt TOK_NEWLINE { $$ = $1; }
+     | compound_stmt TOK_NEWLINE { $$ = $1; }
      ;
 
 simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1, &@$); }
@@ -198,17 +211,18 @@ simple_stmt : expr { $$ = chimp_ast_stmt_new_expr ($1, &@$); }
 compound_stmt : TOK_IF expr block else { $$ = chimp_ast_stmt_new_if_ ($2, $3, $4, &@$); }
               | TOK_IF expr block { $$ = chimp_ast_stmt_new_if_ ($2, $3, NULL, &@$); }
               | TOK_WHILE expr block { $$ = chimp_ast_stmt_new_while_ ($2, $3, &@$); }
-              | TOK_MATCH expr TOK_LBRACE opt_patterns TOK_RBRACE {
-                    $$ = chimp_ast_stmt_new_match ($2, $4, &@$);
+              | TOK_MATCH expr TOK_LBRACE TOK_NEWLINE opt_patterns TOK_RBRACE {
+                    $$ = chimp_ast_stmt_new_match ($2, $5, &@$);
               }
               ;
 
 else : TOK_ELSE block { $$ = $2; }
 
-block : TOK_LBRACE stmts TOK_RBRACE { $$ = $2; }
+block : TOK_LBRACE TOK_NEWLINE stmts TOK_RBRACE { $$ = $3; }
+      | TOK_LBRACE single_stmt TOK_RBRACE { $$ = chimp_array_new_var ($2, NULL); }
       | TOK_LBRACE TOK_RBRACE { $$ = chimp_array_new (); }
       /* | stmt { $$ = chimp_array_new (); chimp_array_unshift ($$, $1); } */
-      | TOK_SEMICOLON { $$ = chimp_array_new (); }
+      | TOK_NEWLINE { $$ = chimp_array_new (); }
       ;
 
 var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->ident.id, NULL, &@$); }
@@ -243,10 +257,17 @@ expr2: expr2 simple_tail {
      ;
 
 expr3: TOK_NOT expr2 { $$ = chimp_ast_expr_new_not ($2, &@$); }
-     | TOK_FN TOK_LBRACE TOK_PIPE opt_params TOK_PIPE opt_stmts TOK_RBRACE {
-        $$ = chimp_ast_expr_new_fn ($4, $6, &@$); }
-     | TOK_FN TOK_LBRACE opt_stmts TOK_RBRACE {
-        $$ = chimp_ast_expr_new_fn (chimp_array_new (), $3, &@$);
+     | TOK_FN TOK_LBRACE TOK_PIPE opt_params TOK_PIPE TOK_NEWLINE opt_stmts TOK_RBRACE {
+        $$ = chimp_ast_expr_new_fn ($4, $7, &@$);
+    }
+     | TOK_FN TOK_LBRACE TOK_PIPE opt_params TOK_PIPE single_stmt TOK_RBRACE {
+        $$ = chimp_ast_expr_new_fn ($4, chimp_array_new_var ($6, NULL), &@$);
+     }
+     | TOK_FN TOK_LBRACE TOK_NEWLINE opt_stmts TOK_RBRACE {
+        $$ = chimp_ast_expr_new_fn (chimp_array_new (), $4, &@$);
+     }
+     | TOK_FN TOK_LBRACE single_stmt TOK_RBRACE {
+        $$ = chimp_ast_expr_new_fn (chimp_array_new (), chimp_array_new_var ($3, NULL), &@$);
      }
      | TOK_SPAWN expr2 {
         ChimpRef *target = CHIMP_AST_EXPR($2)->call.target;
@@ -274,7 +295,7 @@ opt_patterns: pattern opt_patterns { $$ = $2; chimp_array_unshift ($$, $1); }
             | /* empty */ { $$ = chimp_array_new (); }
             ;
 
-pattern: pattern_test block { $$ = chimp_ast_stmt_new_pattern ($1, $2, &@$); }
+pattern: pattern_test block TOK_NEWLINE { $$ = chimp_ast_stmt_new_pattern ($1, $2, &@$); }
        ;
 
 pattern_test: expr5 { $$ = $1; }
@@ -379,6 +400,7 @@ opt_hash_elements_tail : TOK_COMMA expr TOK_COLON expr opt_hash_elements_tail { 
                        ;
 
 array : TOK_LSQBRACKET opt_array_elements TOK_RSQBRACKET { $$ = chimp_ast_expr_new_array ($2, &@$); }
+      | TOK_LSQBRACKET TOK_NEWLINE opt_array_elements TOK_NEWLINE TOK_RSQBRACKET { $$ = chimp_ast_expr_new_array ($3, &@$); }
       ;
 
 opt_array_elements : array_elements { $$ = $1; }

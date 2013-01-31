@@ -1,13 +1,13 @@
-use os;
-use chimpunit;
+use os
+use chimpunit
 
 main argv {
   chimpunit.test("__file__", fn { |t|
-    t.equals(os.basename(__file__), "special_test.chimp");
-  });
+    t.equals(os.basename(__file__), "special_test.chimp")
+  })
 
   chimpunit.test("__line__", fn { |t|
-    t.equals(__line__, 10);
-  });
+    t.equals(__line__, 10)
+  })
 }
 

@@ -10,14 +10,23 @@
 
 #define CHIMP_REF_TOKEN(token, r) yylval->ref = (r); return (token);
 #define CHIMP_TOKEN(token) return (token);
+#define CHIMP_NEWLINE(n) \
+    do { \
+        yylloc->first_line += (n); \
+        yylloc->last_line = yylloc->first_line; \
+        yylloc->first_column = 0; \
+        yylloc->last_column = 0; \
+    } while (0)
 
 #define YY_NO_INPUT /* silence 'warning: ‘input’ defined but not used' */
 
 %}
 
 /* silence warnings / errors */
-%option nounput
+/* %option nounput */
 %option noyywrap
+
+%option debug
 
 %option 8bit
 
@@ -32,18 +41,20 @@
 /* prefer a fast scanner to a small one */
 %option full
 
+/* strings need special escaping voodoo */
 %x IN_STRING
+
+/* newlines need to perform acrobatics to properly cope with comments */
+%x NEWLINES
 
 %%
 
 [#][^\n]*                   { /* do nothing (comment) */ }
-[\n]                        {
-                                yylloc->first_line++;
-                                yylloc->last_line = yylloc->first_line;
-                                yylloc->first_column = 0;
-                                yylloc->last_column = 0;
+[\n]+                       {
+                                CHIMP_NEWLINE(yyleng);
+                                BEGIN(NEWLINES);
+                                CHIMP_TOKEN(TOK_NEWLINE)
                             }
-
 "true"                      { CHIMP_TOKEN(TOK_TRUE) }
 "false"                     { CHIMP_TOKEN(TOK_FALSE) }
 "nil"                       { CHIMP_TOKEN(TOK_NIL) }
@@ -93,7 +104,12 @@
 <IN_STRING>\\b              { chimp_str_append_char (yylval->ref, '\b'); }
 <IN_STRING>\\f              { chimp_str_append_char (yylval->ref, '\f'); }
 <IN_STRING>\\(.|\n)         { chimp_str_append_char (yylval->ref, yytext[1]); }
-<IN_STRING>[^\\\"]+       { chimp_str_append_strn (yylval->ref, yytext, yyleng); }
+<IN_STRING>[^\\\"]+         { chimp_str_append_strn (yylval->ref, yytext, yyleng); }
+<NEWLINES>[#][^\n]+         { /* do nothing (comment) */ }
+<NEWLINES>[#]               { /* do nothing */ }
+<NEWLINES>[ \t\r]           { /* do nothing */ }
+<NEWLINES>\n+               { CHIMP_NEWLINE(yyleng); }
+<NEWLINES>.                 { BEGIN(INITIAL); unput(*yytext); }
 [a-zA-Z_][a-zA-Z_0-9]*[!?]? { CHIMP_REF_TOKEN(TOK_IDENT, chimp_str_new (yytext, yyleng)) }
 [+-]?[0-9]+                 { CHIMP_REF_TOKEN(TOK_INT, chimp_int_new (strtoll(yytext, NULL, 0))) }
 [+-]?[0-9]*\.?[0-9]*        { CHIMP_REF_TOKEN(TOK_FLOAT, chimp_float_new (strtod(yytext, NULL))) }
