@@ -10,4 +10,11 @@ main argv {
   chimpunit.test("grouped expressions 3", fn { |t|
     t.equals(47, 1 + (2 * (3 + (4 * 5))))
   })
+  chimpunit.test("binary boolean expr 1", fn { |t|
+    t.equals(2, 1 and 2)
+  })
+  # GC bug seems to be causing some grief here
+  # chimpunit.test("binary boolean expr 2", fn { |t|
+  #   t.equals(1, 1 or 2)
+  # })
 }

@@ -102,7 +102,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 
 %right TOK_NOT TOK_SPAWN
 %nonassoc TOK_LSQBRACKET TOK_LBRACKET TOK_FULLSTOP
-%left TOK_OR TOK_AND
+%nonassoc TOK_OR TOK_AND
 %left TOK_NEQ TOK_EQ TOK_LT TOK_LTE TOK_GT TOK_GTE
 %left TOK_PLUS TOK_MINUS
 %left TOK_ASTERISK TOK_SLASH
@@ -130,7 +130,7 @@ extern int yylex(YYSTYPE *lvalp, YYLTYPE *llocp, void *scanner, ChimpRef *filena
 
 %%
 
-module : opt_uses opt_decls { *mod = chimp_ast_mod_new_root (CHIMP_STR_NEW("main"), $1, $2, &@$); }
+module : opt_newline opt_uses opt_decls { *mod = chimp_ast_mod_new_root (CHIMP_STR_NEW("main"), $2, $3, &@$); }
        ;
 
 opt_newline : TOK_NEWLINE
