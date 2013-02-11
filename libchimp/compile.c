@@ -1749,6 +1749,9 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
                 ChimpLabel right_label = CHIMP_LABEL_INIT;
                 ChimpLabel end_label = CHIMP_LABEL_INIT;
 
+                if (!chimp_code_dup (code))
+                    goto or_error;
+
                 if (!chimp_code_jumpiffalse (code, &right_label))
                     goto or_error;
 
@@ -1756,6 +1759,9 @@ chimp_compile_ast_expr_binop (ChimpCodeCompiler *c, ChimpRef *expr)
                     goto or_error;
 
                 chimp_code_use_label (code, &right_label);
+
+                if (!chimp_code_pop (code))
+                    goto or_error;
 
                 if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right))
                     goto or_error;
@@ -1776,6 +1782,9 @@ or_error:
                 ChimpLabel right_label = CHIMP_LABEL_INIT;
                 ChimpLabel end_label = CHIMP_LABEL_INIT;
 
+                if (!chimp_code_dup (code))
+                    goto and_error;
+
                 if (!chimp_code_jumpiftrue (code, &right_label))
                     goto and_error;
 
@@ -1784,12 +1793,9 @@ or_error:
 
                 chimp_code_use_label (code, &right_label);
 
-                /* JUMPIFTRUE will pop the value on our behalf */
-                /*
-                if (!chimp_code_pop (code)) {
-                    return NULL;
-                }
-                */
+                if (!chimp_code_pop (code))
+                    goto and_error;
+
                 if (!chimp_compile_ast_expr (c, CHIMP_AST_EXPR(expr)->binop.right))
                     goto and_error;
 
