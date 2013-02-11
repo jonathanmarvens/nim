@@ -22,4 +22,13 @@ main argv {
   chimpunit.test("binary boolean expr 4", fn { |t|
     t.equals(2, 2 or 1)
   })
+  chimpunit.test("binary boolean expr 5", fn { |t|
+    t.equals(1, false or 1)
+  })
+  chimpunit.test("binary boolean expr 6", fn { |t|
+    t.equals(1, 1 or false)
+  })
+  chimpunit.test("binary boolean expr 7", fn { |t|
+    t.equals(nil, false or nil)
+  })
 }
