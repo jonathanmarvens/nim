@@ -203,3 +203,5 @@ add_custom_target (test test-native
 add_custom_target (dist 
     COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}/ master | gzip -9 >${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}.tar.gz)
 
+install(PROGRAMS chimp DESTINATION bin)
+
