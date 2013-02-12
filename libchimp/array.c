@@ -146,6 +146,24 @@ _chimp_array_contains (ChimpRef *self, ChimpRef *args)
 }
 
 static ChimpRef *
+_chimp_array_any (ChimpRef *self, ChimpRef *args)
+{
+    if (!chimp_method_no_args (args)) {
+        return NULL;
+    }
+
+    size_t i;
+    ChimpRef *item;
+    ChimpCmpResult r;
+
+    for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
+        item = CHIMP_ARRAY_ITEM(self, i);
+    }
+
+    return chimp_nil;
+}
+
+static ChimpRef *
 _chimp_array_filter (ChimpRef *self, ChimpRef *args)
 {
     size_t i;
@@ -528,6 +546,7 @@ chimp_array_class_bootstrap (void)
     chimp_class_add_native_method (chimp_array_class, "filter", _chimp_array_filter);
     chimp_class_add_native_method (chimp_array_class, "each", _chimp_array_each);
     chimp_class_add_native_method (chimp_array_class, "contains", _chimp_array_contains);
+    chimp_class_add_native_method (chimp_array_class, "any", _chimp_array_any);
     chimp_class_add_native_method (chimp_array_class, "size", _chimp_array_size);
     chimp_class_add_native_method (chimp_array_class, "join", _chimp_array_join);
     chimp_class_add_native_method (chimp_array_class, "remove", _chimp_array_remove);
