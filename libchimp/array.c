@@ -154,7 +154,6 @@ _chimp_array_any (ChimpRef *self, ChimpRef *args)
 
     size_t i;
     ChimpRef *item;
-    ChimpCmpResult r;
     ChimpClass *class;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
