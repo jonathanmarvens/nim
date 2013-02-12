@@ -155,12 +155,21 @@ _chimp_array_any (ChimpRef *self, ChimpRef *args)
     size_t i;
     ChimpRef *item;
     ChimpCmpResult r;
+    ChimpClass *class;
 
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         item = CHIMP_ARRAY_ITEM(self, i);
+        class = CHIMP_ANY_CLASS(item);
+
+        if (class == chimp_str_class && CHIMP_STR_SIZE(item)) {
+            return  chimp_true;
+        } else if (class == chimp_int_class &&
+            CHIMP_INT(item)->value > 0) {
+            return  chimp_true;
+        }
     }
 
-    return chimp_nil;
+    return chimp_false;
 }
 
 static ChimpRef *

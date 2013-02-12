@@ -91,8 +91,13 @@ main argv {
     t.equals(items.shift(), 4)
   })
 
-  chimpunit.test("any", fn { |t|
+  chimpunit.test("any integers", fn { |t|
     t.equals(true, [0, 1, 0].any())
     t.equals(false, [0, 0, 0].any())
+  })
+
+  chimpunit.test("any strings", fn { |t|
+    t.equals(true, ["Hello", "World", "!"].any())
+    t.equals(false, ["", "", ""].any())
   })
 }
