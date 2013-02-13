@@ -168,7 +168,11 @@ _chimp_array_any (ChimpRef *self, ChimpRef *args)
         }
 
         result = chimp_object_call (fn, fn_args);
-        if (chimp_object_cmp (result, chimp_true) == CHIMP_CMP_EQ) {
+        if (result == NULL) {
+            return NULL;
+        }
+        /* TODO chimp_object_bool(result) == chimp_true? */
+        if (result == chimp_true) {
             return chimp_true;
         }
     }
