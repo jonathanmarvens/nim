@@ -148,23 +148,28 @@ _chimp_array_contains (ChimpRef *self, ChimpRef *args)
 static ChimpRef *
 _chimp_array_any (ChimpRef *self, ChimpRef *args)
 {
-    if (!chimp_method_no_args (args)) {
+
+    ChimpRef *fn;
+    size_t i;
+    ChimpRef *item;
+    ChimpRef *fn_args;
+    ChimpRef *result;
+
+    if (!chimp_method_parse_args (args, "o", &fn)) {
         return NULL;
     }
 
-    size_t i;
-    ChimpRef *item;
-    ChimpClass *class;
-
     for (i = 0; i < CHIMP_ARRAY_SIZE(self); i++) {
         item = CHIMP_ARRAY_ITEM(self, i);
-        class = CHIMP_ANY_CLASS(item);
 
-        if (class == chimp_str_class && CHIMP_STR_SIZE(item)) {
-            return  chimp_true;
-        } else if (class == chimp_int_class &&
-            CHIMP_INT(item)->value > 0) {
-            return  chimp_true;
+        fn_args = chimp_array_new_var (item, NULL);
+        if (fn_args == NULL) {
+            return NULL;
+        }
+
+        result = chimp_object_call (fn, fn_args);
+        if (chimp_object_cmp (result, chimp_true) == CHIMP_CMP_EQ) {
+            return chimp_true;
         }
     }
 
