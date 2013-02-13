@@ -1,4 +1,5 @@
 use chimpunit
+use io
 
 main argv {
   chimpunit.test("int array comparison", fn { |t|
@@ -97,7 +98,7 @@ main argv {
   })
 
   chimpunit.test("any strings", fn { |t|
-    t.equals(true, ["Hello", "World", "!"].any(fn { |x| x == "World" }))
-    t.equals(false, ["", "", ""].any(fn { |x| x == "World" }))
+    t.equals(true, ["Hello", "World", "!"].any(fn { |x| ret x == "World" }))
+    t.equals(false, ["", "", ""].any(fn { |x| ret x == "World" }))
   })
 }
