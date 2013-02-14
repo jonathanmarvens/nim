@@ -93,12 +93,12 @@ main argv {
   })
 
   chimpunit.test("any integers", fn { |t|
-    t.equals(true, [0, 1, 0].any(fn { |x| ret 1 == x }))
-    t.equals(false, [0, 0, 0].any(fn { |x| ret 1 == x }))
+    t.equals(true, [0, 1, 0].any(bool))
+    t.equals(false, [0, 0, 0].any(bool))
   })
 
   chimpunit.test("any strings", fn { |t|
-    t.equals(true, ["Hello", "World", "!"].any(fn { |x| ret x == "World" }))
-    t.equals(false, ["", "", ""].any(fn { |x| ret x == "World" }))
+    t.equals(true, ["Hello", "World", "!"].any(bool))
+    t.equals(false, ["", "", ""].any(bool))
   })
 }
