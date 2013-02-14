@@ -192,4 +192,3 @@ chimp_object_instance_of (ChimpRef *object, ChimpRef *klass)
     }
     return CHIMP_FALSE;
 }
-

@@ -382,6 +382,24 @@ _chimp_str_add (ChimpRef *self, ChimpRef *other)
 }
 
 static ChimpRef *
+_chimp_int_nonzero (ChimpRef *self)
+{
+    if (CHIMP_INT_VALUE(self) > 0) {
+        return chimp_true;
+    }
+    return chimp_false;
+}
+
+static ChimpRef *
+_chimp_str_nonzero (ChimpRef *self)
+{
+    if (CHIMP_STR_SIZE(self) > 0) {
+        return chimp_true;
+    }
+    return chimp_false;
+}
+
+static ChimpRef *
 chimp_bool_init (ChimpRef *self, ChimpRef *args)
 {
     if (CHIMP_ARRAY_SIZE(args) > 0) {
@@ -389,8 +407,16 @@ chimp_bool_init (ChimpRef *self, ChimpRef *args)
         if (!chimp_method_parse_args (args, "o", &arg)) {
             return NULL;
         }
-        return arg;
+        ChimpRef *klass = CHIMP_ANY_CLASS(arg);
+
+        while (klass != NULL) {
+            if (CHIMP_CLASS(klass)->nonzero != NULL) {
+                return CHIMP_CLASS(klass)->nonzero (arg);
+            }
+            klass = CHIMP_CLASS(klass)->super;
+        }
     }
+    CHIMP_BUG("The type does not have a nonzero method");
     return NULL;
 }
 
@@ -418,6 +444,7 @@ chimp_core_startup (const char *path, void *stack_start)
     CHIMP_CLASS(chimp_str_class)->str = chimp_str_str;
     CHIMP_CLASS(chimp_str_class)->mark = _chimp_object_mark;
     CHIMP_CLASS(chimp_str_class)->add  = _chimp_str_add;
+    CHIMP_CLASS(chimp_str_class)->nonzero  = _chimp_str_nonzero;
 
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_object_class);
     CHIMP_BOOTSTRAP_CLASS_L2(NULL, chimp_class_class);
@@ -432,6 +459,7 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_int_class_bootstrap ()) goto error;
+    CHIMP_CLASS(chimp_int_class)->nonzero = _chimp_int_nonzero;
     if (!chimp_float_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
     if (!chimp_hash_class_bootstrap ()) goto error;
