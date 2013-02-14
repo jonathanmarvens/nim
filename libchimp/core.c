@@ -381,6 +381,19 @@ _chimp_str_add (ChimpRef *self, ChimpRef *other)
         CHIMP_STR_DATA(self), CHIMP_STR_DATA(other), NULL);
 }
 
+static ChimpRef *
+chimp_bool_init (ChimpRef *self, ChimpRef *args)
+{
+    if (CHIMP_ARRAY_SIZE(args) > 0) {
+        ChimpRef *arg;
+        if (!chimp_method_parse_args (args, "o", &arg)) {
+            return NULL;
+        }
+        return arg;
+    }
+    return NULL;
+}
+
 chimp_bool_t
 chimp_core_startup (const char *path, void *stack_start)
 {
@@ -444,6 +457,8 @@ chimp_core_startup (const char *path, void *stack_start)
     chimp_false = chimp_class_new_instance (chimp_bool_class, NULL);
     if (chimp_false == NULL) goto error;
     chimp_gc_make_root (NULL, chimp_false);
+
+    CHIMP_CLASS(chimp_bool_class)->init = chimp_bool_init;
 
     if (!chimp_frame_class_bootstrap ()) goto error;
     if (!chimp_code_class_bootstrap ()) goto error;
