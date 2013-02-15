@@ -540,6 +540,12 @@ _chimp_array_unshift (ChimpRef *self, ChimpRef *args)
     return chimp_nil;
 }
 
+static ChimpRef *
+_chimp_array_nonzero (ChimpRef *self)
+{
+    return CHIMP_BOOL_REF(CHIMP_ARRAY_SIZE(self) > 0);
+}
+
 chimp_bool_t
 chimp_array_class_bootstrap (void)
 {
@@ -554,6 +560,7 @@ chimp_array_class_bootstrap (void)
     CHIMP_CLASS(chimp_array_class)->mark = _chimp_array_mark;
     CHIMP_CLASS(chimp_array_class)->cmp = _chimp_array_cmp;
     CHIMP_CLASS(chimp_array_class)->add = _chimp_array_add;
+    CHIMP_CLASS(chimp_array_class)->nonzero = _chimp_array_nonzero;
     chimp_gc_make_root (NULL, chimp_array_class);
     chimp_class_add_native_method (chimp_array_class, "push", _chimp_array_push);
     chimp_class_add_native_method (chimp_array_class, "pop", _chimp_array_pop);

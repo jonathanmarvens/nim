@@ -394,12 +394,6 @@ _chimp_str_nonzero (ChimpRef *self)
 }
 
 static ChimpRef *
-_chimp_array_nonzero (ChimpRef *self)
-{
-    return CHIMP_BOOL_REF(CHIMP_ARRAY_SIZE(self) > 0);
-}
-
-static ChimpRef *
 chimp_bool_init (ChimpRef *self, ChimpRef *args)
 {
     if (CHIMP_ARRAY_SIZE(args) > 0) {
@@ -462,7 +456,6 @@ chimp_core_startup (const char *path, void *stack_start)
     CHIMP_CLASS(chimp_int_class)->nonzero = _chimp_int_nonzero;
     if (!chimp_float_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
-    CHIMP_CLASS(chimp_array_class)->nonzero = _chimp_array_nonzero;
     if (!chimp_hash_class_bootstrap ()) goto error;
 
     chimp_nil_class = chimp_class_new (
