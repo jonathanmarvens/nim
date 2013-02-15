@@ -382,12 +382,6 @@ _chimp_str_add (ChimpRef *self, ChimpRef *other)
 }
 
 static ChimpRef *
-_chimp_int_nonzero (ChimpRef *self)
-{
-    return CHIMP_BOOL_REF(CHIMP_INT_VALUE(self) > 0);
-}
-
-static ChimpRef *
 _chimp_str_nonzero (ChimpRef *self)
 {
     return CHIMP_BOOL_REF(CHIMP_STR_SIZE(self) > 0);
@@ -453,7 +447,6 @@ chimp_core_startup (const char *path, void *stack_start)
     }
 
     if (!chimp_int_class_bootstrap ()) goto error;
-    CHIMP_CLASS(chimp_int_class)->nonzero = _chimp_int_nonzero;
     if (!chimp_float_class_bootstrap ()) goto error;
     if (!chimp_array_class_bootstrap ()) goto error;
     if (!chimp_hash_class_bootstrap ()) goto error;
