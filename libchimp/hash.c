@@ -180,6 +180,12 @@ _chimp_hash_items (ChimpRef *self, ChimpRef *args)
     return items;
 }
 
+ChimpRef *
+_chimp_hash_nonzero (ChimpRef *self)
+{
+    return CHIMP_BOOL_REF(CHIMP_HASH_SIZE(self) > 0);
+}
+
 chimp_bool_t
 chimp_hash_class_bootstrap (void)
 {
@@ -192,6 +198,7 @@ chimp_hash_class_bootstrap (void)
     CHIMP_CLASS(chimp_hash_class)->dtor = _chimp_hash_dtor;
     CHIMP_CLASS(chimp_hash_class)->getitem = _chimp_hash_getitem;
     CHIMP_CLASS(chimp_hash_class)->mark = _chimp_hash_mark;
+    CHIMP_CLASS(chimp_hash_class)->nonzero = _chimp_hash_nonzero;
     chimp_gc_make_root (NULL, chimp_hash_class);
     chimp_class_add_native_method (chimp_hash_class, "put", _chimp_hash_put);
     chimp_class_add_native_method (chimp_hash_class, "get", _chimp_hash_get);

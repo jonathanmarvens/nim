@@ -24,4 +24,9 @@ main argv {
 		t.equals(false, bool(0.0))
 	})
 
+	chimpunit.test("Bool construct hash", fn { |t|
+		t.equals(true, bool({"key": "value"}))
+		t.equals(false, bool({}))
+	})
+
 }
