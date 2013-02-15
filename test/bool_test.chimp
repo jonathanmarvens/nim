@@ -14,4 +14,9 @@ main argv {
 		t.equals(false, bool(""))
 	})
 
+	chimpunit.test("Bool construct list", fn { |t|
+		t.equals(true, bool([1, 2, 4]))
+		t.equals(false, bool([]))
+	})
+
 }
