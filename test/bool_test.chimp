@@ -19,4 +19,9 @@ main argv {
 		t.equals(false, bool([]))
 	})
 
+	chimpunit.test("Bool construct float", fn { |t|
+		t.equals(true, bool(1.0))
+		t.equals(false, bool(0.0))
+	})
+
 }

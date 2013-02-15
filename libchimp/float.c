@@ -23,6 +23,7 @@
 #include "chimp/float.h"
 #include "chimp/str.h"
 #include "chimp/class.h"
+#include "chimp/object.h"
 #include "chimp/ast.h"
 
 ChimpRef *chimp_float_class = NULL;
@@ -54,6 +55,12 @@ chimp_float_str (ChimpRef *self)
     return chimp_str_new (buf, len);
 }
 
+ChimpRef *
+chimp_float_nonzero (ChimpRef *self)
+{
+    return CHIMP_BOOL_REF(CHIMP_FLOAT(self)->value > 0.0);
+}
+
 
 chimp_bool_t
 chimp_float_class_bootstrap (void)
@@ -66,6 +73,7 @@ chimp_float_class_bootstrap (void)
     chimp_gc_make_root (NULL, chimp_float_class);
     CHIMP_CLASS(chimp_float_class)->init = _chimp_float_init;
     CHIMP_CLASS(chimp_float_class)->str = chimp_float_str;
+    CHIMP_CLASS(chimp_float_class)->nonzero = chimp_float_nonzero;
     return CHIMP_TRUE;
 }
 
