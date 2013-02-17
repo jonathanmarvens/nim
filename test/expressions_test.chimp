@@ -31,4 +31,10 @@ main argv {
   chimpunit.test("binary boolean expr 7", fn { |t|
     t.equals(nil, false or nil)
   })
+  chimpunit.test("chained binary arithmetic 1", fn { |t|
+    t.equals(-5, 1 - 1 - 5)
+  })
+  chimpunit.test("chained binary arithmetic 2", fn { |t|
+    t.equals(1, 4 / 2 / 2)
+  })
 }
