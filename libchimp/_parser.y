@@ -234,18 +234,18 @@ var_decl : TOK_VAR ident { $$ = chimp_ast_decl_new_var (CHIMP_AST_EXPR($2)->iden
 assign : ident TOK_ASSIGN expr { $$ = chimp_ast_stmt_new_assign ($1, $3, &@$); }
        ;
 
-expr : expr2 TOK_OR expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3, &@$); }
-     | expr2 TOK_AND expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3, &@$); }
-     | expr2 TOK_GT expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GT, $1, $3, &@$); }
-     | expr2 TOK_GTE expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GTE, $1, $3, &@$); }
-     | expr2 TOK_LT expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LT, $1, $3, &@$); }
-     | expr2 TOK_LTE expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LTE, $1, $3, &@$); }
-     | expr2 TOK_EQ expr  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3, &@$); }
-     | expr2 TOK_NEQ expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3, &@$); }
-     | expr2 TOK_PLUS expr     { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_ADD, $1, $3, &@$); }
-     | expr2 TOK_MINUS expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_SUB, $1, $3, &@$); }
-     | expr2 TOK_ASTERISK expr { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_MUL, $1, $3, &@$); }
-     | expr2 TOK_SLASH expr    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
+expr : expr TOK_OR expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_OR, $1, $3, &@$); }
+     | expr TOK_AND expr2 { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_AND, $1, $3, &@$); }
+     | expr TOK_GT expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GT, $1, $3, &@$); }
+     | expr TOK_GTE expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_GTE, $1, $3, &@$); }
+     | expr TOK_LT expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LT, $1, $3, &@$); }
+     | expr TOK_LTE expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_LTE, $1, $3, &@$); }
+     | expr TOK_EQ expr2  { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_EQ, $1, $3, &@$); }
+     | expr TOK_NEQ expr2 { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_NEQ, $1, $3, &@$); }
+     | expr TOK_PLUS expr2     { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_ADD, $1, $3, &@$); }
+     | expr TOK_MINUS expr2    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_SUB, $1, $3, &@$); }
+     | expr TOK_ASTERISK expr2 { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_MUL, $1, $3, &@$); }
+     | expr TOK_SLASH expr2    { $$ = chimp_ast_expr_new_binop (CHIMP_BINOP_DIV, $1, $3, &@$); }
      | expr2 { $$ = $1; }
      ;
 
