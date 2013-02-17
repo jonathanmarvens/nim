@@ -17,7 +17,8 @@
  *****************************************************************************/
 
 #ifdef HAVE_VALGRIND
-#include <valgrind/memcheck.h>
+/*#include <valgrind/memcheck.h>*/
+#include </usr/local/include/valgrind/memcheck.h>
 #else
 #define VALGRIND_MAKE_MEM_DEFINED(p, s)
 #endif

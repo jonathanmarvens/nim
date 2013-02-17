@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- * Copyright 2012 Thomas Lee                                                 *
+ * Copyright 2013 Thomas Lee                                                 *
  *                                                                           *
  * Licensed under the Apache License, Version 2.0 (the "License");           *
  * you may not use this file except in compliance with the License.          *
@@ -54,6 +54,33 @@ chimp_float_str (ChimpRef *self)
     return chimp_str_new (buf, len);
 }
 
+static ChimpCmpResult
+chimp_float_cmp (ChimpRef *left, ChimpRef *right)
+{
+    ChimpFloat *a;
+    ChimpFloat *b;
+
+    if (CHIMP_ANY_CLASS(left) != chimp_float_class) {
+        return CHIMP_CMP_LT;
+    }
+
+    if (CHIMP_ANY_CLASS(left) != CHIMP_ANY_CLASS(right)) {
+        return CHIMP_CMP_NOT_IMPL;
+    }
+
+    a = CHIMP_FLOAT(left);
+    b = CHIMP_FLOAT(right);
+
+    if (a->value > b->value) {
+        return CHIMP_CMP_GT;
+    }
+    else if (a->value < b->value) {
+        return CHIMP_CMP_LT;
+    }
+    else {
+        return CHIMP_CMP_EQ;
+    }
+}
 
 chimp_bool_t
 chimp_float_class_bootstrap (void)
@@ -66,6 +93,11 @@ chimp_float_class_bootstrap (void)
     chimp_gc_make_root (NULL, chimp_float_class);
     CHIMP_CLASS(chimp_float_class)->init = _chimp_float_init;
     CHIMP_CLASS(chimp_float_class)->str = chimp_float_str;
+    CHIMP_CLASS(chimp_float_class)->add = chimp_num_add;
+    CHIMP_CLASS(chimp_float_class)->sub = chimp_num_sub;
+    CHIMP_CLASS(chimp_float_class)->mul = chimp_num_mul;
+    CHIMP_CLASS(chimp_float_class)->div = chimp_num_div;
+    CHIMP_CLASS(chimp_float_class)->cmp = chimp_float_cmp;
     return CHIMP_TRUE;
 }
 

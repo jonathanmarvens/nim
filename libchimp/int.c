@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- * Copyright 2012 Thomas Lee                                                 *
+ * Copyright 2013 Thomas Lee                                                 *
  *                                                                           *
  * Licensed under the Apache License, Version 2.0 (the "License");           *
  * you may not use this file except in compliance with the License.          *
@@ -61,58 +61,6 @@ chimp_int_str (ChimpRef *self)
     return chimp_str_new (buf, len);
 }
 
-static ChimpRef *
-chimp_int_add (ChimpRef *left, ChimpRef *right)
-{
-    int64_t left_value, right_value;
-    
-    left_value = CHIMP_INT(left)->value;
-    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
-        return NULL;
-    }
-    right_value = CHIMP_INT(right)->value;
-    return chimp_int_new (left_value + right_value);
-}
-
-static ChimpRef *
-chimp_int_sub (ChimpRef *left, ChimpRef *right)
-{
-    int64_t left_value, right_value;
-    
-    left_value = CHIMP_INT(left)->value;
-    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
-        return NULL;
-    }
-    right_value = CHIMP_INT(right)->value;
-    return chimp_int_new (left_value - right_value);
-}
-
-static ChimpRef *
-chimp_int_mul (ChimpRef *left, ChimpRef *right)
-{
-    int64_t left_value, right_value;
-    
-    left_value = CHIMP_INT(left)->value;
-    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
-        return NULL;
-    }
-    right_value = CHIMP_INT(right)->value;
-    return chimp_int_new (left_value * right_value);
-}
-
-static ChimpRef *
-chimp_int_div (ChimpRef *left, ChimpRef *right)
-{
-    int64_t left_value, right_value;
-    
-    left_value = CHIMP_INT(left)->value;
-    if (CHIMP_ANY_CLASS(right) != chimp_int_class) {
-        return NULL;
-    }
-    right_value = CHIMP_INT(right)->value;
-    return chimp_int_new (left_value / right_value);
-}
-
 static ChimpCmpResult
 chimp_int_cmp (ChimpRef *left, ChimpRef *right)
 {
@@ -152,10 +100,10 @@ chimp_int_class_bootstrap (void)
     chimp_gc_make_root (NULL, chimp_int_class);
     CHIMP_CLASS(chimp_int_class)->init = _chimp_int_init;
     CHIMP_CLASS(chimp_int_class)->str = chimp_int_str;
-    CHIMP_CLASS(chimp_int_class)->add = chimp_int_add;
-    CHIMP_CLASS(chimp_int_class)->sub = chimp_int_sub;
-    CHIMP_CLASS(chimp_int_class)->mul = chimp_int_mul;
-    CHIMP_CLASS(chimp_int_class)->div = chimp_int_div;
+    CHIMP_CLASS(chimp_int_class)->add = chimp_num_add;
+    CHIMP_CLASS(chimp_int_class)->sub = chimp_num_sub;
+    CHIMP_CLASS(chimp_int_class)->mul = chimp_num_mul;
+    CHIMP_CLASS(chimp_int_class)->div = chimp_num_div;
     CHIMP_CLASS(chimp_int_class)->cmp = chimp_int_cmp;
     return CHIMP_TRUE;
 }

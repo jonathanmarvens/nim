@@ -56,7 +56,6 @@ extern "C" {
 struct _ChimpLWHash;
 
 typedef struct _ChimpGC ChimpGC;
-typedef struct _ChimpRef ChimpRef;
 
 ChimpGC *
 chimp_gc_new (void *stack_start);

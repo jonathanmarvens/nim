@@ -34,6 +34,8 @@ typedef int chimp_bool_t;
 
 struct _ChimpRef;
 
+typedef struct _ChimpRef ChimpRef;
+
 #define CHIMP_TRUE ((chimp_bool_t) 1)
 #define CHIMP_FALSE ((chimp_bool_t) 0)
 
@@ -53,6 +55,18 @@ chimp_is_builtin (struct _ChimpRef *name);
 
 extern struct _ChimpRef *chimp_module_path;
 
+ChimpRef *
+chimp_num_add (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_num_sub (ChimpRef *left, ChimpRef *right);
+
+ChimpRef *
+chimp_num_mul (ChimpRef *left, ChimpRef *right);
+                                               
+ChimpRef *
+chimp_num_div (ChimpRef *left, ChimpRef *right);
+                                               
 #define CHIMP_BUG(fmt, ...) \
     chimp_bug (__FILE__, __LINE__, (fmt), ## __VA_ARGS__)
 
