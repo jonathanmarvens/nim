@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- * Copyright 2012 Thomas Lee                                                 *
+ * Copyright 2013 Thomas Lee                                                 *
  *                                                                           *
  * Licensed under the Apache License, Version 2.0 (the "License");           *
  * you may not use this file except in compliance with the License.          *
@@ -608,4 +608,124 @@ _chimp_module_make_path (const char *path)
     return result;
 }
 
+static int 
+_is_chimp_float(ChimpRef* var)
+{
+    return (CHIMP_ANY_CLASS(var) == chimp_float_class);
+}
+
+static int 
+_is_chimp_int(ChimpRef* var)
+{
+    return (CHIMP_ANY_CLASS(var) == chimp_int_class);
+}
+
+static int 
+_is_chimp_num(ChimpRef* var)
+{
+    return (_is_chimp_float(var) || _is_chimp_int(var));
+}
+
+ChimpRef *
+chimp_num_add (ChimpRef *left, ChimpRef *right)
+{
+    // Check if both operands are numbers
+    if (!(_is_chimp_num(left) && _is_chimp_num(right))) {
+        return NULL;
+    }
+
+    // Check if one of the operands is float. This would mean promoting the
+    // other operand to a float.
+    if (_is_chimp_float(left) || _is_chimp_float(right)) {
+
+        double left_value, right_value;
+
+        left_value = _is_chimp_float(left)?CHIMP_FLOAT(left)->value:CHIMP_INT(left)->value;
+        right_value = _is_chimp_float(right)?CHIMP_FLOAT(right)->value:CHIMP_INT(right)->value;
+        return chimp_float_new (left_value + right_value);
+    }
+    else {
+
+        int left_value, right_value;
+
+        left_value = CHIMP_INT(left)->value;
+        right_value = CHIMP_INT(right)->value;
+        return chimp_int_new (left_value + right_value);
+    }
+}
+
+ChimpRef *
+chimp_num_sub (ChimpRef *left, ChimpRef *right)
+{
+    if (!(_is_chimp_num(left) && _is_chimp_num(right))) {
+        return NULL;
+    }
+
+    if (_is_chimp_float(left) || _is_chimp_float(right)) {
+
+        double left_value, right_value;
+
+        left_value = _is_chimp_float(left)?CHIMP_FLOAT(left)->value:(double)CHIMP_INT(left)->value;
+        right_value = _is_chimp_float(right)?CHIMP_FLOAT(right)->value:(double)CHIMP_INT(right)->value;
+        return chimp_float_new (left_value - right_value);
+    }
+    else {
+
+        int left_value, right_value;
+
+        left_value = CHIMP_INT(left)->value;
+        right_value = CHIMP_INT(right)->value;
+        return chimp_int_new (left_value - right_value);
+    }
+}
+
+ChimpRef *
+chimp_num_mul (ChimpRef *left, ChimpRef *right)
+{
+    if (!(_is_chimp_num(left) && _is_chimp_num(right))) {
+        return NULL;
+    }
+
+    if (_is_chimp_float(left) || _is_chimp_float(right)) {
+
+        double left_value, right_value;
+
+        left_value = _is_chimp_float(left)?CHIMP_FLOAT(left)->value:CHIMP_INT(left)->value;
+        right_value = _is_chimp_float(right)?CHIMP_FLOAT(right)->value:CHIMP_INT(right)->value;
+        return chimp_float_new (left_value * right_value);
+    }
+    else {
+
+        int left_value, right_value;
+
+        left_value = CHIMP_INT(left)->value;
+        right_value = CHIMP_INT(right)->value;
+        return chimp_int_new (left_value * right_value);
+    }
+}
+
+ChimpRef *
+chimp_num_div (ChimpRef *left, ChimpRef *right)
+{
+    if (!(_is_chimp_num(left) && _is_chimp_num(right))) {
+        return NULL;
+    }
+
+    if (_is_chimp_float(left) || _is_chimp_float(right)) {
+
+        double left_value, right_value;
+
+        left_value = _is_chimp_float(left)?CHIMP_FLOAT(left)->value:CHIMP_INT(left)->value;
+        right_value = _is_chimp_float(right)?CHIMP_FLOAT(right)->value:CHIMP_INT(right)->value;
+        return chimp_float_new (left_value / right_value);
+    }
+    else {
+
+        int left_value, right_value;
+
+        left_value = CHIMP_INT(left)->value;
+        right_value = CHIMP_INT(right)->value;
+        return chimp_int_new (left_value / right_value);
+    }
+}
 
