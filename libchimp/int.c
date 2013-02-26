@@ -24,6 +24,7 @@
 #include "chimp/int.h"
 #include "chimp/str.h"
 #include "chimp/class.h"
+#include "chimp/object.h"
 #include "chimp/ast.h"
 
 ChimpRef *chimp_int_class = NULL;
@@ -89,6 +90,12 @@ chimp_int_cmp (ChimpRef *left, ChimpRef *right)
     }
 }
 
+static ChimpRef *
+_chimp_int_nonzero (ChimpRef *self)
+{
+    return CHIMP_BOOL_REF(CHIMP_INT_VALUE(self) > 0);
+}
+
 chimp_bool_t
 chimp_int_class_bootstrap (void)
 {
@@ -105,6 +112,7 @@ chimp_int_class_bootstrap (void)
     CHIMP_CLASS(chimp_int_class)->mul = chimp_num_mul;
     CHIMP_CLASS(chimp_int_class)->div = chimp_num_div;
     CHIMP_CLASS(chimp_int_class)->cmp = chimp_int_cmp;
+    CHIMP_CLASS(chimp_int_class)->nonzero = _chimp_int_nonzero;
     return CHIMP_TRUE;
 }
 

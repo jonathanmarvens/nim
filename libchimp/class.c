@@ -172,6 +172,7 @@ chimp_class_new (ChimpRef *name, ChimpRef *super, size_t size)
     CHIMP_CLASS(ref)->div = CHIMP_CLASS(super)->div;
     CHIMP_CLASS(ref)->getattr = CHIMP_CLASS(super)->getattr;
     CHIMP_CLASS(ref)->getitem = CHIMP_CLASS(super)->getitem;
+    CHIMP_CLASS(ref)->nonzero = CHIMP_CLASS(super)->nonzero;
     return ref;
 }
 
