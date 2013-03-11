@@ -1,7 +1,3 @@
-#
-# This example is currently broken.
-#
-
 use io
 
 fib n {
