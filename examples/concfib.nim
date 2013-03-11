@@ -12,11 +12,12 @@ fib n {
 }
 
 fib_task p, n {
-  io.print(str("running fib(", n, ")"))
-  p.send(fib(n))
+  p.send(str("fib(", n, ")=", fib(n)))
 }
 
 main argv {
+  io.print("Running fib(10), fib(20) & fib(30) concurrently")
+
   var f3 = spawn fib_task(self(), 30)
   var f2 = spawn fib_task(self(), 20)
   var f1 = spawn fib_task(self(), 10)
