@@ -1,8 +1,8 @@
 #!/usr/local/bin/nim
 
-use io;
+use io
 
 main argv {
-  io.print ("Hello, World");
+  io.print ("Hello, World")
 }
 
