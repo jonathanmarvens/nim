@@ -16,12 +16,42 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#include "nim/var.h"
+#include "nim/str.h"
+#include "nim/class.h"
+#include "nim/object.h"
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
+NimRef *nim_var_class = NULL;
+
+static void
+_nim_var_mark (NimGC *gc, NimRef *self)
+{
+    NIM_SUPER (self)->mark (gc, self);
+
+    nim_gc_mark_ref (gc, NIM_VAR(self)->value);
 }
-END_TEST
+
+nim_bool_t
+nim_var_class_bootstrap (void)
+{
+    nim_var_class =
+        nim_class_new (NIM_STR_NEW("var"), NULL, sizeof(NimVar));
+    if (nim_var_class == NULL) {
+        return NIM_FALSE;
+    }
+    NIM_CLASS(nim_var_class)->mark = _nim_var_mark;
+    nim_gc_make_root (NULL, nim_var_class);
+    return NIM_TRUE;
+}
+
+NimRef *
+nim_var_new (void)
+{
+    NimRef *var = nim_class_new_instance (nim_var_class, NULL);
+    if (var == NULL) {
+        return NULL;
+    }
+    NIM_VAR(var)->value = NULL;
+    return var;
+}
 

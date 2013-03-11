@@ -16,12 +16,60 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_MSG_H_INCLUDED_
+#define _NIM_MSG_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <pthread.h>
+
+#include <nim/any.h>
+#include <nim/gc.h>
+#include <nim/task.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimMsgCell {
+    enum {
+        NIM_MSG_CELL_NIL,
+        NIM_MSG_CELL_INT,
+        NIM_MSG_CELL_STR,
+        NIM_MSG_CELL_ARRAY,
+        NIM_MSG_CELL_MODULE,
+        NIM_MSG_CELL_METHOD,
+        NIM_MSG_CELL_TASK
+    } type;
+    union {
+        int64_t  int_;
+        struct {
+            char    *data;
+            size_t   size;
+        } str;
+        struct {
+            struct _NimMsgCell *items;
+            size_t                size;
+        } array;
+        NimRef          *method;
+        NimRef          *module;
+        NimTaskInternal *task;
+    };
+} NimMsgCell;
+
+typedef struct _NimMsgInternal {
+    size_t                    size;
+    NimMsgCell             *cell;
+    struct _NimMsgInternal *next;
+} NimMsgInternal;
+
+NimMsgInternal *
+nim_msg_pack (NimRef *array);
+
+NimRef *
+nim_msg_unpack (NimMsgInternal *internal);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

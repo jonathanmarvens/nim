@@ -16,12 +16,31 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_COMPILE_H_INCLUDED_
+#define _NIM_COMPILE_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/ast.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+NimRef *
+nim_compile_ast (NimRef *name, const char *filename, NimRef *ast);
+
+NimRef *
+nim_compile_file (NimRef *name, const char *filename);
+
+#define NIM_COMPILE_MODULE_FROM_AST(name, ast) \
+    nim_compile_ast (nim_str_new ((name), strlen(name)), (ast))
+
+/* XXX passing a NULL name generates a warning in GCC for no apparent reason */
+#define NIM_COMPILE_MODULE_FROM_FILE(name, filename) \
+    nim_compile_file ((((name) != NULL) ? nim_str_new ((name), strlen(name)) : NULL), (filename))
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

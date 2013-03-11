@@ -16,12 +16,25 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_H_INCLUDED_
+#define _NIM_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/core.h>
+#include <nim/gc.h>
+#include <nim/object.h>
+#include <nim/module.h>
+#include <nim/str.h>
+#include <nim/int.h>
+#include <nim/array.h>
+#include <nim/hash.h>
+#include <nim/class.h>
+#include <nim/task.h>
+#include <nim/method.h>
+#include <nim/frame.h>
+
+#include <nim/ast.h>
+#include <nim/code.h>
+#include <nim/compile.h>
+
+#endif
 

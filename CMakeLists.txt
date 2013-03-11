@@ -3,9 +3,9 @@
 # http://www.cmake.org/cmake/help/v2.8.8/cmake.html
 #
 cmake_minimum_required (VERSION 2.6)
-project (chimp)
+project (nim)
 
-set (CHIMP_VERSION "0.0.1")
+set (NIM_VERSION "0.0.1")
 
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
@@ -64,15 +64,15 @@ else (VALGRIND_INCLUDE_DIR)
     message (STATUS "memcheck.h [valgrind] not found (valgrind warnings ahoy)")
 endif (VALGRIND_INCLUDE_DIR)
 
-set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/scanner.l)
-set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c)
+set (SCANNER_L ${CMAKE_CURRENT_SOURCE_DIR}/libnim/scanner.l)
+set (SCANNER_C ${CMAKE_CURRENT_BINARY_DIR}/libnim/scanner.c)
 
-set (PARSER_Y ${CMAKE_CURRENT_SOURCE_DIR}/libchimp/_parser.y)
-set (PARSER_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/_parser.c)
-set (PARSER_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/_parser.h)
+set (PARSER_Y ${CMAKE_CURRENT_SOURCE_DIR}/libnim/_parser.y)
+set (PARSER_C ${CMAKE_CURRENT_BINARY_DIR}/libnim/_parser.c)
+set (PARSER_H ${CMAKE_CURRENT_BINARY_DIR}/libnim/include/nim/_parser.h)
 
-set (AST_C ${CMAKE_CURRENT_BINARY_DIR}/libchimp/ast.c)
-set (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libchimp/include/chimp/ast.h)
+set (AST_C ${CMAKE_CURRENT_BINARY_DIR}/libnim/ast.c)
+set (AST_H ${CMAKE_CURRENT_BINARY_DIR}/libnim/include/nim/ast.h)
 
 set (_TEST_MAIN_C ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
 
@@ -99,10 +99,10 @@ add_custom_command (OUTPUT ${PARSER_C} ${PARSER_H}
   COMMENT "[bison] generating parser"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-set_source_files_properties (libchimp/compile.c
+set_source_files_properties (libnim/compile.c
   PROPERTIES OBJECT_DEPENDS ${PARSER_H})
 
-set_source_files_properties (${CMAKE_CURRENT_BINARY_DIR}/libchimp/scanner.c
+set_source_files_properties (${CMAKE_CURRENT_BINARY_DIR}/libnim/scanner.c
   PROPERTIES OBJECT_DEPENDS ${PARSER_H})
 #
 # ---- </FLEX-AND-BISON> ----
@@ -134,50 +134,50 @@ add_custom_command (
 # ---- </TEST-DRIVER> ----
 #
 
-include_directories ("${CMAKE_CURRENT_BINARY_DIR}/libchimp/include" "${PROJECT_SOURCE_DIR}/libchimp/include")
-add_library (libchimp STATIC
+include_directories ("${CMAKE_CURRENT_BINARY_DIR}/libnim/include" "${PROJECT_SOURCE_DIR}/libnim/include")
+add_library (libnim STATIC
   ${PARSER_C}
-  libchimp/array.c
+  libnim/array.c
   ${AST_C}
-  libchimp/class.c
-  libchimp/code.c
-  libchimp/compile.c
-  libchimp/core.c
-  libchimp/frame.c
-  libchimp/gc.c
-  libchimp/hash.c
-  libchimp/int.c
-  libchimp/float.c
-  libchimp/lwhash.c
-  libchimp/method.c
-  libchimp/module.c
-  libchimp/msg.c
-  libchimp/object.c
+  libnim/class.c
+  libnim/code.c
+  libnim/compile.c
+  libnim/core.c
+  libnim/frame.c
+  libnim/gc.c
+  libnim/hash.c
+  libnim/int.c
+  libnim/float.c
+  libnim/lwhash.c
+  libnim/method.c
+  libnim/module.c
+  libnim/msg.c
+  libnim/object.c
   ${SCANNER_C}
-  libchimp/str.c
-  libchimp/symtable.c
-  libchimp/task.c
-  libchimp/var.c
-  libchimp/vm.c
-  libchimp/error.c
-  libchimp/module_mgr.c
-  libchimp/modules/net.c
-  libchimp/modules/assert.c
-  libchimp/modules/chimpunit.c
-  libchimp/modules/gc.c
-  libchimp/modules/io.c
-  libchimp/modules/os.c
-  libchimp/modules/http/http.c
-  libchimp/modules/http/http-parser-2.0/http_parser.c)
+  libnim/str.c
+  libnim/symtable.c
+  libnim/task.c
+  libnim/var.c
+  libnim/vm.c
+  libnim/error.c
+  libnim/module_mgr.c
+  libnim/modules/net.c
+  libnim/modules/assert.c
+  libnim/modules/nimunit.c
+  libnim/modules/gc.c
+  libnim/modules/io.c
+  libnim/modules/os.c
+  libnim/modules/http/http.c
+  libnim/modules/http/http-parser-2.0/http_parser.c)
 #
-# Default behaviour is to generate liblibchimp.a ...
+# Default behaviour is to generate liblibnim.a ...
 #
-set_target_properties (libchimp PROPERTIES OUTPUT_NAME chimp)
-set_target_properties (libchimp PROPERTIES
-  COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libchimp/modules/http/http-parser-2.0")
+set_target_properties (libnim PROPERTIES OUTPUT_NAME nim)
+set_target_properties (libnim PROPERTIES
+  COMPILE_FLAGS "-I${PROJECT_SOURCE_DIR}/libnim/modules/http/http-parser-2.0")
 
-set (CHIMP_LIBRARIES
-    libchimp
+set (NIM_LIBRARIES
+    libnim
     ${FLEX_LIBRARIES}
     ${BISON_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -185,8 +185,8 @@ set (CHIMP_LIBRARIES
     ${CORESERVICES_LIBRARY}
     ${LIBRT_LIBRARIES})
 
-add_executable (chimp main.c)
-target_link_libraries (chimp ${CHIMP_LIBRARIES})
+add_executable (nim main.c)
+target_link_libraries (nim ${NIM_LIBRARIES})
 
 #
 # TODO test for the presence of check
@@ -194,14 +194,14 @@ target_link_libraries (chimp ${CHIMP_LIBRARIES})
 add_executable (test-native
   EXCLUDE_FROM_ALL
   ${CMAKE_CURRENT_BINARY_DIR}/test/_test_main.c)
-target_link_libraries (test-native ${CHIMP_LIBRARIES} check)
+target_link_libraries (test-native ${NIM_LIBRARIES} check)
 
 add_custom_target (test test-native
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/script/test
-  DEPENDS test-native chimp)
+  DEPENDS test-native nim)
 
 add_custom_target (dist 
-    COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}/ master | gzip -9 >${CMAKE_PROJECT_NAME}-${CHIMP_VERSION}.tar.gz)
+    COMMAND git archive --format=tar --prefix=${CMAKE_PROJECT_NAME}-${NIM_VERSION}/ master | gzip -9 >${CMAKE_PROJECT_NAME}-${NIM_VERSION}.tar.gz)
 
-install(PROGRAMS chimp DESTINATION bin)
+install(PROGRAMS nim DESTINATION bin)
 

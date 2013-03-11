@@ -16,12 +16,67 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_MODULE_H_INCLUDED_
+#define _NIM_MODULE_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/any.h>
+#include <nim/method.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimModule {
+    NimAny base;
+    NimRef *name;
+    NimRef *locals;
+} NimModule;
+
+nim_bool_t
+nim_module_class_bootstrap (void);
+
+NimRef *
+nim_module_load (NimRef *name, NimRef *path);
+
+NimRef *
+nim_module_new (NimRef *name, NimRef *locals);
+
+NimRef *
+nim_module_new_str (const char *name, NimRef *locals);
+
+nim_bool_t
+nim_module_add_method_str (
+    NimRef *self,
+    const char *name,
+    NimNativeMethodFunc impl
+);
+
+nim_bool_t
+nim_module_add_local (
+    NimRef *self,
+    NimRef *name,
+    NimRef *value
+);
+
+nim_bool_t
+nim_module_add_local_str (
+    NimRef *self,
+    const char *name,
+    NimRef *value
+);
+
+nim_bool_t
+nim_module_add_builtin (NimRef *module);
+
+#define NIM_MODULE(ref) NIM_CHECK_CAST(NimModule, (ref), nim_module_class)
+#define NIM_MODULE_NAME(ref) (NIM_MODULE(ref)->name)
+#define NIM_MODULE_LOCALS(ref) (NIM_MODULE(ref)->locals)
+
+NIM_EXTERN_CLASS(module);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

@@ -12,7 +12,7 @@ TEARDOWN_REGEX = re.compile(r'^(test_[a-zA-Z0-9]+_teardown)\s*\(')
 files = glob(sys.argv[1] + os.path.sep + "test_*.c")
 with open(sys.argv[2], "w+") as out:
     print >>out, "#include <check.h>"
-    print >>out, "#include <chimp.h>"
+    print >>out, "#include <nim.h>"
     print >>out
     print >>out, "void *stack_base = 0;"
     print >>out

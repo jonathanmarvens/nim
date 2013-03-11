@@ -16,12 +16,67 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#include <stdio.h>
+#include "nim/any.h"
+#include "nim/object.h"
+#include "nim/array.h"
+#include "nim/str.h"
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
+static NimRef *
+_nim_gc_get_collection_count (NimRef *self, NimRef *args)
+{
+    return nim_int_new (nim_gc_collection_count (NULL));
 }
-END_TEST
+
+static NimRef *
+_nim_gc_get_live_count (NimRef *self, NimRef *args)
+{
+    return nim_int_new (nim_gc_num_live (NULL));
+}
+
+static NimRef *
+_nim_gc_get_free_count (NimRef *self, NimRef *args)
+{
+    return nim_int_new (nim_gc_num_free (NULL));
+}
+
+static NimRef *
+_nim_gc_collect (NimRef *self, NimRef *args)
+{
+    return nim_gc_collect (NULL) ? nim_true : nim_false;
+}
+
+NimRef *
+nim_init_gc_module (void)
+{
+    NimRef *gc;
+
+    gc = nim_module_new_str ("gc", NULL);
+    if (gc == NULL) {
+        return NULL;
+    }
+
+    if (!nim_module_add_method_str (
+            gc, "get_collection_count", _nim_gc_get_collection_count)) {
+        return NULL;
+    }
+
+    if (!nim_module_add_method_str (
+            gc, "get_live_count", _nim_gc_get_live_count)) {
+        return NULL;
+    }
+
+    if (!nim_module_add_method_str (
+            gc, "get_free_count", _nim_gc_get_free_count)) {
+        return NULL;
+    }
+
+    if (!nim_module_add_method_str (
+            gc, "collect", _nim_gc_collect)) {
+        return NULL;
+    }
+
+    return gc;
+}
+
 

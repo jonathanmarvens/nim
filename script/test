@@ -5,4 +5,4 @@ APPDIR="$(cd "$APPDIR" && pwd)"
 
 set -e
 
-$APPDIR/chimp script/runner.chimp $APPDIR/test
+$APPDIR/nim script/runner.nim $APPDIR/test

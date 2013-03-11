@@ -16,12 +16,20 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM__PARSER_EXT_H_INCLUDED_
+#define _NIM__PARSER_EXT_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/ast.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define YYLTYPE NimAstNodeLocation
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

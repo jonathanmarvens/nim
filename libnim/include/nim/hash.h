@@ -16,12 +16,62 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_HASH_H_INCLUDED_
+#define _NIM_HASH_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+#include <nim/any.h>
+#include <nim/lwhash.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimHash {
+    NimAny   base;
+    NimRef **keys;
+    NimRef **values;
+    size_t     size;
+} NimHash;
+
+nim_bool_t
+nim_hash_class_bootstrap (void);
+
+NimRef *
+nim_hash_new (void);
+
+nim_bool_t
+nim_hash_put (NimRef *self, NimRef *key, NimRef *value);
+
+nim_bool_t
+nim_hash_put_str (NimRef *self, const char *key, NimRef *value);
+
+int
+nim_hash_get (NimRef *self, NimRef *key, NimRef **value);
+
+NimRef *
+nim_hash_keys (NimRef *self);
+
+NimRef *
+nim_hash_values (NimRef *self);
+
+#define NIM_HASH(ref) \
+    NIM_CHECK_CAST(NimHash, (ref), nim_hash_class)
+
+#define NIM_HASH_PUT(ref, key, value) \
+    nim_hash_put ((ref), NIM_STR_NEW(NULL, (key)), (value))
+
+#define NIM_HASH_GET(ref, key) \
+    nim_hash_get ((ref), NIM_STR_NEW(NULL, (key)))
+
+#define NIM_HASH_SIZE(ref) NIM_HASH(ref)->size
+
+NIM_EXTERN_CLASS(hash);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
+
 

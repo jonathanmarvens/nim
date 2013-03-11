@@ -16,12 +16,35 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_LWHASH_H_INCLUDED_
+#define _NIM_LWHASH_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimLWHash NimLWHash;
+
+NimLWHash *
+nim_lwhash_new (void);
+
+void
+nim_lwhash_delete (NimLWHash *self);
+
+nim_bool_t
+nim_lwhash_put (NimLWHash *self, NimRef *key, NimRef *value);
+
+nim_bool_t
+nim_lwhash_get (NimLWHash *self, NimRef *key, NimRef **value);
+
+void
+nim_lwhash_foreach (NimLWHash *self, void (*fn)(NimLWHash *, NimRef *, NimRef *, void *), void *);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

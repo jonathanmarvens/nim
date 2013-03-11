@@ -1,6 +1,6 @@
 /*****************************************************************************
  *                                                                           *
- * Copyright 2012 Thomas Lee                                                 *
+ * Copyright 2013 Thomas Lee                                                 *
  *                                                                           *
  * Licensed under the Apache License, Version 2.0 (the "License");           *
  * you may not use this file except in compliance with the License.          *
@@ -16,12 +16,32 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_ANY_H_INCLUDED_
+#define _NIM_ANY_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimAny {
+    NimRef       *klass;
+} NimAny;
+
+#define NIM_CHECK_CAST(struc, ref, type) \
+  ((struc *) nim_gc_ref_check_cast ((ref), (type)))
+
+#define NIM_ANY(ref)    NIM_CHECK_CAST(NimAny, (ref), NULL)
+
+#define NIM_ANY_CLASS(ref) (NIM_ANY(ref)->klass)
+#define NIM_ANY_TYPE(ref) (NIM_ANY(ref)->type)
+
+#define NIM_EXTERN_CLASS(name) extern struct _NimRef *nim_ ## name ## _class
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

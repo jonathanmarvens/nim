@@ -16,12 +16,35 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_VAR_H_INCLUDED_
+#define _NIM_VAR_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+#include <nim/any.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimVar {
+    NimAny  base;
+    NimRef *value;
+} NimVar;
+
+nim_bool_t
+nim_var_class_bootstrap (void);
+
+NimRef *
+nim_var_new (void);
+
+#define NIM_VAR(ref)  NIM_CHECK_CAST(NimVar, (ref), nim_var_class)
+#define NIM_VAR_VALUE(ref) NIM_VAR(ref)->value
+
+NIM_EXTERN_CLASS(var);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

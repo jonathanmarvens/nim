@@ -16,12 +16,42 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_FRAME_H_INCLUDED_
+#define _NIM_FRAME_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+#include <nim/any.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimFrame {
+    NimAny   base;
+    NimRef  *method;
+    NimRef  *locals;
+} NimFrame;
+
+nim_bool_t
+nim_frame_class_bootstrap (void);
+
+NimRef *
+nim_frame_new (NimRef *method);
+
+#define NIM_FRAME(ref) \
+    NIM_CHECK_CAST(NimFrame, (ref), nim_frame_class)
+
+/* XXX it's ugly as hell to distinguish between closures & normal methods here */
+#define NIM_FRAME_CODE(ref) \
+    (NIM_METHOD_TYPE(NIM_FRAME(ref)->method) == NIM_METHOD_TYPE_BYTECODE ? \
+        NIM_METHOD(NIM_FRAME(ref)->method)->bytecode.code : \
+        NIM_METHOD(NIM_FRAME(ref)->method)->closure.code)
+
+NIM_EXTERN_CLASS(frame);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

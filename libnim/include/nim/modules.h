@@ -16,12 +16,40 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_MODULES_H_INCLUDED_
+#define _NIM_MODULES_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/any.h>
+#include <nim/gc.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+NimRef *
+nim_init_io_module (void);
+
+NimRef *
+nim_init_assert_module (void);
+
+NimRef *
+nim_init_unit_module (void);
+
+NimRef *
+nim_init_os_module (void);
+
+NimRef *
+nim_init_gc_module (void);
+
+NimRef *
+nim_init_net_module (void);
+
+NimRef *
+nim_init_http_module (void);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

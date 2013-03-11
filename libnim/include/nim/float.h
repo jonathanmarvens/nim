@@ -16,12 +16,35 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_FLOAT_H_INCLUDED_
+#define _NIM_FLOAT_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+#include <nim/any.h>
 
+#ifdef __cplusplus
+extern "C" { 
+#endif
+
+typedef struct _NimFloat { 
+    NimAny base;
+    double value;
+} NimFloat;
+
+nim_bool_t
+nim_float_class_bootstrap (void);
+
+NimRef *
+nim_float_new (double value);
+
+#define NIM_FLOAT(ref) NIM_CHECK_CAST(NimFloat, (ref), nim_float_class)
+
+#define NIM_FLOAT_VALUE(ref) NIM_FLOAT(ref)->value
+
+NIM_EXTERN_CLASS(float);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif

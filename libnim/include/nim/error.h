@@ -16,12 +16,41 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_ERROR_H_INCLUDED_
+#define _NIM_ERROR_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/any.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimError {
+    NimAny base;
+    NimRef *message;
+    NimRef *backtrace;
+    NimRef *cause;
+} NimError;
+
+nim_bool_t
+nim_error_class_bootstrap (void);
+
+NimRef *
+nim_error_new (NimRef *message);
+
+NimRef *
+nim_error_new_with_format (const char *fmt, ...);
+
+#define NIM_ERROR(ref)  NIM_CHECK_CAST(NimError, (ref), nim_error_class)
+#define NIM_ERROR_MESSAGE(ref) NIM_ERROR(ref)->message
+#define NIM_ERROR_BACKTRACE(ref) NIM_ERROR(ref)->backtrace
+#define NIM_ERROR_CAUSE(ref) NIM_ERROR(ref)->cause
+
+NIM_EXTERN_CLASS(error);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 

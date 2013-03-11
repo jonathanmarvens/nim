@@ -16,12 +16,38 @@
  *                                                                           *
  *****************************************************************************/
 
-START_TEST (test_startup_shutdown)
-{
-    int stack;
+#ifndef _NIM_VM_H_INCLUDED_
+#define _NIM_VM_H_INCLUDED_
 
-    fail_unless (nim_core_startup (NULL, (void *)&stack), "expected startup to succeed");
-    nim_core_shutdown ();
-}
-END_TEST
+#include <nim/gc.h>
+#include <nim/any.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _NimVM NimVM;
+
+NimVM *
+nim_vm_new (void);
+
+void
+nim_vm_delete (NimVM *vm);
+
+/*
+NimRef *
+nim_vm_eval (NimVM *vm, NimRef *code, NimRef *locals);
+*/
+
+NimRef *
+nim_vm_invoke (NimVM *vm, NimRef *method, NimRef *args);
+
+void
+nim_vm_panic (NimVM *vm, NimRef *value);
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif
 
