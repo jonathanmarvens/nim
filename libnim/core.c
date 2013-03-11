@@ -588,7 +588,7 @@ _nim_module_make_path (const char *path)
             l = j - i;
             if (l == 0) continue;
 
-            s = strndup (path + i, l);
+            s = fake_strndup (path + i, l);
             if (s == NULL) {
                 return NULL;
             }
